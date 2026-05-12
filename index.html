@@ -1,481 +1,482 @@
+# Dashboard The Brands Club - Tiendas - CD
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BBCE900 — Control Logístico</title>
+<title>The Brands Club - Tiendas - CD</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
-:root {
-  --bg: #0a0c0f;
-  --bg2: #111318;
-  --bg3: #181c22;
-  --border: #2a2f3a;
-  --text: #e2e6ed;
-  --text2: #8892a0;
-  --accent: #00d4aa;
-  --accent2: #0091ff;
-  --warn: #ffb340;
-  --danger: #ff4f4f;
-  --success: #00d4aa;
-  --mono: 'IBM Plex Mono', monospace;
-  --sans: 'IBM Plex Sans', sans-serif;
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root{
+--bg:#0b0711;
+--bg2:#151020;
+--bg3:#1e1630;
+--card:#171124;
+--border:#32254a;
+--text:#ffffff;
+--text2:#b7a8d8;
+--pink:#ff4fd8;
+--purple:#a855f7;
+--purple2:#7c3aed;
+--green:#22c55e;
+--orange:#fb923c;
+--red:#ef4444;
+--shadow:0 0 25px rgba(168,85,247,.15);
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; min-height:100vh; }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-/* HEADER */
-.header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
-.logo { display:flex; align-items:center; gap:12px; }
-.logo-mark { width:36px; height:36px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; font-size:11px; color:#000; }
-.logo-text h1 { font-size:15px; font-weight:600; letter-spacing:.5px; }
-.logo-text p { font-size:11px; color:var(--text2); font-family:var(--mono); }
-.header-right { display:flex; align-items:center; gap:16px; }
-.ts { font-family:var(--mono); font-size:11px; color:var(--text2); }
-.btn-load { background:var(--accent); color:#000; border:none; padding:8px 16px; border-radius:6px; font-family:var(--sans); font-weight:600; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:opacity .2s; }
-.btn-load:hover { opacity:.85; }
-#file-input { display:none; }
+body{
+font-family:'Inter',sans-serif;
+background:linear-gradient(180deg,#09060d,#120d1c);
+color:var(--text);
+padding:20px;
+}
 
-/* KPI BAR */
-.kpi-bar { display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
-.kpi { background:var(--bg2); padding:16px 20px; }
-.kpi-label { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.8px; font-family:var(--mono); margin-bottom:6px; }
-.kpi-val { font-size:26px; font-weight:600; font-family:var(--mono); line-height:1; }
-.kpi-sub { font-size:11px; color:var(--text2); margin-top:4px; }
-.kpi-val.green { color:var(--accent); }
-.kpi-val.blue { color:var(--accent2); }
-.kpi-val.warn { color:var(--warn); }
-.kpi-val.danger { color:var(--danger); }
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+padding:18px 24px;
+background:rgba(23,17,36,.95);
+border:1px solid var(--border);
+border-radius:20px;
+box-shadow:var(--shadow);
+}
 
-/* MAIN GRID */
-.main { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); padding:0; }
-.panel { background:var(--bg2); padding:20px; }
-.panel.full { grid-column:1/-1; }
-.panel-title { font-size:11px; font-family:var(--mono); color:var(--text2); text-transform:uppercase; letter-spacing:.8px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-.panel-title::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+.title h1{
+font-size:28px;
+font-weight:700;
+}
 
-/* ESTADO PICKING - barras */
-.estado-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.estado-label { font-size:12px; color:var(--text2); width:180px; flex-shrink:0; }
-.estado-bar-wrap { flex:1; background:var(--bg3); border-radius:3px; height:8px; overflow:hidden; }
-.estado-bar { height:100%; border-radius:3px; transition:width .6s ease; }
-.estado-count { font-family:var(--mono); font-size:12px; color:var(--text); width:50px; text-align:right; }
+.title span{
+font-size:13px;
+color:var(--text2);
+}
 
-/* TIENDAS TABLE */
-.tbl { width:100%; border-collapse:collapse; }
-.tbl th { font-size:10px; font-family:var(--mono); color:var(--text2); text-transform:uppercase; letter-spacing:.6px; padding:8px 10px; border-bottom:1px solid var(--border); text-align:left; }
-.tbl td { padding:9px 10px; border-bottom:1px solid rgba(42,47,58,.5); font-size:12px; }
-.tbl tr:hover td { background:var(--bg3); }
-.tbl .num { font-family:var(--mono); text-align:right; }
-.tbl .tienda-name { color:var(--text); }
-.badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-family:var(--mono); font-weight:600; }
-.badge-listo { background:rgba(0,212,170,.15); color:var(--accent); }
-.badge-picking { background:rgba(0,145,255,.15); color:var(--accent2); }
-.badge-embalado { background:rgba(255,179,64,.15); color:var(--warn); }
-.badge-parcial { background:rgba(255,79,79,.15); color:var(--danger); }
+.filters{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+}
 
-/* SEMANA CHART */
-.sem-row { display:flex; align-items:flex-end; gap:8px; height:80px; margin-bottom:8px; }
-.sem-col { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
-.sem-bar-wrap { width:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; }
-.sem-bar { width:60%; border-radius:3px 3px 0 0; min-height:4px; }
-.sem-lbl { font-size:10px; color:var(--text2); font-family:var(--mono); }
-.sem-val { font-size:11px; font-family:var(--mono); color:var(--text); }
+.filters select{
+background:var(--bg3);
+color:white;
+border:1px solid var(--border);
+padding:10px 14px;
+border-radius:10px;
+}
 
-/* BLOQUEADOS TABLE */
-.blq-row { display:grid; grid-template-columns:80px 1fr 120px 80px 80px; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid rgba(42,47,58,.5); }
-.blq-row:last-child { border-bottom:none; }
-.blq-ola { font-family:var(--mono); font-size:11px; color:var(--text2); }
-.blq-tienda { font-size:12px; }
-.blq-estado { font-size:10px; color:var(--warn); }
-.blq-quien { font-family:var(--mono); font-size:11px; color:var(--accent2); }
-.blq-cant { font-family:var(--mono); font-size:12px; text-align:right; }
+.grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:16px;
+margin-bottom:18px;
+}
 
-/* TIPO SOLICITUD */
-.tipo-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-.tipo-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.tipo-lbl { font-size:12px; flex:1; }
-.tipo-bar-wrap { width:120px; background:var(--bg3); border-radius:3px; height:6px; }
-.tipo-bar { height:6px; border-radius:3px; }
-.tipo-val { font-family:var(--mono); font-size:12px; width:60px; text-align:right; }
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:18px;
+padding:18px;
+box-shadow:var(--shadow);
+}
 
-/* UPLOAD ZONE */
-.upload-zone { border:2px dashed var(--border); border-radius:12px; padding:40px; text-align:center; margin:20px; cursor:pointer; transition:border-color .2s; }
-.upload-zone:hover { border-color:var(--accent); }
-.upload-zone h2 { font-size:18px; font-weight:500; margin-bottom:8px; }
-.upload-zone p { color:var(--text2); font-size:13px; margin-bottom:20px; }
-.upload-hint { font-size:11px; color:var(--text2); font-family:var(--mono); margin-top:12px; }
+.kpi-title{
+font-size:12px;
+color:var(--text2);
+margin-bottom:10px;
+text-transform:uppercase;
+letter-spacing:1px;
+}
 
-/* SCROLLABLE */
-.scrollable { max-height:300px; overflow-y:auto; }
-.scrollable::-webkit-scrollbar { width:4px; }
-.scrollable::-webkit-scrollbar-track { background:var(--bg3); }
-.scrollable::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.kpi-value{
+font-size:32px;
+font-weight:700;
+}
 
-/* PROGRESS BAR DESPACHO */
-.despacho-wrap { margin-top:12px; }
-.despacho-bar-bg { background:var(--bg3); border-radius:4px; height:12px; overflow:hidden; margin-bottom:6px; }
-.despacho-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent2)); transition:width .8s ease; }
-.despacho-labels { display:flex; justify-content:space-between; font-size:11px; font-family:var(--mono); color:var(--text2); }
+.kpi-sub{
+margin-top:10px;
+font-size:12px;
+color:var(--text2);
+}
 
-#app { display:none; }
-#upload-screen { display:block; }
+.section{
+margin-top:20px;
+}
+
+.section-title{
+font-size:18px;
+margin-bottom:14px;
+font-weight:600;
+}
+
+.week-bars{
+display:flex;
+flex-direction:column;
+gap:14px;
+}
+
+.week-row{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.week-label{
+width:60px;
+font-size:13px;
+color:var(--text2);
+}
+
+.week-bar-wrap{
+flex:1;
+height:16px;
+background:#241a38;
+border-radius:20px;
+overflow:hidden;
+}
+
+.week-bar{
+height:100%;
+background:linear-gradient(90deg,var(--pink),var(--purple));
+border-radius:20px;
+}
+
+.week-value{
+width:90px;
+text-align:right;
+font-size:12px;
+font-weight:600;
+}
+
+.info-grid{
+display:grid;
+grid-template-columns:2fr 1fr;
+gap:18px;
+margin-top:18px;
+}
+
+.table{
+width:100%;
+border-collapse:collapse;
+}
+
+.table th{
+text-align:left;
+padding:12px;
+font-size:11px;
+color:var(--text2);
+border-bottom:1px solid var(--border);
+text-transform:uppercase;
+}
+
+.table td{
+padding:12px;
+font-size:13px;
+border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.table tr:hover{
+background:rgba(255,255,255,.03);
+}
+
+.badge{
+padding:5px 10px;
+border-radius:999px;
+font-size:11px;
+font-weight:600;
+}
+
+.badge-red{
+background:rgba(239,68,68,.2);
+color:#ff8b8b;
+}
+
+.badge-orange{
+background:rgba(251,146,60,.2);
+color:#ffbe7a;
+}
+
+.alerts{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.alert{
+padding:14px;
+background:#211730;
+border:1px solid var(--border);
+border-radius:14px;
+font-size:13px;
+}
+
+.footer-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px;
+margin-top:20px;
+}
+
+.progress-wrap{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.progress-row{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.progress-label{
+width:160px;
+font-size:12px;
+}
+
+.progress-bar-bg{
+flex:1;
+height:10px;
+background:#241a38;
+border-radius:20px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+background:linear-gradient(90deg,var(--purple),var(--pink));
+}
+
+.progress-num{
+width:60px;
+text-align:right;
+font-size:12px;
+}
+
+@media(max-width:1200px){
+.grid{grid-template-columns:1fr 1fr;}
+.info-grid,.footer-grid{grid-template-columns:1fr;}
+}
+
+@media(max-width:700px){
+.grid{grid-template-columns:1fr;}
+.header{flex-direction:column;align-items:flex-start;gap:15px;}
+}
 </style>
 </head>
 <body>
 
-<!-- UPLOAD SCREEN -->
-<div id="upload-screen">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-mark">TBC</div>
-      <div class="logo-text">
-        <h1>BBCE900 — Control Logístico</h1>
-        <p>Dashboard supervisor · Bodega Central</p>
-      </div>
-    </div>
-  </div>
-  <div class="upload-zone" onclick="document.getElementById('file-input-main').click()">
-    <h2>Cargar archivo Excel</h2>
-    <p>Exporta el CSV/Excel desde SAP y arrástralo aquí,<br>o haz clic para seleccionar el archivo.</p>
-    <button class="btn-load" style="margin:0 auto;">↑ Seleccionar archivo</button>
-    <p class="upload-hint">Formatos aceptados: .xlsx · .xls · .csv</p>
-    <input type="file" id="file-input-main" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadFile(this)">
-  </div>
-  <!-- Demo con datos reales del Excel subido -->
-  <div style="text-align:center; margin-top:8px;">
-    <button onclick="loadDemo()" style="background:transparent; border:1px solid var(--border); color:var(--text2); padding:8px 20px; border-radius:6px; cursor:pointer; font-family:var(--sans); font-size:12px;">Ver con datos de muestra</button>
-  </div>
+<div class="header">
+<div class="title">
+<h1>The Brands Club - Tiendas - CD</h1>
+<span>Control operacional | Dashboard logístico</span>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-mark">TBC</div>
-      <div class="logo-text">
-        <h1>BBCE900 — Control Logístico</h1>
-        <p>Dashboard supervisor · Bodega Central</p>
-      </div>
-    </div>
-    <div class="header-right">
-      <span class="ts" id="ts-updated">—</span>
-      <button class="btn-load" onclick="document.getElementById('file-input').click()">↑ Actualizar datos</button>
-      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="loadFile(this)">
-    </div>
-  </div>
+<div class="filters">
+<select>
+<option>Semana S19</option>
+<option>S18</option>
+<option>S17</option>
+</select>
 
-  <!-- KPIs -->
-  <div class="kpi-bar">
-    <div class="kpi">
-      <div class="kpi-label">Solicitado</div>
-      <div class="kpi-val blue" id="kpi-sol">—</div>
-      <div class="kpi-sub">unidades totales</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Despachado</div>
-      <div class="kpi-val green" id="kpi-desp">—</div>
-      <div class="kpi-sub" id="kpi-pct">—% completado</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Por Despachar</div>
-      <div class="kpi-val warn" id="kpi-pend">—</div>
-      <div class="kpi-sub">unidades pendientes</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Listo despachar</div>
-      <div class="kpi-val green" id="kpi-listo">—</div>
-      <div class="kpi-sub">uds embaladas/listas</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">En picking</div>
-      <div class="kpi-val blue" id="kpi-picking">—</div>
-      <div class="kpi-sub">uds en proceso</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Bloqueados</div>
-      <div class="kpi-val danger" id="kpi-bloq">—</div>
-      <div class="kpi-sub">documentos</div>
-    </div>
-  </div>
+<select>
+<option>CI</option>
+<option>Básicos</option>
+<option>Denim</option>
+</select>
 
-  <!-- MAIN GRID -->
-  <div class="main">
+<select>
+<option>Todas las clases</option>
+</select>
 
-    <!-- Panel 1: Estado picking -->
-    <div class="panel">
-      <div class="panel-title">Estado de picking por documento</div>
-      <div id="estados-container"></div>
-      <div class="despacho-wrap">
-        <div style="font-size:11px; color:var(--text2); margin-bottom:6px; font-family:var(--mono);">AVANCE GENERAL</div>
-        <div class="despacho-bar-bg">
-          <div class="despacho-bar-fill" id="despacho-bar" style="width:0%"></div>
-        </div>
-        <div class="despacho-labels">
-          <span id="desp-izq">0 despachadas</span>
-          <span id="desp-der">0% completado</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Panel 2: Por semana y tipo -->
-    <div class="panel">
-      <div class="panel-title">Semana comercial</div>
-      <div class="sem-row" id="sem-chart"></div>
-      <div style="margin-top:20px;">
-        <div class="panel-title">Tipo de solicitud</div>
-        <div id="tipo-container"></div>
-      </div>
-    </div>
-
-    <!-- Panel 3: Top tiendas (full width) -->
-    <div class="panel full">
-      <div class="panel-title">Estado por tienda destino</div>
-      <div class="scrollable">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>Tienda</th>
-              <th class="num">Total uds</th>
-              <th class="num">Listo</th>
-              <th class="num">Picking ef.</th>
-              <th class="num">Embalado</th>
-              <th class="num">Parcial</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="tiendas-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Panel 4: Bloqueados -->
-    <div class="panel full">
-      <div class="panel-title">Documentos bloqueados / con asignación</div>
-      <div class="scrollable" id="bloq-container"></div>
-    </div>
-
-  </div>
+<select>
+<option>Tipo carga</option>
+<option>Reposición</option>
+<option>Inicial</option>
+</select>
+</div>
 </div>
 
-<script>
-// DATOS DE MUESTRA (reales del Excel subido)
-const DEMO = {
-  kpi: { sol:59104, desp:24814, pend:34194, listo:18012, picking:10869, bloq:384 },
-  estados: [
-    { label:'Embalado', count:216, color:'#00d4aa' },
-    { label:'Listo', count:161, color:'#0091ff' },
-    { label:'Picking efectuado', count:153, color:'#ffb340' },
-    { label:'Entregado parcialmente', count:6, color:'#888' },
-    { label:'Parcialmente pickeado', count:5, color:'#ff4f4f' },
-    { label:'Parcialmente listo', count:4, color:'#cc88ff' },
-  ],
-  semanas: [
-    { sem:'S19-2026', sol:28021, desp:7313 },
-    { sem:'S20-2026', sol:27288, desp:17183 },
-    { sem:'S22-2026', sol:2020, desp:0 },
-  ],
-  tipos: [
-    { tipo:'RP', val:25193, color:'#00d4aa' },
-    { tipo:'CE', val:22208, color:'#0091ff' },
-    { tipo:'CI', val:9928,  color:'#ffb340' },
-  ],
-  tiendas: [
-    { nombre:'MALL ARAUCO MAIPU',          total:2792, listo:556,  picking:1056, embalado:1166, parcial:14 },
-    { nombre:'MALL ARAUCO ESTACION',       total:2387, listo:1277, picking:338,  embalado:648,  parcial:124 },
-    { nombre:'OUTLET LA FABRICA PATIO',    total:2348, listo:744,  picking:876,  embalado:600,  parcial:128 },
-    { nombre:'PATIO OUTLET TEMUCO',        total:1286, listo:171,  picking:432,  embalado:634,  parcial:49 },
-    { nombre:'OUTLET CHILLAN',             total:1254, listo:522,  picking:232,  embalado:450,  parcial:50 },
-    { nombre:'MALL ARAUCO CORONEL',        total:1245, listo:158,  picking:512,  embalado:544,  parcial:31 },
-    { nombre:'MALL PLAZA AMERICA RANCAGUA',total:1046, listo:556,  picking:106,  embalado:336,  parcial:48 },
-    { nombre:'MALL PLAZA NORTE',           total:933,  listo:855,  picking:23,   embalado:0,    parcial:55 },
-    { nombre:'CORNER RIPLEY MARINA ARAUCO',total:794,  listo:794,  picking:0,    embalado:0,    parcial:0 },
-    { nombre:'CORNER RIPLEY COSTANERA',    total:768,  listo:0,    picking:0,    embalado:0,    parcial:768 },
-  ],
-  bloqueados: [
-    { ola:22647, tienda:'PATIO OUTLET TEMUCO',         estado:'ENTREGADO PARC.', quien:'LogisticaP24', cant:49 },
-    { ola:22732, tienda:'MALL ARAUCO CORONEL',         estado:'ENTREGADO PARC.', quien:'LogisticaP32', cant:31 },
-    { ola:22773, tienda:'MALL PLAZA AMERICA RANCAGUA', estado:'ENTREGADO PARC.', quien:'LogisticaP24', cant:48 },
-    { ola:22790, tienda:'OUTLET CHILLAN',               estado:'ENTREGADO PARC.', quien:'LogisticaP24', cant:50 },
-    { ola:22859, tienda:'MALL PLAZA NORTE',             estado:'PICKING EFECTUADO',quien:'LogisticaP32', cant:23 },
-    { ola:22865, tienda:'PATIO OUTLET TEMUCO',         estado:'PICKING EFECTUADO',quien:'LogisticaP35', cant:34 },
-    { ola:22914, tienda:'RIPLEY.CL',                   estado:'PICKING EFECTUADO',quien:'LogisticaP22', cant:12 },
-    { ola:22917, tienda:'PARIS.CL',                    estado:'EMBALADO',         quien:'Valentina V.', cant:45 },
-    { ola:22957, tienda:'OUTLET LA FABRICA PATIO',     estado:'PICKING EFECTUADO',quien:'LogisticaP35', cant:41 },
-    { ola:22928, tienda:'MALL VIVO CENTRO',            estado:'PICKING EFECTUADO',quien:'LogisticaP33', cant:39 },
-  ]
-};
+<div class="grid">
+<div class="card">
+<div class="kpi-title">Solicitado</div>
+<div class="kpi-value">28.450</div>
+<div class="kpi-sub">Desde 01/05 hasta 11/05</div>
+</div>
 
-function fmt(n) { return Number(n).toLocaleString('es-CL'); }
+<div class="card">
+<div class="kpi-title">Despachado</div>
+<div class="kpi-value">22.870</div>
+<div class="kpi-sub">80% cumplimiento</div>
+</div>
 
-function renderApp(data) {
-  document.getElementById('upload-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('ts-updated').textContent = 'Actualizado: ' + new Date().toLocaleString('es-CL');
+<div class="card">
+<div class="kpi-title">Uds en Picking</div>
+<div class="kpi-value">4.230</div>
+<div class="kpi-sub">12 olas activas</div>
+</div>
 
-  // KPIs
-  document.getElementById('kpi-sol').textContent = fmt(data.kpi.sol);
-  document.getElementById('kpi-desp').textContent = fmt(data.kpi.desp);
-  document.getElementById('kpi-pend').textContent = fmt(data.kpi.pend);
-  document.getElementById('kpi-listo').textContent = fmt(data.kpi.listo);
-  document.getElementById('kpi-picking').textContent = fmt(data.kpi.picking);
-  document.getElementById('kpi-bloq').textContent = fmt(data.kpi.bloq);
-  const pct = Math.round(data.kpi.desp / data.kpi.sol * 100);
-  document.getElementById('kpi-pct').textContent = pct + '% completado';
+<div class="card">
+<div class="kpi-title">Bloqueados</div>
+<div class="kpi-value">1.350</div>
+<div class="kpi-sub">5 documentos críticos</div>
+</div>
+</div>
 
-  // Barra avance
-  setTimeout(() => {
-    document.getElementById('despacho-bar').style.width = pct + '%';
-  }, 300);
-  document.getElementById('desp-izq').textContent = fmt(data.kpi.desp) + ' despachadas';
-  document.getElementById('desp-der').textContent = pct + '% completado';
+<div class="card section">
+<div class="section-title">Semana Comercial</div>
 
-  // Estados picking
-  const maxEst = Math.max(...data.estados.map(e => e.count));
-  const ec = document.getElementById('estados-container');
-  ec.innerHTML = data.estados.map(e => `
-    <div class="estado-row">
-      <div class="estado-label">${e.label}</div>
-      <div class="estado-bar-wrap">
-        <div class="estado-bar" style="width:${Math.round(e.count/maxEst*100)}%;background:${e.color}"></div>
-      </div>
-      <div class="estado-count">${e.count}</div>
-    </div>
-  `).join('');
+<div class="week-bars">
+<div class="week-row">
+<div class="week-label">S17</div>
+<div class="week-bar-wrap"><div class="week-bar" style="width:45%"></div></div>
+<div class="week-value">18.000 uds</div>
+</div>
 
-  // Semanas
-  const maxSem = Math.max(...data.semanas.map(s => s.sol));
-  document.getElementById('sem-chart').innerHTML = data.semanas.map(s => `
-    <div class="sem-col">
-      <div class="sem-val">${fmt(s.sol)}</div>
-      <div class="sem-bar-wrap">
-        <div class="sem-bar" style="height:${Math.round(s.sol/maxSem*60)}px;background:#0091ff"></div>
-      </div>
-      <div class="sem-lbl">${s.sem}</div>
-    </div>
-  `).join('');
+<div class="week-row">
+<div class="week-label">S18</div>
+<div class="week-bar-wrap"><div class="week-bar" style="width:72%"></div></div>
+<div class="week-value">27.500 uds</div>
+</div>
 
-  // Tipos
-  const maxTipo = Math.max(...data.tipos.map(t => t.val));
-  document.getElementById('tipo-container').innerHTML = data.tipos.map(t => `
-    <div class="tipo-row">
-      <div class="tipo-dot" style="background:${t.color}"></div>
-      <div class="tipo-lbl">${t.tipo}</div>
-      <div class="tipo-bar-wrap">
-        <div class="tipo-bar" style="width:${Math.round(t.val/maxTipo*100)}%;background:${t.color}"></div>
-      </div>
-      <div class="tipo-val">${fmt(t.val)}</div>
-    </div>
-  `).join('');
+<div class="week-row">
+<div class="week-label">S19</div>
+<div class="week-bar-wrap"><div class="week-bar" style="width:92%"></div></div>
+<div class="week-value">34.800 uds</div>
+</div>
+</div>
+</div>
 
-  // Tiendas
-  document.getElementById('tiendas-body').innerHTML = data.tiendas.map(t => {
-    const dom = t.embalado + t.listo;
-    const badge = dom > t.total * 0.5
-      ? '<span class="badge badge-listo">LISTO</span>'
-      : t.picking > 0
-        ? '<span class="badge badge-picking">EN PICKING</span>'
-        : '<span class="badge badge-parcial">REVISAR</span>';
-    return `
-      <tr>
-        <td class="tienda-name">${t.nombre}</td>
-        <td class="num">${fmt(t.total)}</td>
-        <td class="num" style="color:var(--accent)">${fmt(t.listo)}</td>
-        <td class="num" style="color:var(--accent2)">${fmt(t.picking)}</td>
-        <td class="num" style="color:var(--warn)">${fmt(t.embalado)}</td>
-        <td class="num" style="color:var(--danger)">${fmt(t.parcial)}</td>
-        <td>${badge}</td>
-      </tr>`;
-  }).join('');
+<div class="info-grid">
+<div class="card">
+<div class="section-title">Detalle Tiendas</div>
 
-  // Bloqueados
-  document.getElementById('bloq-container').innerHTML = data.bloqueados.map(b => `
-    <div class="blq-row">
-      <div class="blq-ola">OLA ${b.ola}</div>
-      <div class="blq-tienda">${b.tienda}</div>
-      <div class="blq-estado">${b.estado}</div>
-      <div class="blq-quien">${b.quien}</div>
-      <div class="blq-cant">${fmt(b.cant)} uds</div>
-    </div>
-  `).join('');
-}
+<table class="table">
+<thead>
+<tr>
+<th>Tienda</th>
+<th>Clase</th>
+<th>Solicitado</th>
+<th>Despachado</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Costanera</td>
+<td>CI</td>
+<td>4.500</td>
+<td>3.800</td>
+<td><span class="badge badge-orange">Parcial</span></td>
+</tr>
 
-function loadDemo() { renderApp(DEMO); }
+<tr>
+<td>Alto Las Condes</td>
+<td>Denim</td>
+<td>3.200</td>
+<td>3.200</td>
+<td><span class="badge badge-red">Bloqueado</span></td>
+</tr>
 
-function loadFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const wb = XLSX.read(e.target.result, { type:'binary', cellDates:true });
+<tr>
+<td>Florida Center</td>
+<td>Básicos</td>
+<td>2.900</td>
+<td>2.650</td>
+<td><span class="badge badge-orange">En Picking</span></td>
+</tr>
+</tbody>
+</table>
+</div>
 
-      // Intentar leer hojas conocidas
-      let data = JSON.parse(JSON.stringify(DEMO)); // base
+<div class="card">
+<div class="section-title">Alertas Operacionales</div>
 
-      // Leer INF DOC si existe
-      if (wb.SheetNames.includes('INF DOC')) {
-        const ws = wb.Sheets['INF DOC'];
-        const rows = XLSX.utils.sheet_to_json(ws, { header:1 });
-        const estados = {};
-        const bloq = [];
-        const tiendas = {};
-        let listo=0, picking=0, embalado=0, bloqCount=0;
+<div class="alerts">
+<div class="alert">🔴 5 OLAs críticas acumuladas</div>
+<div class="alert">🟠 3 tiendas sobre SLA</div>
+<div class="alert">🟣 Semana S19 con alta carga</div>
+<div class="alert">🔵 4.230 unidades en picking</div>
+</div>
+</div>
+</div>
 
-        for (let i=1; i<rows.length; i++) {
-          const r = rows[i];
-          const est = r[15]; const cant = parseInt(r[6])||0;
-          const blqBy = r[16]; const tienda = r[8]; const ola = r[2]; const doc = r[1];
-          if (est) estados[est] = (estados[est]||0)+1;
-          if (est==='LISTO'||est==='EMBALADO') listo+=cant;
-          if (est==='PICKING EFECTUADO'||est==='PARCIALMENTE PICKEADO') picking+=cant;
-          if (blqBy) { bloqCount++; bloq.push({ola,tienda:String(tienda).replace('TIENDA TBC ','').replace('TIENDA ','').substring(0,28),estado:est,quien:blqBy,cant}); }
-          if (tienda) {
-            if (!tiendas[tienda]) tiendas[tienda]={nombre:String(tienda).replace('TIENDA TBC ','').replace('TIENDA ','').substring(0,35),total:0,listo:0,picking:0,embalado:0,parcial:0};
-            tiendas[tienda].total+=cant;
-            if (est==='LISTO') tiendas[tienda].listo+=cant;
-            else if (est==='PICKING EFECTUADO') tiendas[tienda].picking+=cant;
-            else if (est==='EMBALADO') tiendas[tienda].embalado+=cant;
-            else tiendas[tienda].parcial+=cant;
-          }
-        }
-        data.kpi.listo = listo; data.kpi.picking = picking; data.kpi.bloq = bloqCount;
-        data.estados = Object.entries(estados).map(([label,count]) => {
-          const colors={'EMBALADO':'#00d4aa','LISTO':'#0091ff','PICKING EFECTUADO':'#ffb340','ENTREGADO PARCIALMENTE':'#888','PARCIALMENTE PICKEADO':'#ff4f4f','PARCIALMENTE LISTO':'#cc88ff'};
-          return {label,count,color:colors[label]||'#555'};
-        }).sort((a,b)=>b.count-a.count);
-        data.bloqueados = bloq.slice(0,20);
-        data.tiendas = Object.values(tiendas).sort((a,b)=>b.total-a.total).slice(0,15);
-      }
+<div class="footer-grid">
+<div class="card">
+<div class="section-title">Estados Operacionales</div>
 
-      // Leer Traslado si existe
-      if (wb.SheetNames.includes('Traslado')) {
-        const ws = wb.Sheets['Traslado'];
-        const rows = XLSX.utils.sheet_to_json(ws, { header:1 });
-        let sol=0, desp=0, pend=0;
-        const semMap={}, tipoMap={};
-        for (let i=1; i<rows.length; i++) {
-          const r=rows[i];
-          sol+=(parseInt(r[11])||0); desp+=(parseInt(r[13])||0); pend+=(parseInt(r[12])||0);
-          const sem=r[19]; if(sem) semMap[sem]=(semMap[sem]||0)+(parseInt(r[11])||0);
-          const tip=r[20]; if(tip) tipoMap[tip]=(tipoMap[tip]||0)+(parseInt(r[11])||0);
-        }
-        data.kpi.sol=sol; data.kpi.desp=desp; data.kpi.pend=pend;
-        const colors=['#0091ff','#00d4aa','#ffb340','#cc88ff','#ff4f4f'];
-        data.semanas = Object.entries(semMap).map(([s,v])=>({sem:'S'+String(s).substring(0,2)+'-'+String(s).substring(2),sol:v,desp:0}));
-        data.tipos = Object.entries(tipoMap).map(([t,v],i)=>({tipo:t,val:v,color:colors[i%colors.length]})).sort((a,b)=>b.val-a.val);
-      }
+<div class="progress-wrap">
+<div class="progress-row">
+<div class="progress-label">Picking</div>
+<div class="progress-bar-bg"><div class="progress-bar" style="width:75%"></div></div>
+<div class="progress-num">75%</div>
+</div>
 
-      renderApp(data);
-    } catch(err) {
-      alert('Error al leer el archivo: ' + err.message);
-    }
-  };
-  reader.readAsBinaryString(file);
-}
-</script>
+<div class="progress-row">
+<div class="progress-label">Packing</div>
+<div class="progress-bar-bg"><div class="progress-bar" style="width:58%"></div></div>
+<div class="progress-num">58%</div>
+</div>
+
+<div class="progress-row">
+<div class="progress-label">Despacho</div>
+<div class="progress-bar-bg"><div class="progress-bar" style="width:88%"></div></div>
+<div class="progress-num">88%</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Resumen Clase / CI</div>
+
+<table class="table">
+<thead>
+<tr>
+<th>Clase</th>
+<th>SKU</th>
+<th>Uds</th>
+<th>%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CI</td>
+<td>320</td>
+<td>8.400</td>
+<td>29%</td>
+</tr>
+
+<tr>
+<td>Denim</td>
+<td>240</td>
+<td>6.120</td>
+<td>22%</td>
+</tr>
+
+<tr>
+<td>Básicos</td>
+<td>410</td>
+<td>9.800</td>
+<td>35%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
 </body>
 </html>
+```
