@@ -24,7 +24,7 @@
     transition: background .15s;
   }
   .back-btn:hover { background: rgba(255,255,255,.15); }
-  .topbar-title { color: white; font-size: 16px; font-weight: 900; }
+  .topbar-title { color: white; font-size: 16px; font-weight: 900; text-transform: uppercase; }
   .topbar-meta { color: rgba(255,255,255,.75); font-size: 11px; font-weight: 700; text-align: right; }
   #ts-label { font-size: 10px; opacity: .7; display: block; }
 
@@ -34,6 +34,7 @@
     padding: 14px 22px 12px; font-family: 'Nunito', Arial; font-size: 13px;
     font-weight: 800; color: #6699BB; background: none; border: none;
     border-bottom: 3px solid transparent; cursor: pointer; transition: color .15s, border-color .15s;
+    text-transform: uppercase;
   }
   .tab-btn:hover { color: #0077BB; }
   .tab-btn.active { color: #00AAFF; border-bottom-color: #00AAFF; }
@@ -43,7 +44,7 @@
   .subtab-btn {
     padding: 8px 22px; font-family: 'Nunito', Arial; font-size: 12px; font-weight: 800;
     color: #6699BB; background: white; border: 1.5px solid #CCE9FF;
-    border-radius: 20px; cursor: pointer; transition: all .15s;
+    border-radius: 20px; cursor: pointer; transition: all .15s; text-transform: uppercase;
   }
   .subtab-btn:hover { border-color: #00AAFF; color: #00AAFF; }
   .subtab-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
@@ -73,18 +74,18 @@
   .btn-apply {
     background: linear-gradient(135deg, #00AAFF, #0055AA); color: white;
     border: none; border-radius: 20px; padding: 8px 20px; font-size: 12px;
-    font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial;
+    font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial; text-transform: uppercase;
   }
   .btn-apply:hover { opacity: .88; }
   .btn-hoy {
     background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
     border-radius: 20px; padding: 7px 14px; font-size: 12px; font-weight: 800;
-    cursor: pointer; font-family: 'Nunito', Arial;
+    cursor: pointer; font-family: 'Nunito', Arial; text-transform: uppercase;
   }
   .refresh-btn {
     background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
     border-radius: 20px; padding: 7px 16px; font-size: 12px; font-weight: 800;
-    cursor: pointer; font-family: 'Nunito', Arial; margin-left: auto;
+    cursor: pointer; font-family: 'Nunito', Arial; margin-left: auto; text-transform: uppercase;
   }
   .refresh-btn.loading { opacity: .6; pointer-events: none; }
 
@@ -99,7 +100,7 @@
   .kpi-card.rojo    { border-left-color: #C0392B; }
   .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: #7799AA; font-weight: 800; margin-bottom: 5px; }
   .kpi-value { font-size: 26px; font-weight: 900; color: #003366; line-height: 1; }
-  .kpi-sub   { font-size: 10px; color: #99AABB; margin-top: 3px; font-weight: 700; }
+  .kpi-sub   { font-size: 10px; color: #99AABB; margin-top: 3px; font-weight: 700; text-transform: uppercase; }
 
   /* TABLES */
   .tables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -110,7 +111,7 @@
     padding: 12px 18px; display: flex; align-items: center;
     justify-content: space-between; border-bottom: 1.5px solid #EEF4FF;
   }
-  .table-title { font-size: 13px; font-weight: 900; color: #003366; display: flex; align-items: center; gap: 8px; }
+  .table-title { font-size: 13px; font-weight: 900; color: #003366; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
   .count-badge { background: #E8F6FF; color: #0077BB; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
   .demo-badge { background: #FFF3CD; color: #856404; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 800; border: 1px solid #FFECB5; }
 
@@ -118,7 +119,7 @@
   .toggle-btn {
     padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 800;
     cursor: pointer; border: 1.5px solid #CCE9FF; background: white; color: #6699BB;
-    font-family: 'Nunito', Arial; transition: all .15s;
+    font-family: 'Nunito', Arial; transition: all .15s; text-transform: uppercase;
   }
   .toggle-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
 
@@ -132,15 +133,15 @@
   tbody tr:hover { background: #F8FBFF; }
   tbody td { padding: 8px 12px; color: #1a1a1a; font-size: 12px; }
 
-  .sem-verde    { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-amarillo { background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-rojo     { background: #C0392B; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-negro    { background: #2C3E50; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
+  .sem-verde    { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
+  .sem-amarillo { background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
+  .sem-rojo     { background: #C0392B; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
+  .sem-negro    { background: #2C3E50; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
 
-  .estado-ok      { background: #D5F5E3; color: #1E8449; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
-  .estado-parcial { background: #FEF9E7; color: #E67E22; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
-  .estado-atraso  { background: #FADBD8; color: #C0392B; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
-  .estado-pend    { background: #EAF2FF; color: #2980B9; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+  .estado-ok      { background: #D5F5E3; color: #1E8449; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+  .estado-parcial { background: #FEF9E7; color: #E67E22; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+  .estado-atraso  { background: #FADBD8; color: #C0392B; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+  .estado-pend    { background: #EAF2FF; color: #2980B9; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
 
   .skeleton-cell { height: 13px; border-radius: 6px; background: linear-gradient(90deg,#EEF4FF 25%,#D6E8FF 50%,#EEF4FF 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
   @keyframes shimmer { to { background-position: -200% 0; } }
@@ -178,7 +179,7 @@
 <div class="topbar">
   <div class="topbar-left">
     <a href="index.html" class="back-btn">&#8592; Inicio</a>
-    <span class="topbar-title">&#128230; Control Operacional</span>
+    <span class="topbar-title">&#128230; Control Operacional CD</span>
   </div>
   <div class="topbar-meta" style="text-align:right;line-height:1.9;font-size:11px">
     <div><span style="opacity:.65">Hub</span> &nbsp;últ. <span id="hub-last">—</span> &nbsp;·&nbsp; prox. <span id="hub-next" style="font-weight:900;color:#7FD4FF">—</span></div>
@@ -381,8 +382,8 @@
   <div class="tab-panel" id="panel-tbc">
     <div class="proximo-panel">
       <div class="icon">&#127381;</div>
-      <h3>Area TBC</h3>
-      <p>Fuente de datos en definicion. Proximamente disponible.</p>
+      <h3>ÁREA TBC</h3>
+      <p>FUENTE DE DATOS EN DEFINICIÓN. PRÓXIMAMENTE DISPONIBLE.</p>
     </div>
   </div>
 
@@ -390,8 +391,8 @@
   <div class="tab-panel" id="panel-recepciones">
     <div class="proximo-panel">
       <div class="icon">&#128230;</div>
-      <h3>Recepciones</h3>
-      <p>Fuente de datos en definicion. Proximamente disponible.</p>
+      <h3>RECEPCIONES</h3>
+      <p>FUENTE DE DATOS EN DEFINICIÓN. PRÓXIMAMENTE DISPONIBLE.</p>
     </div>
   </div>
 
