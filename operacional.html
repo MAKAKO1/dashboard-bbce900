@@ -167,6 +167,7 @@
   <div class="topbar-meta">
     <span id="ts-label">Ultima actualizacion Hub</span>
     <span id="ts-value">—</span>
+    <span id="ts-label" style="margin-top:3px">Prox. actualiz. en <span id="countdown-val">1:00</span></span>
   </div>
 </div>
 
@@ -342,7 +343,7 @@
       <!-- Tabla resumen por seller -->
       <div class="table-wrap" style="margin-bottom:18px">
         <div class="table-head">
-          <span class="table-title">&#127981; Resumen por Seller <span class="demo-badge">&#9888; Demo — pendiente API</span></span>
+          <span class="table-title">&#127981; Resumen por Seller</span>
           <div class="view-toggle">
             <button class="toggle-btn active" onclick="setDespachoView('seller',this)">Por Seller</button>
             <button class="toggle-btn"        onclick="setDespachoView('fecha',this)">Por Fecha</button>
@@ -388,31 +389,24 @@ const DESPACHOS_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6AD
 const cache = { TIENDAS: null, ECO: null };
 const viewState = {}, tableData = {};
 let despachoView = 'seller';
+let despachoData = null;
 
-// ── MOCK DATA DESPACHOS (reemplazar con API cuando esté lista) ──
-const MOCK_SELLERS = [
-  { seller:'Sitio Shopify', comprometido:4320, pickeado:4073, embalado:4073, despachado:4073, pct:94.3, estado:'Parcial' },
-  { seller:'Falabella',     comprometido:5088, pickeado:4846, embalado:4489, despachado:4489, pct:88.2, estado:'Parcial' },
-  { seller:'Mercado Libre', comprometido:3626, pickeado:3157, embalado:3157, despachado:3157, pct:87.1, estado:'Parcial' },
-  { seller:'Ripley',        comprometido:2229, pickeado:2115, embalado:2115, despachado:2115, pct:94.9, estado:'Parcial' },
-  { seller:'Paris',         comprometido:2055, pickeado:1893, embalado:1893, despachado:1893, pct:92.1, estado:'Parcial' },
-  { seller:'Walmart',       comprometido:327,  pickeado:278,  embalado:278,  despachado:278,  pct:85.0, estado:'Parcial' },
-  { seller:'Sitio Havaianas',comprometido:21,  pickeado:17,   embalado:17,   despachado:17,   pct:81.0, estado:'Atraso'  },
-];
-const MOCK_FECHAS = [
-  { fecha:'30/04/2026', comprometido:1633, pickeado:1633, embalado:1633, despachado:1633, pct:100, estado:'Cumplido' },
-  { fecha:'04/05/2026', comprometido:6101, pickeado:6101, embalado:6101, despachado:6101, pct:100, estado:'Cumplido' },
-  { fecha:'05/05/2026', comprometido:1338, pickeado:1338, embalado:1338, despachado:1338, pct:100, estado:'Cumplido' },
-  { fecha:'06/05/2026', comprometido:780,  pickeado:780,  embalado:780,  despachado:780,  pct:100, estado:'Cumplido' },
-  { fecha:'07/05/2026', comprometido:797,  pickeado:797,  embalado:797,  despachado:797,  pct:100, estado:'Cumplido' },
-  { fecha:'08/05/2026', comprometido:580,  pickeado:580,  embalado:580,  despachado:580,  pct:100, estado:'Cumplido' },
-  { fecha:'11/05/2026', comprometido:1747, pickeado:1747, embalado:1747, despachado:1747, pct:100, estado:'Cumplido' },
-  { fecha:'12/05/2026', comprometido:806,  pickeado:806,  embalado:806,  despachado:806,  pct:100, estado:'Cumplido' },
-  { fecha:'13/05/2026', comprometido:927,  pickeado:927,  embalado:927,  despachado:927,  pct:100, estado:'Cumplido' },
-  { fecha:'14/05/2026', comprometido:845,  pickeado:845,  embalado:845,  despachado:845,  pct:100, estado:'Cumplido' },
-  { fecha:'15/05/2026', comprometido:468,  pickeado:468,  embalado:468,  despachado:468,  pct:100, estado:'Cumplido' },
-  { fecha:'18/05/2026', comprometido:1644, pickeado:357,  embalado:0,    despachado:0,    pct:0,   estado:'Pendiente'},
-];
+// ── Auto-refresh countdown ───────────────────────────────────
+let countdownSecs = 60;
+function tickCountdown() {
+  countdownSecs--;
+  if (countdownSecs <= 0) {
+    countdownSecs = 60;
+    loadData('TIENDAS');
+    loadData('ECO');
+    loadDespachos();
+  }
+  const m = Math.floor(countdownSecs / 60);
+  const s = String(countdownSecs % 60).padStart(2, '0');
+  const el = document.getElementById('countdown-val');
+  if (el) el.textContent = m + ':' + s;
+}
+setInterval(tickCountdown, 1000);
 
 // ── Fechas init ─────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -609,6 +603,56 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
 }
 
 // ── DESPACHOS ───────────────────────────────────────────────
+async function loadDespachos() {
+  if (!DESPACHOS_URL) return;
+  try {
+    const res  = await fetch(DESPACHOS_URL);
+    const data = await res.json();
+    if (data.ok && data.registros) {
+      despachoData = data.registros.filter(r => Number(r.comprometido) > 0);
+      renderDespachos();
+    }
+  } catch(e) {
+    document.getElementById('tbody-despachos').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar datos.</div></td></tr>`;
+  }
+}
+
+function _groupBySeller(registros, sellerFilter) {
+  const map = {};
+  registros.forEach(r => {
+    if (!r.seller) return;
+    if (sellerFilter && r.seller !== sellerFilter) return;
+    if (!map[r.seller]) map[r.seller] = { seller:r.seller, comprometido:0, pickeado:0, embalado:0, despachado:0 };
+    map[r.seller].comprometido += Number(r.comprometido)||0;
+    map[r.seller].pickeado     += Number(r.pickeado)    ||0;
+    map[r.seller].embalado     += Number(r.embalado)    ||0;
+    map[r.seller].despachado   += Number(r.despachado)  ||0;
+  });
+  return Object.values(map).map(r => ({
+    ...r,
+    pct:    r.comprometido>0 ? (r.despachado/r.comprometido*100).toFixed(1) : 0,
+    estado: r.comprometido>0 ? (r.despachado>=r.comprometido?'Cumplido':r.despachado>0?'Parcial':'Pendiente') : ''
+  }));
+}
+
+function _groupByFecha(registros) {
+  const map = {};
+  registros.forEach(r => {
+    if (!r.fecha) return;
+    if (!map[r.fecha]) map[r.fecha] = { fecha:r.fecha, comprometido:0, pickeado:0, embalado:0, despachado:0 };
+    map[r.fecha].comprometido += Number(r.comprometido)||0;
+    map[r.fecha].pickeado     += Number(r.pickeado)    ||0;
+    map[r.fecha].embalado     += Number(r.embalado)    ||0;
+    map[r.fecha].despachado   += Number(r.despachado)  ||0;
+  });
+  return Object.values(map).sort((a,b)=>a.fecha.localeCompare(b.fecha)).map(r => ({
+    ...r,
+    pct:    r.comprometido>0 ? (r.despachado/r.comprometido*100).toFixed(1) : 0,
+    estado: r.comprometido>0 ? (r.despachado>=r.comprometido?'Cumplido':r.despachado>0?'Parcial':'Pendiente') : ''
+  }));
+}
+
 function setDespachoView(mode, btn) {
   despachoView = mode;
   btn.closest('.view-toggle').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
@@ -618,37 +662,43 @@ function setDespachoView(mode, btn) {
 
 function renderDespachos() {
   const sellerFilter = document.getElementById('filter-seller-despachos').value;
+  const registros = despachoData || [];
+
+  if (!registros.length) {
+    document.getElementById('tbody-despachos').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos. Presiona Actualizar.</div></td></tr>`;
+    return;
+  }
 
   if (despachoView === 'seller') {
-    const data = sellerFilter ? MOCK_SELLERS.filter(r => r.seller === sellerFilter) : MOCK_SELLERS;
+    const data = _groupBySeller(registros, sellerFilter);
     const tot  = data.reduce((a,r)=>a+r.comprometido,0);
     const des  = data.reduce((a,r)=>a+r.despachado,0);
     const pct  = tot>0 ? (des/tot*100).toFixed(1) : 0;
     updateKpisDespachos(tot, des, pct, tot-des);
-
     document.getElementById('thead-despachos').innerHTML = '<tr><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
     document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
       <td style="font-weight:800">${r.seller}</td>
-      <td>${r.comprometido.toLocaleString('es-CL')}</td>
-      <td>${r.pickeado.toLocaleString('es-CL')}</td>
-      <td>${r.embalado.toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${r.despachado.toLocaleString('es-CL')}</td>
+      <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+      <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+      <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
       <td style="font-weight:800">${r.pct}%</td>
       <td>${estadoBadge(r.estado)}</td>
     </tr>`).join('');
   } else {
-    const tot = MOCK_FECHAS.reduce((a,r)=>a+r.comprometido,0);
-    const des = MOCK_FECHAS.reduce((a,r)=>a+r.despachado,0);
-    const pct = tot>0?(des/tot*100).toFixed(1):0;
+    const data = _groupByFecha(registros);
+    const tot  = data.reduce((a,r)=>a+r.comprometido,0);
+    const des  = data.reduce((a,r)=>a+r.despachado,0);
+    const pct  = tot>0?(des/tot*100).toFixed(1):0;
     updateKpisDespachos(tot, des, pct, tot-des);
-
     document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
-    document.getElementById('tbody-despachos').innerHTML = MOCK_FECHAS.map(r => `<tr>
+    document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
       <td style="font-weight:800">${r.fecha}</td>
-      <td>${r.comprometido.toLocaleString('es-CL')}</td>
-      <td>${r.pickeado.toLocaleString('es-CL')}</td>
-      <td>${r.embalado.toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${r.despachado.toLocaleString('es-CL')}</td>
+      <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+      <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+      <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
       <td style="font-weight:800">${r.pct}%</td>
       <td>${estadoBadge(r.estado)}</td>
     </tr>`).join('');
@@ -689,9 +739,9 @@ function formatDate(iso) {
 }
 
 // ── Init ────────────────────────────────────────────────────
-renderDespachos();
 loadData('TIENDAS');
 loadData('ECO');
+loadDespachos();
 </script>
 </body>
 </html>
