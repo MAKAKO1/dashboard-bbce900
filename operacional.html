@@ -386,9 +386,10 @@ const HUB_URL = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUi
 
 const cache = { TIENDAS: null, ECO: null };
 const viewState = {}, tableData = {};
-let despachoView = 'seller';
-let despachoData = null;
-let hubLoading   = false;
+let despachoView      = 'seller';
+let despachoData      = null;  // por seller
+let despachoDataFecha = null;  // por fecha
+let hubLoading        = false;
 
 // ── Auto-refresh countdown ───────────────────────────────────
 let countdownSecs = 60;
@@ -633,16 +634,18 @@ async function loadDespachos() {
   try {
     const res  = await fetch(HUB_URL + '?tipo=despachos');
     const data = await res.json();
-    if (data.ok && data.registros) {
-      despachoData = data.registros.filter(r => Number(r.comprometido) > 0);
-      saveLS(LS_DESP, despachoData);
+    if (data.ok) {
+      despachoData      = (data.registros      || []).filter(r => Number(r.comprometido) > 0);
+      despachoDataFecha = (data.registrosFecha || []).filter(r => Number(r.comprometido) > 0);
+      saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha });
       renderDespachos();
     }
   } catch(e) {
     console.error('Despachos fetch error:', e);
     const saved = loadLS(LS_DESP);
     if (saved) {
-      despachoData = saved.data;
+      despachoData      = saved.data.seller || saved.data || [];
+      despachoDataFecha = saved.data.fecha  || [];
       renderDespachos();
     } else {
       document.getElementById('tbody-despachos').innerHTML =
@@ -695,7 +698,7 @@ function setDespachoView(mode, btn) {
 
 function renderDespachos() {
   const sellerFilter = document.getElementById('filter-seller-despachos').value;
-  const registros = despachoData || [];
+  const registros = despachoView === 'date' ? (despachoDataFecha || []) : (despachoData || []);
 
   if (!registros.length) {
     document.getElementById('tbody-despachos').innerHTML =
