@@ -24,28 +24,36 @@
     transition: background .15s;
   }
   .back-btn:hover { background: rgba(255,255,255,.15); }
-  .topbar-title { color: white; font-size: 16px; font-weight: 900; letter-spacing: .5px; }
+  .topbar-title { color: white; font-size: 16px; font-weight: 900; }
   .topbar-meta { color: rgba(255,255,255,.75); font-size: 11px; font-weight: 700; text-align: right; }
   #ts-label { font-size: 10px; opacity: .7; display: block; }
 
   /* TABS */
-  .tabs-wrap {
-    background: white; border-bottom: 2px solid #CCE9FF;
-    padding: 0 24px; display: flex; gap: 4px;
-  }
+  .tabs-wrap { background: white; border-bottom: 2px solid #CCE9FF; padding: 0 24px; display: flex; gap: 4px; }
   .tab-btn {
     padding: 14px 22px 12px; font-family: 'Nunito', Arial; font-size: 13px;
     font-weight: 800; color: #6699BB; background: none; border: none;
-    border-bottom: 3px solid transparent; cursor: pointer;
-    transition: color .15s, border-color .15s; display: flex; align-items: center; gap: 7px;
+    border-bottom: 3px solid transparent; cursor: pointer; transition: color .15s, border-color .15s;
   }
   .tab-btn:hover { color: #0077BB; }
   .tab-btn.active { color: #00AAFF; border-bottom-color: #00AAFF; }
+
+  /* SUB-TABS */
+  .subtabs-wrap { display: flex; gap: 6px; margin-bottom: 18px; }
+  .subtab-btn {
+    padding: 8px 22px; font-family: 'Nunito', Arial; font-size: 12px; font-weight: 800;
+    color: #6699BB; background: white; border: 1.5px solid #CCE9FF;
+    border-radius: 20px; cursor: pointer; transition: all .15s;
+  }
+  .subtab-btn:hover { border-color: #00AAFF; color: #00AAFF; }
+  .subtab-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
 
   /* MAIN */
   .main { padding: 20px 24px; max-width: 1400px; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
+  .subpanel { display: none; }
+  .subpanel.active { display: block; }
 
   /* FILTER BAR */
   .filter-bar {
@@ -54,42 +62,34 @@
     align-items: center; box-shadow: 0 2px 10px rgba(0,80,180,.08);
   }
   .filter-bar label { font-size: 11px; font-weight: 800; color: #0077BB; text-transform: uppercase; letter-spacing: .5px; }
-  .filter-bar input[type="date"], .filter-bar input[type="text"] {
-    border: 1.5px solid #CCE9FF; border-radius: 10px;
-    padding: 7px 12px; font-size: 12px; outline: none;
-    font-family: 'Nunito', Arial; color: #1a1a1a; transition: border-color .2s;
+  .filter-bar input[type="date"], .filter-bar input[type="text"], .filter-bar select {
+    border: 1.5px solid #CCE9FF; border-radius: 10px; padding: 7px 12px;
+    font-size: 12px; outline: none; font-family: 'Nunito', Arial; color: #1a1a1a;
+    transition: border-color .2s;
   }
-  .filter-bar input[type="date"]:focus,
-  .filter-bar input[type="text"]:focus { border-color: #00AAFF; }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: #00AAFF; }
   .filter-group { display: flex; align-items: center; gap: 8px; }
   .filter-sep { color: #CCE9FF; font-size: 16px; }
   .btn-apply {
     background: linear-gradient(135deg, #00AAFF, #0055AA); color: white;
     border: none; border-radius: 20px; padding: 8px 20px; font-size: 12px;
     font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial;
-    transition: opacity .15s;
   }
   .btn-apply:hover { opacity: .88; }
   .btn-hoy {
     background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
     border-radius: 20px; padding: 7px 14px; font-size: 12px; font-weight: 800;
-    cursor: pointer; font-family: 'Nunito', Arial; transition: background .15s;
+    cursor: pointer; font-family: 'Nunito', Arial;
   }
-  .btn-hoy:hover { background: #CCE9FF; }
   .refresh-btn {
     background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
     border-radius: 20px; padding: 7px 16px; font-size: 12px; font-weight: 800;
-    cursor: pointer; font-family: 'Nunito', Arial; transition: background .15s;
-    margin-left: auto;
+    cursor: pointer; font-family: 'Nunito', Arial; margin-left: auto;
   }
-  .refresh-btn:hover { background: #CCE9FF; }
   .refresh-btn.loading { opacity: .6; pointer-events: none; }
 
   /* KPI STRIP */
-  .kpi-strip {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px; margin-bottom: 18px;
-  }
+  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
   .kpi-card {
     background: white; border-radius: 14px; padding: 14px 16px;
     box-shadow: 0 2px 10px rgba(0,80,180,.08); border-left: 4px solid #00AAFF;
@@ -105,16 +105,15 @@
   .tables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   @media (max-width: 900px) { .tables-grid { grid-template-columns: 1fr; } }
 
-  .table-wrap { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,80,180,.08); overflow: hidden; }
+  .table-wrap { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,80,180,.08); overflow: hidden; margin-bottom: 18px; }
   .table-head {
     padding: 12px 18px; display: flex; align-items: center;
     justify-content: space-between; border-bottom: 1.5px solid #EEF4FF;
   }
   .table-title { font-size: 13px; font-weight: 900; color: #003366; display: flex; align-items: center; gap: 8px; }
-  .count-badge {
-    background: #E8F6FF; color: #0077BB; border-radius: 20px;
-    padding: 2px 10px; font-size: 11px; font-weight: 800;
-  }
+  .count-badge { background: #E8F6FF; color: #0077BB; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+  .demo-badge { background: #FFF3CD; color: #856404; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 800; border: 1px solid #FFECB5; }
+
   .view-toggle { display: flex; gap: 4px; }
   .toggle-btn {
     padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 800;
@@ -122,28 +121,29 @@
     font-family: 'Nunito', Arial; transition: all .15s;
   }
   .toggle-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
+
   table { width: 100%; border-collapse: collapse; }
   thead th {
-    background: #F0F6FF; color: #0055AA; font-size: 10px;
-    font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
-    padding: 9px 12px; text-align: left; white-space: nowrap;
+    background: #F0F6FF; color: #0055AA; font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px;
+    text-align: left; white-space: nowrap;
   }
   tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
   tbody tr:hover { background: #F8FBFF; }
   tbody td { padding: 8px 12px; color: #1a1a1a; font-size: 12px; }
 
-  .sem-verde   { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-amarillo{ background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-rojo    { background: #C0392B; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
-  .sem-negro   { background: #2C3E50; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
+  .sem-verde    { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
+  .sem-amarillo { background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
+  .sem-rojo     { background: #C0392B; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
+  .sem-negro    { background: #2C3E50; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; }
 
-  .skeleton-cell {
-    height: 13px; border-radius: 6px;
-    background: linear-gradient(90deg, #EEF4FF 25%, #D6E8FF 50%, #EEF4FF 75%);
-    background-size: 200% 100%; animation: shimmer 1.2s infinite;
-  }
+  .estado-ok      { background: #D5F5E3; color: #1E8449; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+  .estado-parcial { background: #FEF9E7; color: #E67E22; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+  .estado-atraso  { background: #FADBD8; color: #C0392B; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+  .estado-pend    { background: #EAF2FF; color: #2980B9; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; }
+
+  .skeleton-cell { height: 13px; border-radius: 6px; background: linear-gradient(90deg,#EEF4FF 25%,#D6E8FF 50%,#EEF4FF 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
   @keyframes shimmer { to { background-position: -200% 0; } }
-
   .empty-state { text-align: center; padding: 36px 24px; color: #99AABB; font-weight: 800; }
   .empty-state .icon { font-size: 30px; margin-bottom: 8px; }
 
@@ -154,7 +154,6 @@
   @media (max-width: 700px) {
     .topbar-meta { display: none; }
     .tab-btn { padding: 12px 14px; font-size: 12px; }
-    .filter-bar { gap: 8px; }
   }
 </style>
 </head>
@@ -180,7 +179,7 @@
 
 <div class="main">
 
-  <!-- TIENDAS -->
+  <!-- ══ TIENDAS ══ -->
   <div class="tab-panel active" id="panel-tiendas">
     <div class="filter-bar">
       <div class="filter-group">
@@ -201,104 +200,167 @@
       <button class="refresh-btn" id="refresh-btn-tiendas" onclick="loadData('TIENDAS')">&#8635; Actualizar</button>
     </div>
     <div class="kpi-strip" id="kpis-tiendas"></div>
-    <div class="tables-grid">
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
-          <div class="view-toggle">
-            <button class="toggle-btn active" onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
-            <button class="toggle-btn"        onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table id="table-pick-tiendas">
-            <thead id="thead-pick-tiendas"><tr>
-              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-            </tr></thead>
-            <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
-          </table>
+    <!-- Solo Picking para Tiendas -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
+        <div class="view-toggle">
+          <button class="toggle-btn active" onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
+          <button class="toggle-btn"        onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
         </div>
       </div>
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-tiendas">0</span></span>
-          <div class="view-toggle">
-            <button class="toggle-btn active" onclick="setView('emb-tiendas','detalle',this)">Detalle</button>
-            <button class="toggle-btn"        onclick="setView('emb-tiendas','resumen',this)">Resumen</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table id="table-emb-tiendas">
-            <thead id="thead-emb-tiendas"><tr>
-              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-            </tr></thead>
-            <tbody id="tbody-emb-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
-          </table>
-        </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead id="thead-pick-tiendas"><tr>
+            <th>Operario</th><th>Seller / Tienda</th><th>Pedido</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <!-- ECOMMERCE -->
+  <!-- ══ ECOMMERCE ══ -->
   <div class="tab-panel" id="panel-ecommerce">
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>Desde</label>
-        <input type="date" id="desde-ecommerce">
-      </div>
-      <span class="filter-sep">→</span>
-      <div class="filter-group">
-        <label>Hasta</label>
-        <input type="date" id="hasta-ecommerce">
-      </div>
-      <div class="filter-group">
-        <label>Operario</label>
-        <input type="text" id="filter-ecommerce" placeholder="Buscar..." style="width:140px" oninput="applyFilters('ECO')">
-      </div>
-      <button class="btn-hoy" onclick="setHoy('ecommerce')">Hoy</button>
-      <button class="btn-apply" onclick="applyFilters('ECO')">Aplicar</button>
-      <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
+    <div class="subtabs-wrap">
+      <button class="subtab-btn active" onclick="switchSubtab('eco','operaciones')" id="subtab-eco-operaciones">&#9881; Operaciones</button>
+      <button class="subtab-btn"        onclick="switchSubtab('eco','despachos')"   id="subtab-eco-despachos">&#128666; Despachos</button>
     </div>
-    <div class="kpi-strip" id="kpis-ecommerce"></div>
-    <div class="tables-grid">
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-ecommerce">0</span></span>
-          <div class="view-toggle">
-            <button class="toggle-btn active" onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
-            <button class="toggle-btn"        onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
+
+    <!-- Sub: Operaciones -->
+    <div class="subpanel active" id="subpanel-eco-operaciones">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" id="desde-ecommerce">
+        </div>
+        <span class="filter-sep">→</span>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" id="hasta-ecommerce">
+        </div>
+        <div class="filter-group">
+          <label>Operario</label>
+          <input type="text" id="filter-ecommerce" placeholder="Buscar..." style="width:140px" oninput="applyFilters('ECO')">
+        </div>
+        <button class="btn-hoy" onclick="setHoy('ecommerce')">Hoy</button>
+        <button class="btn-apply" onclick="applyFilters('ECO')">Aplicar</button>
+        <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
+      </div>
+      <div class="kpi-strip" id="kpis-ecommerce"></div>
+      <div class="tables-grid">
+        <div class="table-wrap">
+          <div class="table-head">
+            <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-ecommerce">0</span></span>
+            <div class="view-toggle">
+              <button class="toggle-btn active" onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
+              <button class="toggle-btn"        onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead id="thead-pick-ecommerce"><tr>
+                <th>Operario</th><th>Seller</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+              </tr></thead>
+              <tbody id="tbody-pick-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+            </table>
           </div>
         </div>
-        <div style="overflow-x:auto">
-          <table id="table-pick-ecommerce">
-            <thead id="thead-pick-ecommerce"><tr>
-              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-            </tr></thead>
-            <tbody id="tbody-pick-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
-          </table>
+        <div class="table-wrap">
+          <div class="table-head">
+            <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-ecommerce">0</span></span>
+            <div class="view-toggle">
+              <button class="toggle-btn active" onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
+              <button class="toggle-btn"        onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead id="thead-emb-ecommerce"><tr>
+                <th>Operario</th><th>Seller</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+              </tr></thead>
+              <tbody id="tbody-emb-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="table-wrap">
+    </div>
+
+    <!-- Sub: Despachos -->
+    <div class="subpanel" id="subpanel-eco-despachos">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Desde</label>
+          <input type="date" id="desde-despachos">
+        </div>
+        <span class="filter-sep">→</span>
+        <div class="filter-group">
+          <label>Hasta</label>
+          <input type="date" id="hasta-despachos">
+        </div>
+        <div class="filter-group">
+          <label>Seller</label>
+          <select id="filter-seller-despachos" onchange="renderDespachos()">
+            <option value="">Todos</option>
+            <option>Sitio Shopify</option>
+            <option>Falabella</option>
+            <option>Mercado Libre</option>
+            <option>Ripley</option>
+            <option>Paris</option>
+            <option>Walmart</option>
+            <option>Sitio Havaianas</option>
+          </select>
+        </div>
+        <button class="btn-hoy" onclick="setHoyDespachos()">Hoy</button>
+        <button class="btn-apply" onclick="renderDespachos()">Aplicar</button>
+      </div>
+
+      <!-- KPIs Despachos -->
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Comprometido</div>
+          <div class="kpi-value" id="kpi-comprometido">—</div>
+          <div class="kpi-sub">unidades</div>
+        </div>
+        <div class="kpi-card verde">
+          <div class="kpi-label">Total Despachado</div>
+          <div class="kpi-value" id="kpi-despachado">—</div>
+          <div class="kpi-sub">unidades</div>
+        </div>
+        <div class="kpi-card" id="kpi-card-pct">
+          <div class="kpi-label">% Cumplimiento</div>
+          <div class="kpi-value" id="kpi-pct">—</div>
+          <div class="kpi-sub">global</div>
+        </div>
+        <div class="kpi-card naranja">
+          <div class="kpi-label">Pendiente</div>
+          <div class="kpi-value" id="kpi-pendiente">—</div>
+          <div class="kpi-sub">unidades</div>
+        </div>
+      </div>
+
+      <!-- Tabla resumen por seller -->
+      <div class="table-wrap" style="margin-bottom:18px">
         <div class="table-head">
-          <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-ecommerce">0</span></span>
+          <span class="table-title">&#127981; Resumen por Seller <span class="demo-badge">&#9888; Demo — pendiente API</span></span>
           <div class="view-toggle">
-            <button class="toggle-btn active" onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
-            <button class="toggle-btn"        onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
+            <button class="toggle-btn active" onclick="setDespachoView('seller',this)">Por Seller</button>
+            <button class="toggle-btn"        onclick="setDespachoView('fecha',this)">Por Fecha</button>
           </div>
         </div>
         <div style="overflow-x:auto">
-          <table id="table-emb-ecommerce">
-            <thead id="thead-emb-ecommerce"><tr>
-              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+          <table id="table-despachos">
+            <thead id="thead-despachos"><tr>
+              <th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th>
             </tr></thead>
-            <tbody id="tbody-emb-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+            <tbody id="tbody-despachos"></tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TBC -->
+  <!-- ══ TBC ══ -->
   <div class="tab-panel" id="panel-tbc">
     <div class="proximo-panel">
       <div class="icon">&#127381;</div>
@@ -307,7 +369,7 @@
     </div>
   </div>
 
-  <!-- RECEPCIONES -->
+  <!-- ══ RECEPCIONES ══ -->
   <div class="tab-panel" id="panel-recepciones">
     <div class="proximo-panel">
       <div class="icon">&#128230;</div>
@@ -320,178 +382,213 @@
 
 <script>
 const HUB_URL = 'https://script.google.com/macros/s/AKfycbymOP_NATgnmzOX_XcbH2Rurxl3WB1zpFxA4Lo4w5I5LirPwsJc7_GBLtnPpBNnldD5/exec';
-const cache = { TIENDAS: null, ECO: null };
+// Cuando logistica6 entregue la URL, reemplazar null:
+const DESPACHOS_URL = null;
 
-// ── Init fechas ─────────────────────────────────────────────
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+const cache = { TIENDAS: null, ECO: null };
+const viewState = {}, tableData = {};
+let despachoView = 'seller';
+
+// ── MOCK DATA DESPACHOS (reemplazar con API cuando esté lista) ──
+const MOCK_SELLERS = [
+  { seller:'Sitio Shopify', comprometido:4320, pickeado:4073, embalado:4073, despachado:4073, pct:94.3, estado:'Parcial' },
+  { seller:'Falabella',     comprometido:5088, pickeado:4846, embalado:4489, despachado:4489, pct:88.2, estado:'Parcial' },
+  { seller:'Mercado Libre', comprometido:3626, pickeado:3157, embalado:3157, despachado:3157, pct:87.1, estado:'Parcial' },
+  { seller:'Ripley',        comprometido:2229, pickeado:2115, embalado:2115, despachado:2115, pct:94.9, estado:'Parcial' },
+  { seller:'Paris',         comprometido:2055, pickeado:1893, embalado:1893, despachado:1893, pct:92.1, estado:'Parcial' },
+  { seller:'Walmart',       comprometido:327,  pickeado:278,  embalado:278,  despachado:278,  pct:85.0, estado:'Parcial' },
+  { seller:'Sitio Havaianas',comprometido:21,  pickeado:17,   embalado:17,   despachado:17,   pct:81.0, estado:'Atraso'  },
+];
+const MOCK_FECHAS = [
+  { fecha:'30/04/2026', comprometido:1633, pickeado:1633, embalado:1633, despachado:1633, pct:100, estado:'Cumplido' },
+  { fecha:'04/05/2026', comprometido:6101, pickeado:6101, embalado:6101, despachado:6101, pct:100, estado:'Cumplido' },
+  { fecha:'05/05/2026', comprometido:1338, pickeado:1338, embalado:1338, despachado:1338, pct:100, estado:'Cumplido' },
+  { fecha:'06/05/2026', comprometido:780,  pickeado:780,  embalado:780,  despachado:780,  pct:100, estado:'Cumplido' },
+  { fecha:'07/05/2026', comprometido:797,  pickeado:797,  embalado:797,  despachado:797,  pct:100, estado:'Cumplido' },
+  { fecha:'08/05/2026', comprometido:580,  pickeado:580,  embalado:580,  despachado:580,  pct:100, estado:'Cumplido' },
+  { fecha:'11/05/2026', comprometido:1747, pickeado:1747, embalado:1747, despachado:1747, pct:100, estado:'Cumplido' },
+  { fecha:'12/05/2026', comprometido:806,  pickeado:806,  embalado:806,  despachado:806,  pct:100, estado:'Cumplido' },
+  { fecha:'13/05/2026', comprometido:927,  pickeado:927,  embalado:927,  despachado:927,  pct:100, estado:'Cumplido' },
+  { fecha:'14/05/2026', comprometido:845,  pickeado:845,  embalado:845,  despachado:845,  pct:100, estado:'Cumplido' },
+  { fecha:'15/05/2026', comprometido:468,  pickeado:468,  embalado:468,  despachado:468,  pct:100, estado:'Cumplido' },
+  { fecha:'18/05/2026', comprometido:1644, pickeado:357,  embalado:0,    despachado:0,    pct:0,   estado:'Pendiente'},
+];
+
+// ── Fechas init ─────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0,10); }
 function setHoy(area) {
   document.getElementById('desde-' + area).value = todayStr();
   document.getElementById('hasta-' + area).value = todayStr();
-  const apiArea = area === 'tiendas' ? 'TIENDAS' : 'ECO';
-  applyFilters(apiArea);
+  if (area === 'tiendas') applyFilters('TIENDAS');
+  else applyFilters('ECO');
 }
-['tiendas','ecommerce'].forEach(a => {
-  document.getElementById('desde-' + a).value = todayStr();
-  document.getElementById('hasta-' + a).value = todayStr();
+function setHoyDespachos() {
+  document.getElementById('desde-despachos').value = todayStr();
+  document.getElementById('hasta-despachos').value = todayStr();
+  renderDespachos();
+}
+['tiendas','ecommerce','despachos'].forEach(a => {
+  const d = document.getElementById('desde-' + a);
+  const h = document.getElementById('hasta-' + a);
+  if (d) d.value = todayStr();
+  if (h) h.value = todayStr();
 });
 
-// ── Tab switching ───────────────────────────────────────────
+// ── Tab / Subtab switching ──────────────────────────────────
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
 }
+function switchSubtab(area, sub) {
+  ['operaciones','despachos'].forEach(s => {
+    document.getElementById('subtab-' + area + '-' + s).classList.remove('active');
+    document.getElementById('subpanel-' + area + '-' + s).classList.remove('active');
+  });
+  document.getElementById('subtab-' + area + '-' + sub).classList.add('active');
+  document.getElementById('subpanel-' + area + '-' + sub).classList.add('active');
+  if (sub === 'despachos') renderDespachos();
+}
 
-// ── Load data ───────────────────────────────────────────────
+// ── Load Hub data ───────────────────────────────────────────
 async function loadData(area) {
   const slug = area === 'TIENDAS' ? 'tiendas' : 'ecommerce';
   const btn  = document.getElementById('refresh-btn-' + slug);
   btn.classList.add('loading'); btn.textContent = 'Cargando...';
-
   try {
     const res  = await fetch(HUB_URL + '?area=' + area);
     const data = await res.json();
-
-    if (data.kpis && data.kpis.ultima_actualizacion) {
-      document.getElementById('ts-value').textContent =
-        data.kpis.ultima_actualizacion.replace('Ultima actualizacion: ', '');
-    }
-
+    if (data.kpis && data.kpis.ultima_actualizacion)
+      document.getElementById('ts-value').textContent = data.kpis.ultima_actualizacion.replace('Ultima actualizacion: ','');
     const rows = [
-      ...(data.picking  || []).map(r => ({ ...r, tipo: 'Picking'  })),
-      ...(data.embalaje || []).map(r => ({ ...r, tipo: 'Embalaje' })),
+      ...(data.picking  || []).map(r => ({ ...r, tipo:'Picking'  })),
+      ...(data.embalaje || []).map(r => ({ ...r, tipo:'Embalaje' })),
     ];
     cache[area] = rows;
     applyFilters(area);
-
-  } catch(err) {
+  } catch(e) {
     ['pick','emb'].forEach(t => {
-      document.getElementById('tbody-' + t + '-' + slug).innerHTML =
-        `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar. Verifica la conexion.</div></td></tr>`;
+      const el = document.getElementById('tbody-' + t + '-' + slug);
+      if (el) el.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar.</div></td></tr>`;
     });
   }
-
   btn.classList.remove('loading'); btn.innerHTML = '&#8635; Actualizar';
 }
 
-// ── Apply filters ───────────────────────────────────────────
+// ── Apply filters Hub ───────────────────────────────────────
 function applyFilters(area) {
   if (!cache[area]) return;
   const slug  = area === 'TIENDAS' ? 'tiendas' : 'ecommerce';
   const desde = document.getElementById('desde-' + slug).value;
   const hasta = document.getElementById('hasta-' + slug).value;
   const q     = (document.getElementById('filter-' + slug).value || '').toLowerCase();
-
   const desdeD = desde ? new Date(desde + 'T00:00:00') : null;
   const hastaD = hasta ? new Date(hasta + 'T23:59:59') : null;
 
   const filtered = cache[area].filter(r => {
-    const fecha = r.inicio ? new Date(r.inicio) : null;
-    if (desdeD && fecha && fecha < desdeD) return false;
-    if (hastaD && fecha && fecha > hastaD) return false;
-    if (q && !String(r.operario || '').toLowerCase().includes(q) &&
-             !String(r.seller   || '').toLowerCase().includes(q)) return false;
+    const f = r.inicio ? new Date(r.inicio) : null;
+    if (desdeD && f && f < desdeD) return false;
+    if (hastaD && f && f > hastaD) return false;
+    if (q && !String(r.operario||'').toLowerCase().includes(q) &&
+             !String(r.seller||'').toLowerCase().includes(q)) return false;
     return true;
   });
 
   const pick = filtered.filter(r => r.tipo === 'Picking');
   const emb  = filtered.filter(r => r.tipo === 'Embalaje');
 
-  const limPick = area === 'ECO' ? 45 : 25;
-  const limEmb  = area === 'ECO' ? 60 : 15;
-
-  renderSubTable('tbody-pick-' + slug, 'count-pick-' + slug, pick, limPick);
-  renderSubTable('tbody-emb-'  + slug, 'count-emb-'  + slug, emb,  limEmb);
-  renderKPIs(area, filtered, 'kpis-' + slug, limPick, limEmb);
+  if (area === 'TIENDAS') {
+    const lim = 25;
+    renderSubTable('tbody-pick-tiendas','count-pick-tiendas','thead-pick-tiendas', pick, lim, 'Pedido');
+    renderKPIs('TIENDAS', pick, 'kpis-tiendas', lim, lim);
+  } else {
+    renderSubTable('tbody-pick-ecommerce','count-pick-ecommerce','thead-pick-ecommerce', pick, 45, 'Picking');
+    renderSubTable('tbody-emb-ecommerce', 'count-emb-ecommerce', 'thead-emb-ecommerce',  emb,  60, 'Picking');
+    renderKPIs('ECO', filtered, 'kpis-ecommerce', 45, 60);
+  }
 }
 
-// ── Vista state ─────────────────────────────────────────────
-const viewState = {};
-const tableData = {};
-
+// ── View state ──────────────────────────────────────────────
 function setView(tableId, mode, btn) {
   viewState[tableId] = mode;
-  btn.closest('.view-toggle').querySelectorAll('.toggle-btn')
-    .forEach(b => b.classList.remove('active'));
+  btn.closest('.view-toggle').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (tableData[tableId]) redrawTable(tableId, tableData[tableId].rows, tableData[tableId].lim);
+  if (tableData[tableId]) redrawTable(tableId, tableData[tableId].rows, tableData[tableId].lim, tableData[tableId].olaLabel);
 }
 
-// ── Render sub-table ────────────────────────────────────────
-function renderSubTable(tbodyId, countId, rows, lim) {
-  const tableId = tbodyId.replace('tbody-', '');
-  tableData[tableId] = { rows, lim };
+function renderSubTable(tbodyId, countId, theadId, rows, lim, olaLabel) {
+  const tableId = tbodyId.replace('tbody-','');
+  tableData[tableId] = { rows, lim, olaLabel };
   document.getElementById(countId).textContent = rows.length;
-  redrawTable(tableId, rows, lim);
+  redrawTable(tableId, rows, lim, olaLabel);
 }
 
-function redrawTable(tableId, rows, lim) {
-  const mode   = viewState[tableId] || 'detalle';
-  const thead  = document.getElementById('thead-' + tableId);
-  const tbody  = document.getElementById('tbody-' + tableId);
-
+function redrawTable(tableId, rows, lim, olaLabel) {
+  const mode  = viewState[tableId] || 'detalle';
+  const thead = document.getElementById('thead-' + tableId);
+  const tbody = document.getElementById('tbody-' + tableId);
   if (!rows.length) {
-    thead.innerHTML = '<tr><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>';
+    thead.innerHTML = `<tr><th>Operario</th><th>Seller</th><th>${olaLabel||'Picking'}</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros.</div></td></tr>`;
     return;
   }
-
   if (mode === 'resumen') {
-    thead.innerHTML = '<tr><th>Operario</th><th>Sellers</th><th>Olas</th><th>Prom. Min</th><th>Estado</th></tr>';
+    thead.innerHTML = '<tr><th>Operario</th><th>Sellers</th><th>Registros</th><th>Prom. Min</th><th>Estado</th></tr>';
     const grouped = {};
     rows.forEach(r => {
-      const op = String(r.operario || '—').trim();
-      if (!grouped[op]) grouped[op] = { sellers: new Set(), olas: 0, mins: [] };
-      grouped[op].olas++;
+      const op = String(r.operario||'—').trim();
+      if (!grouped[op]) grouped[op] = { sellers: new Set(), count:0, mins:[] };
+      grouped[op].count++;
       if (r.seller) grouped[op].sellers.add(String(r.seller).trim());
-      const m = Number(r.minutos);
-      if (m > 0) grouped[op].mins.push(m);
+      const m = Number(r.minutos); if (m>0) grouped[op].mins.push(m);
     });
-    tbody.innerHTML = Object.entries(grouped)
-      .map(([op, g]) => {
-        const prom   = g.mins.length ? Math.round(g.mins.reduce((a,b) => a+b, 0) / g.mins.length) : 0;
-        const semTag = prom === 0 ? '—' : semaforo(prom, lim);
-        return `<tr>
-          <td style="font-weight:800">${op}</td>
-          <td style="font-size:11px;color:#6699BB">${[...g.sellers].join(', ') || '—'}</td>
-          <td style="font-weight:800;color:#0055AA">${g.olas}</td>
-          <td style="font-weight:800">${prom || '—'}</td>
-          <td>${semTag}</td>
-        </tr>`;
-      }).join('');
-  } else {
-    thead.innerHTML = '<tr><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>';
-    tbody.innerHTML = rows.map(r => {
-      const min    = Number(r.minutos) || 0;
-      const semTag = min === 0 ? '—' : semaforo(min, lim);
+    tbody.innerHTML = Object.entries(grouped).map(([op,g]) => {
+      const prom = g.mins.length ? Math.round(g.mins.reduce((a,b)=>a+b,0)/g.mins.length) : 0;
       return `<tr>
-        <td>${r.operario || '—'}</td>
-        <td>${r.seller   || '—'}</td>
-        <td>${r.ola      || '—'}</td>
+        <td style="font-weight:800">${op}</td>
+        <td style="font-size:11px;color:#6699BB">${[...g.sellers].join(', ')||'—'}</td>
+        <td style="font-weight:800;color:#0055AA">${g.count}</td>
+        <td style="font-weight:800">${prom||'—'}</td>
+        <td>${prom===0?'—':semaforo(prom,lim)}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    thead.innerHTML = `<tr><th>Operario</th><th>Seller / Tienda</th><th>${olaLabel||'Picking'}</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
+    tbody.innerHTML = rows.map(r => {
+      const min = Number(r.minutos)||0;
+      return `<tr>
+        <td>${r.operario||'—'}</td>
+        <td>${r.seller||'—'}</td>
+        <td>${r.ola||'—'}</td>
         <td>${formatDate(r.inicio)}</td>
         <td>${formatDate(r.fin)}</td>
-        <td style="font-weight:800">${min || '—'}</td>
-        <td>${semTag}</td>
+        <td style="font-weight:800">${min||'—'}</td>
+        <td>${min===0?'—':semaforo(min,lim)}</td>
       </tr>`;
     }).join('');
   }
 }
 
-// ── Render KPIs ─────────────────────────────────────────────
+// ── KPIs Hub ────────────────────────────────────────────────
 function renderKPIs(area, rows, containerId, limPick, limEmb) {
-  const pick = rows.filter(r => r.tipo === 'Picking');
-  const emb  = rows.filter(r => r.tipo === 'Embalaje');
-  const avg  = arr => {
-    const mins = arr.map(r => Number(r.minutos)).filter(m => m > 0);
-    return mins.length ? Math.round(mins.reduce((a,b) => a+b, 0) / mins.length) : 0;
-  };
-  const avgP = avg(pick), avgE = avg(emb);
-  const colP = avgP === 0 ? '' : avgP <= limPick ? 'verde' : 'rojo';
-  const colE = avgE === 0 ? '' : avgE <= limEmb  ? 'verde' : 'rojo';
-
+  const pick = rows.filter(r => r.tipo==='Picking');
+  const emb  = rows.filter(r => r.tipo==='Embalaje');
+  const avg  = arr => { const m=arr.map(r=>Number(r.minutos)).filter(m=>m>0); return m.length?Math.round(m.reduce((a,b)=>a+b,0)/m.length):0; };
+  const avgP=avg(pick), avgE=avg(emb);
+  const colP = avgP===0?'':avgP<=limPick?'verde':'rojo';
+  const colE = avgE===0?'':avgE<=limEmb?'verde':'rojo';
+  const embCard = area==='TIENDAS' ? '' : `
+    <div class="kpi-card">
+      <div class="kpi-label">Olas Embalaje</div>
+      <div class="kpi-value">${emb.length}</div>
+      <div class="kpi-sub">registros</div>
+    </div>
+    <div class="kpi-card ${colE}">
+      <div class="kpi-label">Prom. Embalaje</div>
+      <div class="kpi-value">${avgE||'—'}</div>
+      <div class="kpi-sub">min · limite ${limEmb}</div>
+    </div>`;
   document.getElementById(containerId).innerHTML = `
     <div class="kpi-card">
       <div class="kpi-label">Olas Picking</div>
@@ -500,43 +597,99 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
     </div>
     <div class="kpi-card ${colP}">
       <div class="kpi-label">Prom. Picking</div>
-      <div class="kpi-value">${avgP || '—'}</div>
+      <div class="kpi-value">${avgP||'—'}</div>
       <div class="kpi-sub">min · limite ${limPick}</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Olas Embalaje</div>
-      <div class="kpi-value">${emb.length}</div>
-      <div class="kpi-sub">registros</div>
-    </div>
-    <div class="kpi-card ${colE}">
-      <div class="kpi-label">Prom. Embalaje</div>
-      <div class="kpi-value">${avgE || '—'}</div>
-      <div class="kpi-sub">min · limite ${limEmb}</div>
-    </div>
+    ${embCard}
     <div class="kpi-card naranja">
       <div class="kpi-label">Total registros</div>
       <div class="kpi-value">${rows.length}</div>
-      <div class="kpi-sub">picking + embalaje</div>
-    </div>
-  `;
+      <div class="kpi-sub">picking${area==='TIENDAS'?'':' + embalaje'}</div>
+    </div>`;
+}
+
+// ── DESPACHOS ───────────────────────────────────────────────
+function setDespachoView(mode, btn) {
+  despachoView = mode;
+  btn.closest('.view-toggle').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDespachos();
+}
+
+function renderDespachos() {
+  const sellerFilter = document.getElementById('filter-seller-despachos').value;
+
+  if (despachoView === 'seller') {
+    const data = sellerFilter ? MOCK_SELLERS.filter(r => r.seller === sellerFilter) : MOCK_SELLERS;
+    const tot  = data.reduce((a,r)=>a+r.comprometido,0);
+    const des  = data.reduce((a,r)=>a+r.despachado,0);
+    const pct  = tot>0 ? (des/tot*100).toFixed(1) : 0;
+    updateKpisDespachos(tot, des, pct, tot-des);
+
+    document.getElementById('thead-despachos').innerHTML = '<tr><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+    document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
+      <td style="font-weight:800">${r.seller}</td>
+      <td>${r.comprometido.toLocaleString('es-CL')}</td>
+      <td>${r.pickeado.toLocaleString('es-CL')}</td>
+      <td>${r.embalado.toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${r.despachado.toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${r.pct}%</td>
+      <td>${estadoBadge(r.estado)}</td>
+    </tr>`).join('');
+  } else {
+    const tot = MOCK_FECHAS.reduce((a,r)=>a+r.comprometido,0);
+    const des = MOCK_FECHAS.reduce((a,r)=>a+r.despachado,0);
+    const pct = tot>0?(des/tot*100).toFixed(1):0;
+    updateKpisDespachos(tot, des, pct, tot-des);
+
+    document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+    document.getElementById('tbody-despachos').innerHTML = MOCK_FECHAS.map(r => `<tr>
+      <td style="font-weight:800">${r.fecha}</td>
+      <td>${r.comprometido.toLocaleString('es-CL')}</td>
+      <td>${r.pickeado.toLocaleString('es-CL')}</td>
+      <td>${r.embalado.toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${r.despachado.toLocaleString('es-CL')}</td>
+      <td style="font-weight:800">${r.pct}%</td>
+      <td>${estadoBadge(r.estado)}</td>
+    </tr>`).join('');
+  }
+}
+
+function updateKpisDespachos(comp, desp, pct, pend) {
+  document.getElementById('kpi-comprometido').textContent = Number(comp).toLocaleString('es-CL');
+  document.getElementById('kpi-despachado').textContent   = Number(desp).toLocaleString('es-CL');
+  document.getElementById('kpi-pct').textContent          = pct + '%';
+  document.getElementById('kpi-pendiente').textContent    = Number(pend).toLocaleString('es-CL');
+  const card = document.getElementById('kpi-card-pct');
+  card.className = 'kpi-card ' + (pct>=95?'verde':pct>=80?'naranja':'rojo');
+}
+
+function estadoBadge(estado) {
+  const map = {
+    'Cumplido': '<span class="estado-ok">Cumplido</span>',
+    'OK':       '<span class="estado-ok">OK</span>',
+    'Parcial':  '<span class="estado-parcial">Parcial</span>',
+    'Atraso':   '<span class="estado-atraso">Atraso</span>',
+    'Pendiente':'<span class="estado-pend">Pendiente</span>',
+  };
+  return map[estado] || estado;
 }
 
 // ── Helpers ─────────────────────────────────────────────────
 function semaforo(min, lim) {
-  if (min <= lim * 0.5) return `<span class="sem-verde">${min} min</span>`;
-  if (min <= lim)       return `<span class="sem-amarillo">${min} min</span>`;
-  if (min <= lim * 1.5) return `<span class="sem-rojo">${min} min</span>`;
+  if (min <= lim*0.5) return `<span class="sem-verde">${min} min</span>`;
+  if (min <= lim)     return `<span class="sem-amarillo">${min} min</span>`;
+  if (min <= lim*1.5) return `<span class="sem-rojo">${min} min</span>`;
   return `<span class="sem-negro">${min} min</span>`;
 }
 function formatDate(iso) {
   if (!iso) return '—';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString('es-CL') + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-  } catch { return iso; }
+  try { const d=new Date(iso); return d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}); }
+  catch { return iso; }
 }
 
 // ── Init ────────────────────────────────────────────────────
+renderDespachos();
 loadData('TIENDAS');
 loadData('ECO');
 </script>
