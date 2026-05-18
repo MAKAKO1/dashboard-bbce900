@@ -383,28 +383,21 @@
 
 <script>
 const HUB_URL = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUiv3yLccM6kfph_kL1O7TKJURaA_4oSiZiul7BgwF2Z4co/exec';
-// Cuando logistica6 entregue la URL, reemplazar null:
-const DESPACHOS_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6bEoFl1wq4Cl6zKDD3ova4qBb2EGQawThLJ_1U_SEiYUM7dw/exec';
 
 const cache = { TIENDAS: null, ECO: null };
 const viewState = {}, tableData = {};
 let despachoView = 'seller';
 let despachoData = null;
+let hubLoading   = false;
 
 // ── Auto-refresh countdown ───────────────────────────────────
 let countdownSecs = 60;
 function tickCountdown() {
   countdownSecs--;
-  if (countdownSecs <= 0) {
-    countdownSecs = 60;
-    loadData('TIENDAS');
-    loadData('ECO');
-    loadDespachos();
-  }
-  const m = Math.floor(countdownSecs / 60);
-  const s = String(countdownSecs % 60).padStart(2, '0');
+  if (countdownSecs <= 0) { countdownSecs = 60; loadAllHubData(); loadDespachos(); }
+  const m = Math.floor(countdownSecs/60), s = String(countdownSecs%60).padStart(2,'0');
   const el = document.getElementById('countdown-val');
-  if (el) el.textContent = m + ':' + s;
+  if (el) el.textContent = m+':'+s;
 }
 setInterval(tickCountdown, 1000);
 
@@ -421,12 +414,14 @@ function setHoyDespachos() {
   document.getElementById('hasta-despachos').value = todayStr();
   renderDespachos();
 }
-['tiendas','ecommerce','despachos'].forEach(a => {
+['tiendas','ecommerce'].forEach(a => {
   const d = document.getElementById('desde-' + a);
   const h = document.getElementById('hasta-' + a);
   if (d) d.value = todayStr();
   if (h) h.value = todayStr();
 });
+// Despachos: sin filtro de fecha por defecto (muestra todo)
+
 
 // ── Tab / Subtab switching ──────────────────────────────────
 function switchTab(name) {
@@ -445,30 +440,61 @@ function switchSubtab(area, sub) {
   if (sub === 'despachos') renderDespachos();
 }
 
-// ── Load Hub data ───────────────────────────────────────────
-async function loadData(area) {
-  const slug = area === 'TIENDAS' ? 'tiendas' : 'ecommerce';
-  const btn  = document.getElementById('refresh-btn-' + slug);
-  btn.classList.add('loading'); btn.textContent = 'Cargando...';
-  try {
-    const res  = await fetch(HUB_URL + '?area=' + area);
-    const data = await res.json();
-    if (data.kpis && data.kpis.ultima_actualizacion)
-      document.getElementById('ts-value').textContent = data.kpis.ultima_actualizacion.replace('Ultima actualizacion: ','');
-    const rows = [
-      ...(data.picking  || []).map(r => ({ ...r, tipo:'Picking'  })),
-      ...(data.embalaje || []).map(r => ({ ...r, tipo:'Embalaje' })),
-    ];
-    cache[area] = rows;
-    applyFilters(area);
-  } catch(e) {
-    ['pick','emb'].forEach(t => {
-      const el = document.getElementById('tbody-' + t + '-' + slug);
-      if (el) el.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar.</div></td></tr>`;
-    });
+// ── localStorage cache ───────────────────────────────────────
+const LS_HUB  = 'dashcd_hub_v1';
+const LS_DESP = 'dashcd_desp_v1';
+function saveLS(key, data) { try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(e){} }
+function loadLS(key) { try { const r = JSON.parse(localStorage.getItem(key)); return r || null; } catch(e){ return null; } }
+function showOfflineBanner(msg) {
+  let b = document.getElementById('offline-banner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'offline-banner';
+    b.style.cssText = 'background:#FEF9E7;border-bottom:2px solid #F39C12;padding:8px 24px;font-size:12px;font-weight:800;color:#856404;text-align:center;';
+    document.querySelector('.tabs-wrap').after(b);
   }
-  btn.classList.remove('loading'); btn.innerHTML = '&#8635; Actualizar';
+  b.textContent = msg;
 }
+function hideOfflineBanner() { const b = document.getElementById('offline-banner'); if (b) b.remove(); }
+
+// ── Load Hub data via fetch ──────────────────────────────────
+async function loadAllHubData() {
+  if (hubLoading) return;
+  hubLoading = true;
+  ['tiendas','ecommerce'].forEach(slug => {
+    const btn = document.getElementById('refresh-btn-'+slug);
+    if (btn) { btn.classList.add('loading'); btn.textContent = 'Cargando...'; }
+  });
+  try {
+    const res  = await fetch(HUB_URL);
+    const data = await res.json();
+    hideOfflineBanner();
+    const picking  = (data.picking  || []).map(r => ({ ...r, tipo:'Picking'  }));
+    const embalaje = (data.embalaje || []).map(r => ({ ...r, tipo:'Embalaje' }));
+    const all = [...picking, ...embalaje];
+    cache['ECO']     = all.filter(r => (r.area||'').toUpperCase() === 'ECO');
+    cache['TIENDAS'] = all.filter(r => (r.area||'').toUpperCase() === 'TIENDAS');
+    saveLS(LS_HUB, { ECO: cache['ECO'], TIENDAS: cache['TIENDAS'] });
+    applyFilters('ECO'); applyFilters('TIENDAS');
+    document.getElementById('ts-value').textContent = new Date().toLocaleTimeString('es-CL');
+  } catch(e) {
+    console.error('Hub fetch error:', e);
+    const saved = loadLS(LS_HUB);
+    if (saved) {
+      cache['ECO']     = saved.data.ECO;
+      cache['TIENDAS'] = saved.data.TIENDAS;
+      applyFilters('ECO'); applyFilters('TIENDAS');
+      const mins = Math.round((Date.now() - saved.ts) / 60000);
+      showOfflineBanner('⚠️ Sin conexión — datos de hace ' + mins + ' min. Inicia sesión en Google para actualizar.');
+    }
+  }
+  hubLoading = false;
+  ['tiendas','ecommerce'].forEach(slug => {
+    const btn = document.getElementById('refresh-btn-'+slug);
+    if (btn) { btn.classList.remove('loading'); btn.innerHTML='&#8635; Actualizar'; }
+  });
+}
+function loadData(area) { loadAllHubData(); }
 
 // ── Apply filters Hub ───────────────────────────────────────
 function applyFilters(area) {
@@ -602,19 +628,26 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
     </div>`;
 }
 
-// ── DESPACHOS ───────────────────────────────────────────────
+// ── DESPACHOS via Hub Web App ────────────────────────────────
 async function loadDespachos() {
-  if (!DESPACHOS_URL) return;
   try {
-    const res  = await fetch(DESPACHOS_URL);
+    const res  = await fetch(HUB_URL + '?tipo=despachos');
     const data = await res.json();
     if (data.ok && data.registros) {
       despachoData = data.registros.filter(r => Number(r.comprometido) > 0);
+      saveLS(LS_DESP, despachoData);
       renderDespachos();
     }
   } catch(e) {
-    document.getElementById('tbody-despachos').innerHTML =
-      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar datos.</div></td></tr>`;
+    console.error('Despachos fetch error:', e);
+    const saved = loadLS(LS_DESP);
+    if (saved) {
+      despachoData = saved.data;
+      renderDespachos();
+    } else {
+      document.getElementById('tbody-despachos').innerHTML =
+        `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Sin datos. Verifica conexión.</div></td></tr>`;
+    }
   }
 }
 
@@ -739,8 +772,7 @@ function formatDate(iso) {
 }
 
 // ── Init ────────────────────────────────────────────────────
-loadData('TIENDAS');
-loadData('ECO');
+loadAllHubData();
 loadDespachos();
 </script>
 </body>
