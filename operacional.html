@@ -115,6 +115,13 @@
     background: #E8F6FF; color: #0077BB; border-radius: 20px;
     padding: 2px 10px; font-size: 11px; font-weight: 800;
   }
+  .view-toggle { display: flex; gap: 4px; }
+  .toggle-btn {
+    padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 800;
+    cursor: pointer; border: 1.5px solid #CCE9FF; background: white; color: #6699BB;
+    font-family: 'Nunito', Arial; transition: all .15s;
+  }
+  .toggle-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
   table { width: 100%; border-collapse: collapse; }
   thead th {
     background: #F0F6FF; color: #0055AA; font-size: 10px;
@@ -198,24 +205,34 @@
       <div class="table-wrap">
         <div class="table-head">
           <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn active" onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
+            <button class="toggle-btn"        onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr>
-            <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-          </tr></thead>
-          <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          <table id="table-pick-tiendas">
+            <thead id="thead-pick-tiendas"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
       <div class="table-wrap">
         <div class="table-head">
           <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-tiendas">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn active" onclick="setView('emb-tiendas','detalle',this)">Detalle</button>
+            <button class="toggle-btn"        onclick="setView('emb-tiendas','resumen',this)">Resumen</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr>
-            <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-          </tr></thead>
-          <tbody id="tbody-emb-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          <table id="table-emb-tiendas">
+            <thead id="thead-emb-tiendas"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-emb-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -247,24 +264,34 @@
       <div class="table-wrap">
         <div class="table-head">
           <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-ecommerce">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn active" onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
+            <button class="toggle-btn"        onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr>
-            <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-          </tr></thead>
-          <tbody id="tbody-pick-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          <table id="table-pick-ecommerce">
+            <thead id="thead-pick-ecommerce"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-pick-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
       <div class="table-wrap">
         <div class="table-head">
           <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-ecommerce">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn active" onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
+            <button class="toggle-btn"        onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr>
-            <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-          </tr></thead>
-          <tbody id="tbody-emb-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          <table id="table-emb-ecommerce">
+            <thead id="thead-emb-ecommerce"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-emb-ecommerce"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -381,27 +408,76 @@ function applyFilters(area) {
   renderKPIs(area, filtered, 'kpis-' + slug, limPick, limEmb);
 }
 
+// ── Vista state ─────────────────────────────────────────────
+const viewState = {};
+const tableData = {};
+
+function setView(tableId, mode, btn) {
+  viewState[tableId] = mode;
+  btn.closest('.view-toggle').querySelectorAll('.toggle-btn')
+    .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tableData[tableId]) redrawTable(tableId, tableData[tableId].rows, tableData[tableId].lim);
+}
+
 // ── Render sub-table ────────────────────────────────────────
 function renderSubTable(tbodyId, countId, rows, lim) {
+  const tableId = tbodyId.replace('tbody-', '');
+  tableData[tableId] = { rows, lim };
   document.getElementById(countId).textContent = rows.length;
-  const tbody = document.getElementById(tbodyId);
+  redrawTable(tableId, rows, lim);
+}
+
+function redrawTable(tableId, rows, lim) {
+  const mode   = viewState[tableId] || 'detalle';
+  const thead  = document.getElementById('thead-' + tableId);
+  const tbody  = document.getElementById('tbody-' + tableId);
+
   if (!rows.length) {
+    thead.innerHTML = '<tr><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>';
     tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros.</div></td></tr>`;
     return;
   }
-  tbody.innerHTML = rows.map(r => {
-    const min    = Number(r.minutos) || 0;
-    const semTag = min === 0 ? '—' : semaforo(min, lim);
-    return `<tr>
-      <td>${r.operario || '—'}</td>
-      <td>${r.seller   || '—'}</td>
-      <td>${r.ola      || '—'}</td>
-      <td>${formatDate(r.inicio)}</td>
-      <td>${formatDate(r.fin)}</td>
-      <td style="font-weight:800">${min || '—'}</td>
-      <td>${semTag}</td>
-    </tr>`;
-  }).join('');
+
+  if (mode === 'resumen') {
+    thead.innerHTML = '<tr><th>Operario</th><th>Sellers</th><th>Olas</th><th>Prom. Min</th><th>Estado</th></tr>';
+    const grouped = {};
+    rows.forEach(r => {
+      const op = String(r.operario || '—').trim();
+      if (!grouped[op]) grouped[op] = { sellers: new Set(), olas: 0, mins: [] };
+      grouped[op].olas++;
+      if (r.seller) grouped[op].sellers.add(String(r.seller).trim());
+      const m = Number(r.minutos);
+      if (m > 0) grouped[op].mins.push(m);
+    });
+    tbody.innerHTML = Object.entries(grouped)
+      .map(([op, g]) => {
+        const prom   = g.mins.length ? Math.round(g.mins.reduce((a,b) => a+b, 0) / g.mins.length) : 0;
+        const semTag = prom === 0 ? '—' : semaforo(prom, lim);
+        return `<tr>
+          <td style="font-weight:800">${op}</td>
+          <td style="font-size:11px;color:#6699BB">${[...g.sellers].join(', ') || '—'}</td>
+          <td style="font-weight:800;color:#0055AA">${g.olas}</td>
+          <td style="font-weight:800">${prom || '—'}</td>
+          <td>${semTag}</td>
+        </tr>`;
+      }).join('');
+  } else {
+    thead.innerHTML = '<tr><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>';
+    tbody.innerHTML = rows.map(r => {
+      const min    = Number(r.minutos) || 0;
+      const semTag = min === 0 ? '—' : semaforo(min, lim);
+      return `<tr>
+        <td>${r.operario || '—'}</td>
+        <td>${r.seller   || '—'}</td>
+        <td>${r.ola      || '—'}</td>
+        <td>${formatDate(r.inicio)}</td>
+        <td>${formatDate(r.fin)}</td>
+        <td style="font-weight:800">${min || '—'}</td>
+        <td>${semTag}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ── Render KPIs ─────────────────────────────────────────────
