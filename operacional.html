@@ -404,8 +404,9 @@ const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6
 const cache = { TIENDAS: null, ECO: null };
 const viewState = { 'pick-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
 let despachoView      = 'fecha';
-let despachoData      = null;
-let despachoDataFecha = null;
+let despachoData           = null;  // acumulado por seller
+let despachoDataFecha      = null;  // acumulado por fecha
+let despachoDataFechaXSell = null;  // desglose fecha×seller desde INPUT
 let hubLoading        = false;
 
 let lastHubFetchAt  = null;
@@ -687,9 +688,10 @@ async function loadDespachos() {
     const res  = await fetch(DESP_URL);
     const data = await res.json();
     if (data.ok) {
-      despachoData      = (data.registros      || []).filter(r => Number(r.comprometido) > 0);
-      despachoDataFecha = (data.registrosFecha || []).filter(r => Number(r.comprometido) > 0);
-      saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha });
+      despachoData           = (data.registros             || []).filter(r => Number(r.comprometido) > 0);
+      despachoDataFecha      = (data.registrosFecha        || []).filter(r => Number(r.comprometido) > 0);
+      despachoDataFechaXSell = (data.registrosFechaXSeller || []).filter(r => Number(r.comprometido) > 0);
+      saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha, fxs: despachoDataFechaXSell });
       lastDespFetchAt = Date.now();
       const clLastEl = document.getElementById('cl-last');
       if (clLastEl) clLastEl.textContent = _fmtTime(new Date());
@@ -699,8 +701,9 @@ async function loadDespachos() {
     console.error('Despachos fetch error:', e);
     const saved = loadLS(LS_DESP);
     if (saved) {
-      despachoData      = saved.data.seller || saved.data || [];
-      despachoDataFecha = saved.data.fecha  || [];
+      despachoData           = saved.data.seller || saved.data || [];
+      despachoDataFecha      = saved.data.fecha  || [];
+      despachoDataFechaXSell = saved.data.fxs    || [];
       renderDespachos();
     } else {
       document.getElementById('tbody-despachos').innerHTML =
@@ -774,13 +777,25 @@ function renderDespachos() {
   }
 
   if (despachoView === 'seller') {
-    const data = _groupBySeller(registros, sellerFilter);
-    const tot  = data.reduce((a,r)=>a+r.comprometido,0);
-    const des  = data.reduce((a,r)=>a+r.despachado,0);
-    const pct  = tot>0 ? (des/tot*100).toFixed(1) : 0;
+    // Desglose fecha×seller desde INPUT, filtrado por fecha seleccionada
+    let data = (despachoDataFechaXSell || []).filter(r => {
+      if (desdeVal && r.fecha < desdeVal) return false;
+      if (hastaVal && r.fecha > hastaVal) return false;
+      if (sellerFilter && r.seller !== sellerFilter) return false;
+      return true;
+    }).map(r => ({
+      ...r,
+      pct:    r.comprometido>0 ? (r.despachado/r.comprometido*100).toFixed(1) : 0,
+      estado: r.comprometido>0 ? (r.despachado>=r.comprometido?'Cumplido':r.despachado>0?'Parcial':'Pendiente') : ''
+    }));
+
+    const tot = data.reduce((a,r)=>a+r.comprometido,0);
+    const des = data.reduce((a,r)=>a+r.despachado,0);
+    const pct = tot>0 ? (des/tot*100).toFixed(1) : 0;
     updateKpisDespachos(tot, des, pct, tot-des);
-    document.getElementById('thead-despachos').innerHTML = '<tr><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
-    document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
+    document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+    document.getElementById('tbody-despachos').innerHTML = data.length ? data.map(r => `<tr>
+      <td style="color:#7799AA;font-size:11px">${r.fecha}</td>
       <td style="font-weight:800">${r.seller}</td>
       <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
       <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
@@ -788,7 +803,7 @@ function renderDespachos() {
       <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
       <td style="font-weight:800">${r.pct}%</td>
       <td>${estadoBadge(r.estado)}</td>
-    </tr>`).join('');
+    </tr>`).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
   } else {
     const data = _groupByFecha(registros);
     const tot  = data.reduce((a,r)=>a+r.comprometido,0);
