@@ -280,11 +280,7 @@
 <script>
 const HUB_URL = 'https://script.google.com/macros/s/AKfycbymOP_NATgnmzOX_XcbH2Rurxl3WB1zpFxA4Lo4w5I5LirPwsJc7_GBLtnPpBNnldD5/exec';
 
-// Auth guard
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (!session) window.location.href = 'login.html';
-});
+// Auth guard desactivado temporalmente
 
 // Cached raw data per area
 const cache = { TIENDAS: null, ECO: null };
