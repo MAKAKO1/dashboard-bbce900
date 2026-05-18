@@ -725,8 +725,6 @@ async function loadDespachos() {
       despachoData           = (data.registros             || []).filter(r => Number(r.comprometido) > 0);
       despachoDataFecha      = (data.registrosFecha        || []).filter(r => Number(r.comprometido) > 0);
       despachoDataFechaXSell = (data.registrosFechaXSeller || []).filter(r => Number(r.comprometido) > 0);
-      usuariosEco            = data.usuariosEco    || [];
-      usuariosTienda         = data.usuariosTienda || [];
       saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha, fxs: despachoDataFechaXSell });
       lastDespFetchAt = Date.now();
       const clLastEl = document.getElementById('cl-last');
@@ -892,10 +890,7 @@ function formatDate(iso) {
   catch { return iso; }
 }
 
-// ── Panel Usuarios ───────────────────────────────────────────
-let usuariosEco    = null;
-let usuariosTienda = null;
-
+// ── Panel Usuarios por Fecha ─────────────────────────────────
 function toggleUsuarios(area) {
   const drawer = document.getElementById('drawer-' + area);
   const icon   = document.getElementById('icon-usuarios-' + area);
@@ -906,50 +901,61 @@ function toggleUsuarios(area) {
 }
 
 function renderUsuariosDrawer(area) {
-  const inner = document.getElementById('drawer-inner-' + area);
-  const data  = area === 'tiendas' ? usuariosTienda : usuariosEco;
+  const inner   = document.getElementById('drawer-inner-' + area);
+  const slug    = area === 'tiendas' ? 'tiendas' : 'ecommerce';
+  const cacheKey= area === 'tiendas' ? 'TIENDAS' : 'ECO';
+  const desde   = document.getElementById('desde-' + slug).value;
+  const hasta   = document.getElementById('hasta-' + slug).value;
+  const limPick = area === 'tiendas' ? 25 : 45;
+  const limEmb  = 60;
 
-  if (!data || !data.length) {
-    inner.innerHTML = `<div style="color:#99AABB;font-size:12px;font-weight:700;text-transform:uppercase">Sin datos de usuarios. Publica la versión en Control Logístico.</div>`;
+  const rows = (cache[cacheKey] || []).filter(r => {
+    const f = r.inicio ? new Date(r.inicio) : null;
+    if (!f) return false;
+    if (desde && f < new Date(desde + 'T00:00:00')) return false;
+    if (hasta && f > new Date(hasta + 'T23:59:59')) return false;
+    return true;
+  });
+
+  if (!rows.length) {
+    inner.innerHTML = `<div style="color:#99AABB;font-size:12px;font-weight:800;text-transform:uppercase;padding:8px 0">Sin registros para la fecha seleccionada.</div>`;
     return;
   }
 
-  // Detectar columna de nombre y rol/tipo
-  const keys = Object.keys(data[0]);
-  const keyNombre = keys.find(k => /nombre|name|operario/i.test(k)) || keys[0];
-  const keyRol    = keys.find(k => /rol|tipo|area|funcion|cargo|meson|picking/i.test(k) && k !== keyNombre);
-  const otrasKeys = keys.filter(k => k !== keyNombre && k !== keyRol);
+  // Agrupar por tipo → por operario
+  const tipos = area === 'tiendas' ? ['Picking'] : ['Picking', 'Embalaje'];
+  inner.innerHTML = tipos.map(tipo => {
+    const lim  = tipo === 'Picking' ? limPick : limEmb;
+    const sub  = rows.filter(r => r.tipo === tipo);
+    if (!sub.length) return '';
 
-  // Agrupar por rol si existe
-  if (keyRol) {
-    const grupos = {};
-    data.forEach(u => {
-      const g = String(u[keyRol] || 'SIN ROL').trim().toUpperCase();
-      if (!grupos[g]) grupos[g] = [];
-      grupos[g].push(u);
+    const map = {};
+    sub.forEach(r => {
+      const op = String(r.operario || '—').trim();
+      if (!map[op]) map[op] = { operario: op, olas: 0, mins: [], sellers: new Set() };
+      map[op].olas++;
+      const m = Number(r.minutos); if (m > 0) map[op].mins.push(m);
+      if (r.seller) map[op].sellers.add(String(r.seller).trim());
     });
-    inner.innerHTML = Object.entries(grupos).map(([grupo, usuarios]) => `
-      <div class="usuarios-seccion-titulo">${grupo} (${usuarios.length})</div>
-      <div class="usuarios-grid">
-        ${usuarios.map(u => _chipUsuario(u, keyNombre, otrasKeys)).join('')}
-      </div>
-    `).join('');
-  } else {
-    inner.innerHTML = `
-      <div class="usuarios-seccion-titulo">${area === 'tiendas' ? 'Tiendas' : 'Ecommerce'} — ${data.length} usuarios</div>
-      <div class="usuarios-grid">${data.map(u => _chipUsuario(u, keyNombre, otrasKeys)).join('')}</div>
-    `;
-  }
-}
 
-function _chipUsuario(u, keyNombre, otrasKeys) {
-  const nombre = String(u[keyNombre] || '—').trim();
-  const extras = otrasKeys.map(k => u[k] ? `<span>${u[k]}</span>` : '').filter(Boolean).join(' · ');
-  return `<div class="usuario-chip">
-    <div class="usuario-nombre">${nombre}</div>
-    ${extras ? `<div class="usuario-rol">${extras}</div>` : ''}
-  </div>`;
-}
+    const usuarios = Object.values(map).sort((a,b) => a.operario.localeCompare(b.operario));
+
+    return `
+      <div class="usuarios-seccion-titulo">${tipo} — ${usuarios.length} operarios · ${sub.length} olas</div>
+      <div class="usuarios-grid">
+        ${usuarios.map(u => {
+          const prom = u.mins.length ? Math.round(u.mins.reduce((a,b)=>a+b,0)/u.mins.length) : 0;
+          const col  = prom === 0 ? '#99AABB' : prom <= lim*0.5 ? '#1E8449' : prom <= lim ? '#E67E22' : '#C0392B';
+          const sellers = [...u.sellers].join(', ');
+          return `<div class="usuario-chip" style="border-left-color:${col}">
+            <div class="usuario-nombre">${u.operario}</div>
+            <div class="usuario-rol">${u.olas} olas · ${prom ? prom+' min prom' : 'sin tiempo'}</div>
+            ${sellers ? `<div class="usuario-rol" style="color:#0055AA">${sellers}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+  }).join('')
+};
 
 // ── Init ────────────────────────────────────────────────────
 loadAllHubData();
