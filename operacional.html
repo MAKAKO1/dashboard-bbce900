@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Operacional — Dash CD</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', Arial, sans-serif;
+    font-size: 13px;
+    background: #F0F6FF;
+    min-height: 100vh;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: linear-gradient(135deg, #00AAFF 0%, #0055AA 100%);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+    box-shadow: 0 2px 12px rgba(0,80,180,.3);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .back-btn {
+    color: rgba(255,255,255,.85); font-size: 13px; font-weight: 800;
+    text-decoration: none; display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,.3);
+    transition: background .15s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.15); }
+  .topbar-title {
+    color: white; font-size: 16px; font-weight: 900; letter-spacing: .5px;
+  }
+  .topbar-meta {
+    color: rgba(255,255,255,.75); font-size: 11px; font-weight: 700;
+    text-align: right;
+  }
+  #ts-label { font-size: 10px; opacity: .7; display: block; }
+
+  /* ── TABS ── */
+  .tabs-wrap {
+    background: white;
+    border-bottom: 2px solid #CCE9FF;
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 22px 12px;
+    font-family: 'Nunito', Arial;
+    font-size: 13px;
+    font-weight: 800;
+    color: #6699BB;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tab-btn:hover { color: #0077BB; }
+  .tab-btn.active { color: #00AAFF; border-bottom-color: #00AAFF; }
+
+  /* ── MAIN ── */
+  .main { padding: 24px; max-width: 1400px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── KPI STRIP ── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 10px rgba(0,80,180,.08);
+    border-left: 4px solid #00AAFF;
+  }
+  .kpi-card.verde  { border-left-color: #1E8449; }
+  .kpi-card.naranja{ border-left-color: #E67E22; }
+  .kpi-card.rojo   { border-left-color: #C0392B; }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: #7799AA; font-weight: 800; margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 900; color: #003366; line-height: 1; }
+  .kpi-sub   { font-size: 10px; color: #99AABB; margin-top: 4px; font-weight: 700; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,80,180,.08);
+    overflow: hidden;
+  }
+  .table-head {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid #EEF4FF;
+  }
+  .table-title { font-size: 14px; font-weight: 900; color: #003366; }
+  .table-controls { display: flex; gap: 10px; align-items: center; }
+  .filter-input {
+    border: 1.5px solid #CCE9FF; border-radius: 20px;
+    padding: 7px 14px; font-size: 12px; outline: none;
+    font-family: 'Nunito', Arial; color: #1a1a1a;
+    transition: border-color .2s;
+    width: 180px;
+  }
+  .filter-input:focus { border-color: #00AAFF; }
+  .refresh-btn {
+    background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
+    border-radius: 20px; padding: 7px 16px; font-size: 12px; font-weight: 800;
+    cursor: pointer; font-family: 'Nunito', Arial; transition: background .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .refresh-btn:hover { background: #CCE9FF; }
+  .refresh-btn.loading { opacity: .6; pointer-events: none; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: #F0F6FF; color: #0055AA; font-size: 11px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+    padding: 10px 14px; text-align: left; white-space: nowrap;
+  }
+  tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
+  tbody tr:hover { background: #F8FBFF; }
+  tbody td { padding: 9px 14px; color: #1a1a1a; font-size: 12px; }
+  .equipo-badge {
+    display: inline-block;
+    padding: 2px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+  }
+  .badge-eco     { background: #D6E4F0; color: #1F3864; }
+  .badge-tiendas { background: #D5F5E3; color: #1E8449; }
+  .sem-verde  { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; }
+  .sem-amarillo{ background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; }
+  .sem-rojo   { background: #C0392B; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; }
+  .sem-negro  { background: #2C3E50; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; }
+
+  /* ── SKELETON ── */
+  .skeleton-row td { padding: 10px 14px; }
+  .skeleton-cell {
+    height: 14px; border-radius: 6px;
+    background: linear-gradient(90deg, #EEF4FF 25%, #D6E8FF 50%, #EEF4FF 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ── EMPTY / ERROR ── */
+  .empty-state {
+    text-align: center; padding: 48px 24px; color: #99AABB;
+    font-weight: 800;
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+
+  /* ── PRÓXIMO ── */
+  .proximo-panel {
+    text-align: center; padding: 80px 24px;
+    color: #99AABB;
+  }
+  .proximo-panel .icon { font-size: 48px; margin-bottom: 16px; }
+  .proximo-panel h3 { font-size: 20px; color: #6699BB; margin-bottom: 8px; }
+  .proximo-panel p  { font-size: 13px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .topbar-meta { display: none; }
+    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .tab-btn { padding: 12px 14px; font-size: 12px; }
+    .filter-input { width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="back-btn">&#8592; Inicio</a>
+    <span class="topbar-title">&#128230; Control Operacional</span>
+  </div>
+  <div class="topbar-meta">
+    <span id="ts-label">Ultima actualizacion</span>
+    <span id="ts-value">—</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <button class="tab-btn active" onclick="switchTab('tiendas')"   id="tab-tiendas">&#127978; Tiendas</button>
+  <button class="tab-btn"        onclick="switchTab('ecommerce')" id="tab-ecommerce">&#128230; Ecommerce</button>
+  <button class="tab-btn"        onclick="switchTab('tbc')"       id="tab-tbc">&#127381; TBC</button>
+  <button class="tab-btn"        onclick="switchTab('recepciones')" id="tab-recepciones">&#128230; Recepciones</button>
+</div>
+
+<!-- PANELS -->
+<div class="main">
+
+  <!-- TIENDAS -->
+  <div class="tab-panel active" id="panel-tiendas">
+    <div class="kpi-strip" id="kpis-tiendas"></div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="table-title">Picking + Embalaje — Tiendas</span>
+        <div class="table-controls">
+          <input class="filter-input" id="filter-tiendas" placeholder="Buscar operario..." oninput="filterTable('tiendas')">
+          <button class="refresh-btn" id="refresh-btn-tiendas" onclick="loadData('TIENDAS')">&#8635; Actualizar</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="table-tiendas">
+          <thead><tr>
+            <th>Tipo</th><th>Operario</th><th>Seller / Tienda</th>
+            <th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tbody-tiendas"><tr class="skeleton-row"><td colspan="8"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ECOMMERCE -->
+  <div class="tab-panel" id="panel-ecommerce">
+    <div class="kpi-strip" id="kpis-ecommerce"></div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="table-title">Picking + Embalaje — Ecommerce</span>
+        <div class="table-controls">
+          <input class="filter-input" id="filter-ecommerce" placeholder="Buscar operario..." oninput="filterTable('ecommerce')">
+          <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="table-ecommerce">
+          <thead><tr>
+            <th>Tipo</th><th>Operario</th><th>Seller / Tienda</th>
+            <th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tbody-ecommerce"><tr class="skeleton-row"><td colspan="8"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TBC -->
+  <div class="tab-panel" id="panel-tbc">
+    <div class="proximo-panel">
+      <div class="icon">&#127381;</div>
+      <h3>Area TBC</h3>
+      <p>Fuente de datos en definicion. Proximamente disponible.</p>
+    </div>
+  </div>
+
+  <!-- RECEPCIONES -->
+  <div class="tab-panel" id="panel-recepciones">
+    <div class="proximo-panel">
+      <div class="icon">&#128230;</div>
+      <h3>Recepciones</h3>
+      <p>Fuente de datos en definicion. Proximamente disponible.</p>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const HUB_URL = 'https://script.google.com/macros/s/AKfycbymOP_NATgnmzOX_XcbH2Rurxl3WB1zpFxA4Lo4w5I5LirPwsJc7_GBLtnPpBNnldD5/exec';
+
+// Cached raw data per area
+const cache = { TIENDAS: null, ECO: null };
+
+// ── Tab switching ──────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ── Load data ──────────────────────────────────────────────
+async function loadData(area) {
+  const btnId  = area === 'TIENDAS' ? 'refresh-btn-tiendas' : 'refresh-btn-ecommerce';
+  const tbodyId = area === 'TIENDAS' ? 'tbody-tiendas'       : 'tbody-ecommerce';
+  const kpisId  = area === 'TIENDAS' ? 'kpis-tiendas'        : 'kpis-ecommerce';
+  const filterId = area === 'TIENDAS' ? 'filter-tiendas'     : 'filter-ecommerce';
+
+  const btn = document.getElementById(btnId);
+  btn.classList.add('loading');
+  btn.textContent = 'Cargando...';
+
+  try {
+    const res  = await fetch(HUB_URL + '?area=' + area);
+    const data = await res.json();
+
+    if (data.kpis && data.kpis.ultima_actualizacion) {
+      document.getElementById('ts-value').textContent = data.kpis.ultima_actualizacion.replace('Ultima actualizacion: ', '');
+    }
+
+    // Merge picking + embalaje, tag each row with tipo
+    const rows = [
+      ...(data.picking  || []).map(r => ({ ...r, tipo: 'Picking'  })),
+      ...(data.embalaje || []).map(r => ({ ...r, tipo: 'Embalaje' })),
+    ];
+
+    cache[area] = rows;
+    renderTable(area, rows, document.getElementById(filterId).value);
+    renderKPIs(area, rows, kpisId);
+
+  } catch(err) {
+    document.getElementById(tbodyId).innerHTML =
+      `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#9888;</div>Error al cargar datos. Verifica la conexion.</div></td></tr>`;
+  }
+
+  btn.classList.remove('loading');
+  btn.innerHTML = '&#8635; Actualizar';
+}
+
+// ── Render table ───────────────────────────────────────────
+function renderTable(area, rows, filterText) {
+  const tbodyId = area === 'TIENDAS' ? 'tbody-tiendas' : 'tbody-ecommerce';
+  const tbody   = document.getElementById(tbodyId);
+  const q       = (filterText || '').toLowerCase();
+
+  const filtered = rows.filter(r =>
+    !q || String(r.operario || '').toLowerCase().includes(q) ||
+          String(r.seller   || '').toLowerCase().includes(q)
+  );
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros para mostrar.</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const equipoBadge = r.equipo === 'ECO'
+      ? `<span class="equipo-badge badge-eco">ECO</span>`
+      : `<span class="equipo-badge badge-tiendas">Tiendas</span>`;
+
+    const minutos = Number(r.minutos) || 0;
+    const lim     = r.equipo === 'ECO'
+      ? (r.tipo === 'Picking' ? 45 : 60)
+      : (r.tipo === 'Picking' ? 25 : 15);
+    const semTag  = minutos === 0 ? '—' : semaforo(minutos, lim);
+
+    return `<tr>
+      <td>${r.tipo}</td>
+      <td>${r.operario || '—'}</td>
+      <td>${r.seller   || '—'}</td>
+      <td>${r.ola      || '—'}</td>
+      <td>${formatDate(r.inicio)}</td>
+      <td>${formatDate(r.fin)}</td>
+      <td style="font-weight:800">${minutos || '—'}</td>
+      <td>${semTag}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render KPIs ────────────────────────────────────────────
+function renderKPIs(area, rows, containerId) {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  const hoyRows = rows.filter(r => r.inicio && new Date(r.inicio) >= hoy);
+  const pick    = hoyRows.filter(r => r.tipo === 'Picking');
+  const emb     = hoyRows.filter(r => r.tipo === 'Embalaje');
+
+  const avg = arr => {
+    const mins = arr.map(r => Number(r.minutos)).filter(m => m > 0);
+    return mins.length ? Math.round(mins.reduce((a, b) => a + b, 0) / mins.length) : 0;
+  };
+
+  const limPickECO = 45, limPickT = 25, limEmbECO = 60, limEmbT = 15;
+  const limPick = area === 'ECO' ? limPickECO : limPickT;
+  const limEmb  = area === 'ECO' ? limEmbECO  : limEmbT;
+  const avgP    = avg(pick);
+  const avgE    = avg(emb);
+
+  const colPick = avgP === 0 ? '' : avgP <= limPick ? 'verde' : 'rojo';
+  const colEmb  = avgE === 0 ? '' : avgE <= limEmb  ? 'verde' : 'rojo';
+
+  document.getElementById(containerId).innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Olas Picking hoy</div>
+      <div class="kpi-value">${pick.length}</div>
+      <div class="kpi-sub">registros</div>
+    </div>
+    <div class="kpi-card ${colPick}">
+      <div class="kpi-label">Prom. Picking hoy</div>
+      <div class="kpi-value">${avgP || '—'}</div>
+      <div class="kpi-sub">min (limite ${limPick})</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Olas Embalaje hoy</div>
+      <div class="kpi-value">${emb.length}</div>
+      <div class="kpi-sub">registros</div>
+    </div>
+    <div class="kpi-card ${colEmb}">
+      <div class="kpi-label">Prom. Embalaje hoy</div>
+      <div class="kpi-value">${avgE || '—'}</div>
+      <div class="kpi-sub">min (limite ${limEmb})</div>
+    </div>
+    <div class="kpi-card naranja">
+      <div class="kpi-label">Total registros hoy</div>
+      <div class="kpi-value">${hoyRows.length}</div>
+      <div class="kpi-sub">picking + embalaje</div>
+    </div>
+  `;
+}
+
+// ── Filter table ───────────────────────────────────────────
+function filterTable(area) {
+  const filterId = area === 'tiendas' ? 'filter-tiendas' : 'filter-ecommerce';
+  const apiArea  = area === 'tiendas' ? 'TIENDAS' : 'ECO';
+  const q        = document.getElementById(filterId).value;
+  if (cache[apiArea]) renderTable(apiArea, cache[apiArea], q);
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function semaforo(min, lim) {
+  if (min <= lim * 0.5) return `<span class="sem-verde">${min} min</span>`;
+  if (min <= lim)        return `<span class="sem-amarillo">${min} min</span>`;
+  if (min <= lim * 1.5)  return `<span class="sem-rojo">${min} min</span>`;
+  return `<span class="sem-negro">${min} min</span>`;
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CL') + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
+// ── Init ────────────────────────────────────────────────────
+loadData('TIENDAS');
+loadData('ECO');
+</script>
+</body>
+</html>
