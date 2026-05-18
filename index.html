@@ -331,12 +331,9 @@
 <script>
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  (async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'login.html'; return; }
-    document.getElementById('userBadge').textContent = session.user.email.split('@')[0].toUpperCase();
-    document.getElementById('loadingOverlay').style.display = 'none';
-  })();
+  // Auth guard desactivado temporalmente
+  document.getElementById('userBadge').textContent = 'PRUEBA';
+  document.getElementById('loadingOverlay').style.display = 'none';
 
   document.getElementById('footerDate').textContent = new Date().toLocaleDateString('es-CL', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
