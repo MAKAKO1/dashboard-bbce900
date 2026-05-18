@@ -168,30 +168,6 @@
   }
   .alert-chip.ok { background:#D5F5E3; color:#1E8449; border-color:#82E0AA; }
 
-  /* PANEL USUARIOS */
-  .usuarios-btn {
-    background: #003366; color: white; border: none; border-radius: 20px;
-    padding: 7px 18px; font-size: 12px; font-weight: 800; cursor: pointer;
-    font-family: 'Nunito', Arial; text-transform: uppercase; margin-left: auto;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .usuarios-btn:hover { background: #0055AA; }
-  .usuarios-drawer {
-    background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,50,120,.15);
-    margin-bottom: 18px; overflow: hidden;
-    max-height: 0; transition: max-height .35s ease, padding .35s ease;
-  }
-  .usuarios-drawer.open { max-height: 600px; }
-  .usuarios-drawer-inner { padding: 16px 20px; }
-  .usuarios-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
-  .usuario-chip {
-    background: #F0F6FF; border-radius: 10px; padding: 10px 14px;
-    border-left: 3px solid #00AAFF; font-size: 12px;
-  }
-  .usuario-nombre { font-weight: 800; color: #003366; }
-  .usuario-rol { font-size: 10px; color: #7799AA; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
-  .usuarios-seccion-titulo { font-size: 11px; font-weight: 800; color: #0055AA; text-transform: uppercase;
-    letter-spacing: .8px; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid #EEF4FF; }
 
   @media (max-width: 700px) {
     .topbar-meta { display: none; }
@@ -240,10 +216,6 @@
       <button class="btn-hoy" onclick="setHoy('tiendas')">Hoy</button>
       <button class="btn-apply" onclick="applyFilters('TIENDAS')">Aplicar</button>
       <button class="refresh-btn" id="refresh-btn-tiendas" onclick="loadData('TIENDAS')">&#8635; Actualizar</button>
-      <button class="usuarios-btn" onclick="toggleUsuarios('tiendas')">&#128101; Usuarios <span id="icon-usuarios-tiendas">&#9660;</span></button>
-    </div>
-    <div class="usuarios-drawer" id="drawer-tiendas">
-      <div class="usuarios-drawer-inner" id="drawer-inner-tiendas"><div style="color:#99AABB;font-size:12px">Cargando...</div></div>
     </div>
     <div class="kpi-strip" id="kpis-tiendas"></div>
     <!-- Solo Picking para Tiendas -->
@@ -292,10 +264,6 @@
         <button class="btn-hoy" onclick="setHoy('ecommerce')">Hoy</button>
         <button class="btn-apply" onclick="applyFilters('ECO')">Aplicar</button>
         <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
-        <button class="usuarios-btn" onclick="toggleUsuarios('ecommerce')">&#128101; Usuarios <span id="icon-usuarios-ecommerce">&#9660;</span></button>
-      </div>
-      <div class="usuarios-drawer" id="drawer-ecommerce">
-        <div class="usuarios-drawer-inner" id="drawer-inner-ecommerce"><div style="color:#99AABB;font-size:12px">Cargando...</div></div>
       </div>
       <div class="kpi-strip" id="kpis-ecommerce"></div>
       <div class="tables-grid">
@@ -921,72 +889,6 @@ function formatDate(iso) {
   catch { return iso; }
 }
 
-// ── Panel Usuarios por Fecha ─────────────────────────────────
-function toggleUsuarios(area) {
-  const drawer = document.getElementById('drawer-' + area);
-  const icon   = document.getElementById('icon-usuarios-' + area);
-  const isOpen = drawer.classList.contains('open');
-  drawer.classList.toggle('open', !isOpen);
-  icon.innerHTML = isOpen ? '&#9660;' : '&#9650;';
-  if (!isOpen) renderUsuariosDrawer(area);
-}
-
-function renderUsuariosDrawer(area) {
-  const inner   = document.getElementById('drawer-inner-' + area);
-  const slug    = area === 'tiendas' ? 'tiendas' : 'ecommerce';
-  const cacheKey= area === 'tiendas' ? 'TIENDAS' : 'ECO';
-  const desde   = document.getElementById('desde-' + slug).value;
-  const hasta   = document.getElementById('hasta-' + slug).value;
-  const limPick = area === 'tiendas' ? 25 : 45;
-  const limEmb  = 60;
-
-  const rows = (cache[cacheKey] || []).filter(r => {
-    const f = r.inicio ? new Date(r.inicio) : null;
-    if (!f) return false;
-    if (desde && f < new Date(desde + 'T00:00:00')) return false;
-    if (hasta && f > new Date(hasta + 'T23:59:59')) return false;
-    return true;
-  });
-
-  if (!rows.length) {
-    inner.innerHTML = `<div style="color:#99AABB;font-size:12px;font-weight:800;text-transform:uppercase;padding:8px 0">Sin registros para la fecha seleccionada.</div>`;
-    return;
-  }
-
-  // Agrupar por tipo → por operario
-  const tipos = area === 'tiendas' ? ['Picking'] : ['Picking', 'Embalaje'];
-  inner.innerHTML = tipos.map(tipo => {
-    const lim  = tipo === 'Picking' ? limPick : limEmb;
-    const sub  = rows.filter(r => r.tipo === tipo);
-    if (!sub.length) return '';
-
-    const map = {};
-    sub.forEach(r => {
-      const op = String(r.operario || '—').trim();
-      if (!map[op]) map[op] = { operario: op, olas: 0, mins: [], sellers: new Set() };
-      map[op].olas++;
-      const m = Number(r.minutos); if (m > 0) map[op].mins.push(m);
-      if (r.seller) map[op].sellers.add(String(r.seller).trim());
-    });
-
-    const usuarios = Object.values(map).sort((a,b) => a.operario.localeCompare(b.operario));
-
-    return `
-      <div class="usuarios-seccion-titulo">${tipo} — ${usuarios.length} operarios · ${sub.length} olas</div>
-      <div class="usuarios-grid">
-        ${usuarios.map(u => {
-          const prom = u.mins.length ? Math.round(u.mins.reduce((a,b)=>a+b,0)/u.mins.length) : 0;
-          const col  = prom === 0 ? '#99AABB' : prom <= lim*0.5 ? '#1E8449' : prom <= lim ? '#E67E22' : '#C0392B';
-          const sellers = [...u.sellers].join(', ');
-          return `<div class="usuario-chip" style="border-left-color:${col}">
-            <div class="usuario-nombre">${u.operario}</div>
-            <div class="usuario-rol">${u.olas} olas · ${prom ? prom+' min prom' : 'sin tiempo'}</div>
-            ${sellers ? `<div class="usuario-rol" style="color:#0055AA">${sellers}</div>` : ''}
-          </div>`;
-        }).join('')}
-      </div>`;
-  }).join('')
-};
 
 // ── Init ────────────────────────────────────────────────────
 loadAllHubData();
