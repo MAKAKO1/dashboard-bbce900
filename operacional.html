@@ -180,10 +180,9 @@
     <a href="index.html" class="back-btn">&#8592; Inicio</a>
     <span class="topbar-title">&#128230; Control Operacional</span>
   </div>
-  <div class="topbar-meta">
-    <span id="ts-label">Ultima actualizacion Hub</span>
-    <span id="ts-value">—</span>
-    <span id="ts-label" style="margin-top:3px">Prox. actualiz. en <span id="countdown-val">1:00</span></span>
+  <div class="topbar-meta" style="text-align:right;line-height:1.9;font-size:11px">
+    <div><span style="opacity:.65">Hub</span> &nbsp;últ. <span id="hub-last">—</span> &nbsp;·&nbsp; prox. <span id="hub-next" style="font-weight:900;color:#7FD4FF">—</span></div>
+    <div><span style="opacity:.65">CL &nbsp;</span> &nbsp;últ. <span id="cl-last">—</span> &nbsp;·&nbsp; prox. <span id="cl-next" style="font-weight:900;color:#7FD4FF">—</span></div>
   </div>
 </div>
 
@@ -405,18 +404,42 @@ const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6
 const cache = { TIENDAS: null, ECO: null };
 const viewState = { 'pick-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
 let despachoView      = 'fecha';
-let despachoData      = null;  // por seller
-let despachoDataFecha = null;  // por fecha
+let despachoData      = null;
+let despachoDataFecha = null;
 let hubLoading        = false;
+
+let lastHubFetchAt  = null;
+let lastDespFetchAt = null;
+const TRIGGER_MINS  = 5;
+
+function _fmtTime(d) {
+  if (!d) return '—';
+  return d.toLocaleTimeString('es-CL', { hour:'2-digit', minute:'2-digit' });
+}
+function _secsUntilNext(lastFetchAt) {
+  if (!lastFetchAt) return null;
+  const elapsed = Math.floor((Date.now() - lastFetchAt) / 1000);
+  return Math.max(0, TRIGGER_MINS * 60 - elapsed);
+}
+function _fmtCountdown(secs) {
+  if (secs === null) return '—';
+  const m = Math.floor(secs / 60), s = String(secs % 60).padStart(2, '0');
+  return m + ':' + s;
+}
 
 // ── Auto-refresh countdown ───────────────────────────────────
 let countdownSecs = 60;
 function tickCountdown() {
   countdownSecs--;
   if (countdownSecs <= 0) { countdownSecs = 60; loadAllHubData(); loadDespachos(); }
-  const m = Math.floor(countdownSecs/60), s = String(countdownSecs%60).padStart(2,'0');
-  const el = document.getElementById('countdown-val');
-  if (el) el.textContent = m+':'+s;
+
+  const hubSecs  = _secsUntilNext(lastHubFetchAt);
+  const despSecs = _secsUntilNext(lastDespFetchAt);
+
+  const hubNextEl  = document.getElementById('hub-next');
+  const clNextEl   = document.getElementById('cl-next');
+  if (hubNextEl)  hubNextEl.textContent  = _fmtCountdown(hubSecs);
+  if (clNextEl)   clNextEl.textContent   = _fmtCountdown(despSecs);
 }
 setInterval(tickCountdown, 1000);
 
@@ -497,7 +520,9 @@ async function loadAllHubData() {
     cache['TIENDAS'] = all.filter(r => (r.area||'').toUpperCase() === 'TIENDAS');
     saveLS(LS_HUB, { ECO: cache['ECO'], TIENDAS: cache['TIENDAS'] });
     applyFilters('ECO'); applyFilters('TIENDAS');
-    document.getElementById('ts-value').textContent = new Date().toLocaleTimeString('es-CL');
+    lastHubFetchAt = Date.now();
+    const hubLastEl = document.getElementById('hub-last');
+    if (hubLastEl) hubLastEl.textContent = _fmtTime(new Date());
   } catch(e) {
     console.error('Hub fetch error:', e);
     const saved = loadLS(LS_HUB);
@@ -665,6 +690,9 @@ async function loadDespachos() {
       despachoData      = (data.registros      || []).filter(r => Number(r.comprometido) > 0);
       despachoDataFecha = (data.registrosFecha || []).filter(r => Number(r.comprometido) > 0);
       saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha });
+      lastDespFetchAt = Date.now();
+      const clLastEl = document.getElementById('cl-last');
+      if (clLastEl) clLastEl.textContent = _fmtTime(new Date());
       renderDespachos();
     }
   } catch(e) {
