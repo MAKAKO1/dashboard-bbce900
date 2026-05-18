@@ -382,7 +382,8 @@
 </div>
 
 <script>
-const HUB_URL = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUiv3yLccM6kfph_kL1O7TKJURaA_4oSiZiul7BgwF2Z4co/exec';
+const HUB_URL  = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUiv3yLccM6kfph_kL1O7TKJURaA_4oSiZiul7BgwF2Z4co/exec';
+const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6bEoFl1wq4Cl6zKDD3ova4qBb2EGQawThLJ_1U_SEiYUM7dw/exec';
 
 const cache = { TIENDAS: null, ECO: null };
 const viewState = {}, tableData = {};
@@ -632,7 +633,7 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
 // ── DESPACHOS via Hub Web App ────────────────────────────────
 async function loadDespachos() {
   try {
-    const res  = await fetch(HUB_URL + '?tipo=despachos');
+    const res  = await fetch(DESP_URL);
     const data = await res.json();
     if (data.ok) {
       despachoData      = (data.registros      || []).filter(r => Number(r.comprometido) > 0);
