@@ -206,8 +206,8 @@
       <div class="table-head">
         <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
         <div class="view-toggle">
-          <button class="toggle-btn active" onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
-          <button class="toggle-btn"        onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
+          <button class="toggle-btn"        onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
+          <button class="toggle-btn active" onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -254,8 +254,8 @@
           <div class="table-head">
             <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-ecommerce">0</span></span>
             <div class="view-toggle">
-              <button class="toggle-btn active" onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
-              <button class="toggle-btn"        onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
+              <button class="toggle-btn"        onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
+              <button class="toggle-btn active" onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -271,8 +271,8 @@
           <div class="table-head">
             <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-ecommerce">0</span></span>
             <div class="view-toggle">
-              <button class="toggle-btn active" onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
-              <button class="toggle-btn"        onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
+              <button class="toggle-btn"        onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
+              <button class="toggle-btn active" onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -314,6 +314,7 @@
         </div>
         <button class="btn-hoy" onclick="setHoyDespachos()">Hoy</button>
         <button class="btn-apply" onclick="renderDespachos()">Aplicar</button>
+        <button class="refresh-btn" id="refresh-btn-despachos" onclick="reloadDespachos()">&#8635; Actualizar</button>
       </div>
 
       <!-- KPIs Despachos -->
@@ -386,7 +387,7 @@ const HUB_URL  = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqU
 const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6bEoFl1wq4Cl6zKDD3ova4qBb2EGQawThLJ_1U_SEiYUM7dw/exec';
 
 const cache = { TIENDAS: null, ECO: null };
-const viewState = {}, tableData = {};
+const viewState = { 'pick-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
 let despachoView      = 'seller';
 let despachoData      = null;  // por seller
 let despachoDataFecha = null;  // por fecha
@@ -631,6 +632,13 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
 }
 
 // ── DESPACHOS via Hub Web App ────────────────────────────────
+async function reloadDespachos() {
+  const btn = document.getElementById('refresh-btn-despachos');
+  if (btn) { btn.classList.add('loading'); btn.innerHTML = '&#8635; Cargando...'; }
+  await loadDespachos();
+  if (btn) { btn.classList.remove('loading'); btn.innerHTML = '&#8635; Actualizar'; }
+}
+
 async function loadDespachos() {
   try {
     const res  = await fetch(DESP_URL);
