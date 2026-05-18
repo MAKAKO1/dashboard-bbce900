@@ -168,6 +168,31 @@
   }
   .alert-chip.ok { background:#D5F5E3; color:#1E8449; border-color:#82E0AA; }
 
+  /* PANEL USUARIOS */
+  .usuarios-btn {
+    background: #003366; color: white; border: none; border-radius: 20px;
+    padding: 7px 18px; font-size: 12px; font-weight: 800; cursor: pointer;
+    font-family: 'Nunito', Arial; text-transform: uppercase; margin-left: auto;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .usuarios-btn:hover { background: #0055AA; }
+  .usuarios-drawer {
+    background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,50,120,.15);
+    margin-bottom: 18px; overflow: hidden;
+    max-height: 0; transition: max-height .35s ease, padding .35s ease;
+  }
+  .usuarios-drawer.open { max-height: 600px; }
+  .usuarios-drawer-inner { padding: 16px 20px; }
+  .usuarios-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
+  .usuario-chip {
+    background: #F0F6FF; border-radius: 10px; padding: 10px 14px;
+    border-left: 3px solid #00AAFF; font-size: 12px;
+  }
+  .usuario-nombre { font-weight: 800; color: #003366; }
+  .usuario-rol { font-size: 10px; color: #7799AA; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+  .usuarios-seccion-titulo { font-size: 11px; font-weight: 800; color: #0055AA; text-transform: uppercase;
+    letter-spacing: .8px; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid #EEF4FF; }
+
   @media (max-width: 700px) {
     .topbar-meta { display: none; }
     .tab-btn { padding: 12px 14px; font-size: 12px; }
@@ -215,6 +240,10 @@
       <button class="btn-hoy" onclick="setHoy('tiendas')">Hoy</button>
       <button class="btn-apply" onclick="applyFilters('TIENDAS')">Aplicar</button>
       <button class="refresh-btn" id="refresh-btn-tiendas" onclick="loadData('TIENDAS')">&#8635; Actualizar</button>
+      <button class="usuarios-btn" onclick="toggleUsuarios('tiendas')">&#128101; Usuarios <span id="icon-usuarios-tiendas">&#9660;</span></button>
+    </div>
+    <div class="usuarios-drawer" id="drawer-tiendas">
+      <div class="usuarios-drawer-inner" id="drawer-inner-tiendas"><div style="color:#99AABB;font-size:12px">Cargando...</div></div>
     </div>
     <div class="kpi-strip" id="kpis-tiendas"></div>
     <!-- Solo Picking para Tiendas -->
@@ -263,6 +292,10 @@
         <button class="btn-hoy" onclick="setHoy('ecommerce')">Hoy</button>
         <button class="btn-apply" onclick="applyFilters('ECO')">Aplicar</button>
         <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
+        <button class="usuarios-btn" onclick="toggleUsuarios('ecommerce')">&#128101; Usuarios <span id="icon-usuarios-ecommerce">&#9660;</span></button>
+      </div>
+      <div class="usuarios-drawer" id="drawer-ecommerce">
+        <div class="usuarios-drawer-inner" id="drawer-inner-ecommerce"><div style="color:#99AABB;font-size:12px">Cargando...</div></div>
       </div>
       <div class="kpi-strip" id="kpis-ecommerce"></div>
       <div class="tables-grid">
@@ -692,6 +725,8 @@ async function loadDespachos() {
       despachoData           = (data.registros             || []).filter(r => Number(r.comprometido) > 0);
       despachoDataFecha      = (data.registrosFecha        || []).filter(r => Number(r.comprometido) > 0);
       despachoDataFechaXSell = (data.registrosFechaXSeller || []).filter(r => Number(r.comprometido) > 0);
+      usuariosEco            = data.usuariosEco    || [];
+      usuariosTienda         = data.usuariosTienda || [];
       saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha, fxs: despachoDataFechaXSell });
       lastDespFetchAt = Date.now();
       const clLastEl = document.getElementById('cl-last');
@@ -855,6 +890,65 @@ function formatDate(iso) {
   if (!iso) return '—';
   try { const d=new Date(iso); return d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}); }
   catch { return iso; }
+}
+
+// ── Panel Usuarios ───────────────────────────────────────────
+let usuariosEco    = null;
+let usuariosTienda = null;
+
+function toggleUsuarios(area) {
+  const drawer = document.getElementById('drawer-' + area);
+  const icon   = document.getElementById('icon-usuarios-' + area);
+  const isOpen = drawer.classList.contains('open');
+  drawer.classList.toggle('open', !isOpen);
+  icon.innerHTML = isOpen ? '&#9660;' : '&#9650;';
+  if (!isOpen) renderUsuariosDrawer(area);
+}
+
+function renderUsuariosDrawer(area) {
+  const inner = document.getElementById('drawer-inner-' + area);
+  const data  = area === 'tiendas' ? usuariosTienda : usuariosEco;
+
+  if (!data || !data.length) {
+    inner.innerHTML = `<div style="color:#99AABB;font-size:12px;font-weight:700;text-transform:uppercase">Sin datos de usuarios. Publica la versión en Control Logístico.</div>`;
+    return;
+  }
+
+  // Detectar columna de nombre y rol/tipo
+  const keys = Object.keys(data[0]);
+  const keyNombre = keys.find(k => /nombre|name|operario/i.test(k)) || keys[0];
+  const keyRol    = keys.find(k => /rol|tipo|area|funcion|cargo|meson|picking/i.test(k) && k !== keyNombre);
+  const otrasKeys = keys.filter(k => k !== keyNombre && k !== keyRol);
+
+  // Agrupar por rol si existe
+  if (keyRol) {
+    const grupos = {};
+    data.forEach(u => {
+      const g = String(u[keyRol] || 'SIN ROL').trim().toUpperCase();
+      if (!grupos[g]) grupos[g] = [];
+      grupos[g].push(u);
+    });
+    inner.innerHTML = Object.entries(grupos).map(([grupo, usuarios]) => `
+      <div class="usuarios-seccion-titulo">${grupo} (${usuarios.length})</div>
+      <div class="usuarios-grid">
+        ${usuarios.map(u => _chipUsuario(u, keyNombre, otrasKeys)).join('')}
+      </div>
+    `).join('');
+  } else {
+    inner.innerHTML = `
+      <div class="usuarios-seccion-titulo">${area === 'tiendas' ? 'Tiendas' : 'Ecommerce'} — ${data.length} usuarios</div>
+      <div class="usuarios-grid">${data.map(u => _chipUsuario(u, keyNombre, otrasKeys)).join('')}</div>
+    `;
+  }
+}
+
+function _chipUsuario(u, keyNombre, otrasKeys) {
+  const nombre = String(u[keyNombre] || '—').trim();
+  const extras = otrasKeys.map(k => u[k] ? `<span>${u[k]}</span>` : '').filter(Boolean).join(' · ');
+  return `<div class="usuario-chip">
+    <div class="usuario-nombre">${nombre}</div>
+    ${extras ? `<div class="usuario-rol">${extras}</div>` : ''}
+  </div>`;
 }
 
 // ── Init ────────────────────────────────────────────────────
