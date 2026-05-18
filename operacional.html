@@ -346,8 +346,8 @@
         <div class="table-head">
           <span class="table-title">&#127981; Resumen por Seller</span>
           <div class="view-toggle">
-            <button class="toggle-btn active" onclick="setDespachoView('seller',this)">Por Seller</button>
-            <button class="toggle-btn"        onclick="setDespachoView('fecha',this)">Por Fecha</button>
+            <button class="toggle-btn"        onclick="setDespachoView('seller',this)">Por Seller</button>
+            <button class="toggle-btn active" onclick="setDespachoView('fecha',this)">Por Fecha</button>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -388,7 +388,7 @@ const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6
 
 const cache = { TIENDAS: null, ECO: null };
 const viewState = { 'pick-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
-let despachoView      = 'seller';
+let despachoView      = 'fecha';
 let despachoData      = null;  // por seller
 let despachoDataFecha = null;  // por fecha
 let hubLoading        = false;
@@ -423,7 +423,9 @@ function setHoyDespachos() {
   if (d) d.value = todayStr();
   if (h) h.value = todayStr();
 });
-// Despachos: sin filtro de fecha por defecto (muestra todo)
+// Despachos: por defecto muestra hoy
+document.getElementById('desde-despachos').value = todayStr();
+document.getElementById('hasta-despachos').value = todayStr();
 
 
 // ── Tab / Subtab switching ──────────────────────────────────
@@ -707,11 +709,23 @@ function setDespachoView(mode, btn) {
 
 function renderDespachos() {
   const sellerFilter = document.getElementById('filter-seller-despachos').value;
-  const registros = despachoView === 'date' ? (despachoDataFecha || []) : (despachoData || []);
+  const desdeVal = document.getElementById('desde-despachos').value;
+  const hastaVal = document.getElementById('hasta-despachos').value;
+
+  let registros;
+  if (despachoView === 'fecha') {
+    registros = (despachoDataFecha || []).filter(r => {
+      if (desdeVal && r.fecha < desdeVal) return false;
+      if (hastaVal && r.fecha > hastaVal) return false;
+      return true;
+    });
+  } else {
+    registros = (despachoData || []);
+  }
 
   if (!registros.length) {
     document.getElementById('tbody-despachos').innerHTML =
-      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos. Presiona Actualizar.</div></td></tr>`;
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
     return;
   }
 
