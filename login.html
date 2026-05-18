@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dash CD — Ingreso</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', Arial, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.12) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0,70,180,.2) 0%, transparent 50%),
+      linear-gradient(135deg, #00AAFF 0%, #0055AA 100%);
+  }
+
+  body::before {
+    content: 'CD';
+    position: fixed;
+    font-size: 55vw;
+    font-family: 'Fredoka One', Arial;
+    color: rgba(255,255,255,.06);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    font-weight: 900;
+  }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 36px 36px;
+    width: 100%;
+    max-width: 390px;
+    box-shadow: 0 20px 60px rgba(0,80,180,.35);
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-wrap { text-align: center; margin-bottom: 28px; }
+  .logo-tbc {
+    display: inline-block;
+    background: #00AAFF;
+    border-radius: 16px;
+    padding: 10px 20px 8px;
+    line-height: 1.1;
+    box-shadow: 0 4px 16px rgba(0,150,255,.4);
+    margin-bottom: 10px;
+  }
+  .logo-tbc .l-the    { display: block; font-family: 'Fredoka One', Arial; font-size: 13px; color: white; opacity: .9; }
+  .logo-tbc .l-brands { display: block; font-family: 'Fredoka One', Arial; font-size: 26px; color: white; }
+  .logo-tbc .l-club   { display: block; font-family: 'Fredoka One', Arial; font-size: 32px; color: white; letter-spacing: 2px; line-height: .95; }
+  .logo-sub { color: #999; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+  .dash-tag {
+    display: inline-block;
+    background: #E8F6FF;
+    color: #0077BB;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #99D4F5;
+    margin-top: 8px;
+  }
+
+  h2 { color: #00AAFF; font-size: 17px; font-weight: 800; margin-bottom: 24px; text-align: center; }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-weight: 800; color: #0077BB;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%; border: 2px solid #CCE9FF; border-radius: 10px;
+    padding: 11px 14px; font-size: 13px; outline: none;
+    transition: border-color .2s, box-shadow .2s; color: #1a1a1a;
+    font-family: 'Nunito', Arial;
+  }
+  .field input:focus { border-color: #00AAFF; box-shadow: 0 0 0 3px rgba(0,170,255,.15); }
+
+  .btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, #00AAFF, #0055AA);
+    color: white; border: none; border-radius: 30px;
+    padding: 13px; font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: opacity .2s, box-shadow .2s;
+    margin-top: 8px; letter-spacing: .5px;
+    box-shadow: 0 4px 16px rgba(0,150,255,.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Nunito', Arial;
+  }
+  .btn-login:hover:not(:disabled) { opacity: .9; box-shadow: 0 6px 20px rgba(0,150,255,.5); }
+  .btn-login:disabled { opacity: .5; cursor: not-allowed; }
+
+  .spinner {
+    width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: white; border-radius: 50%;
+    animation: spin .7s linear infinite; display: none;
+  }
+  .btn-login.loading .spinner { display: block; }
+  .btn-login.loading .btn-text { opacity: .7; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: #FFF0F0; color: #c0392b;
+    border: 1.5px solid #FFAAAA; border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; margin-top: 14px; display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  .footer-note { text-align: center; color: #ccc; font-size: 10.5px; margin-top: 22px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo-wrap">
+    <div class="logo-tbc">
+      <span class="l-the">The</span>
+      <span class="l-brands">Brands</span>
+      <span class="l-club">CLUB</span>
+    </div>
+    <div class="logo-sub">Centro de Distribución</div>
+    <div class="dash-tag">&#128230; Dash CD</div>
+  </div>
+
+  <h2>Ingreso al Sistema</h2>
+
+  <div class="field">
+    <label for="email">Correo corporativo</label>
+    <input type="email" id="email" placeholder="nombre@thebrandsclub.com" autocomplete="email">
+  </div>
+
+  <div class="field">
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+
+  <button class="btn-login" id="btnLogin" onclick="login()">
+    <span class="spinner"></span>
+    <span class="btn-text">Ingresar</span>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="footer-note">Acceso restringido · Solo personal TBC</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const DOMINIO = '@thebrandsclub.com';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'index.html';
+  });
+
+  document.getElementById('email').addEventListener('keydown',    e => { if (e.key === 'Enter') document.getElementById('password').focus(); });
+  document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  async function login() {
+    const email    = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('btnLogin');
+    showError('');
+
+    if (!email || !password) { showError('Completa correo y contraseña.'); return; }
+    if (!email.endsWith(DOMINIO)) { showError(`Solo se permiten cuentas ${DOMINIO}`); return; }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    btn.classList.remove('loading');
+
+    if (error) {
+      showError(error.message === 'Invalid login credentials' ? 'Correo o contraseña incorrectos.' : error.message);
+      return;
+    }
+    window.location.href = 'index.html';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.toggle('visible', !!msg);
+  }
+</script>
+</body>
+</html>
