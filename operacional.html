@@ -131,7 +131,7 @@
   }
   tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
   tbody tr:hover { background: #F8FBFF; }
-  tbody td { padding: 8px 12px; color: #1a1a1a; font-size: 12px; }
+  tbody td { padding: 8px 12px; color: #1a1a1a; font-size: 12px; text-transform: uppercase; }
 
   .sem-verde    { background: #27AE60; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
   .sem-amarillo { background: #F39C12; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; }
@@ -793,26 +793,9 @@ function renderDespachos() {
   const desdeVal = document.getElementById('desde-despachos').value;
   const hastaVal = document.getElementById('hasta-despachos').value;
 
-  let registros;
-  if (despachoView === 'fecha') {
-    registros = (despachoDataFecha || []).filter(r => {
-      if (desdeVal && r.fecha < desdeVal) return false;
-      if (hastaVal && r.fecha > hastaVal) return false;
-      return true;
-    });
-  } else {
-    registros = (despachoData || []);
-  }
-
-  if (!registros.length) {
-    document.getElementById('tbody-despachos').innerHTML =
-      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
-    return;
-  }
-
   if (despachoView === 'seller') {
-    // Desglose fecha×seller desde INPUT, filtrado por fecha seleccionada
-    let data = (despachoDataFechaXSell || []).filter(r => {
+    // Desglose diario por fecha×seller desde INPUT
+    const data = (despachoDataFechaXSell || []).filter(r => {
       if (desdeVal && r.fecha < desdeVal) return false;
       if (hastaVal && r.fecha > hastaVal) return false;
       if (sellerFilter && r.seller !== sellerFilter) return false;
@@ -828,33 +811,49 @@ function renderDespachos() {
     const pct = tot>0 ? (des/tot*100).toFixed(1) : 0;
     updateKpisDespachos(tot, des, pct, tot-des);
     document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
-    document.getElementById('tbody-despachos').innerHTML = data.length ? data.map(r => `<tr>
-      <td style="color:#7799AA;font-size:11px">${r.fecha}</td>
-      <td style="font-weight:800">${r.seller}</td>
-      <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
-      <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
-      <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${r.pct}%</td>
-      <td>${estadoBadge(r.estado)}</td>
-    </tr>`).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
-  } else {
-    const data = _groupByFecha(registros);
-    const tot  = data.reduce((a,r)=>a+r.comprometido,0);
-    const des  = data.reduce((a,r)=>a+r.despachado,0);
-    const pct  = tot>0?(des/tot*100).toFixed(1):0;
-    updateKpisDespachos(tot, des, pct, tot-des);
-    document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
-    document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
-      <td style="font-weight:800">${r.fecha}</td>
-      <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
-      <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
-      <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
-      <td style="font-weight:800">${r.pct}%</td>
-      <td>${estadoBadge(r.estado)}</td>
-    </tr>`).join('');
+    document.getElementById('tbody-despachos').innerHTML = data.length
+      ? data.map(r => `<tr>
+          <td style="color:#7799AA;font-size:11px">${r.fecha}</td>
+          <td style="font-weight:800">${r.seller}</td>
+          <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+          <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+          <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+          <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
+          <td style="font-weight:800">${r.pct}%</td>
+          <td>${estadoBadge(r.estado)}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
+    return;
   }
+
+  // Vista Por Fecha
+  const registros = (despachoDataFecha || []).filter(r => {
+    if (desdeVal && r.fecha < desdeVal) return false;
+    if (hastaVal && r.fecha > hastaVal) return false;
+    return true;
+  });
+
+  if (!registros.length) {
+    document.getElementById('tbody-despachos').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
+    return;
+  }
+
+  const data = _groupByFecha(registros);
+  const tot  = data.reduce((a,r)=>a+r.comprometido,0);
+  const des  = data.reduce((a,r)=>a+r.despachado,0);
+  const pct  = tot>0?(des/tot*100).toFixed(1):0;
+  updateKpisDespachos(tot, des, pct, tot-des);
+  document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+  document.getElementById('tbody-despachos').innerHTML = data.map(r => `<tr>
+    <td style="font-weight:800">${r.fecha}</td>
+    <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+    <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+    <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+    <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
+    <td style="font-weight:800">${r.pct}%</td>
+    <td>${estadoBadge(r.estado)}</td>
+  </tr>`).join('');
 }
 
 function updateKpisDespachos(comp, desp, pct, pend) {
