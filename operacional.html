@@ -151,6 +151,22 @@
   .proximo-panel .icon { font-size: 48px; margin-bottom: 16px; }
   .proximo-panel h3 { font-size: 20px; color: #6699BB; margin-bottom: 8px; }
 
+  /* RESUMEN GENERAL */
+  .resumen-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .resumen-titulo { font-size:20px; font-weight:900; color:#003366; }
+  .resumen-fecha  { font-size:12px; color:#7799AA; font-weight:700; margin-top:3px; text-transform:capitalize; }
+
+  .progress-wrap { background:#EEF4FF; border-radius:6px; height:10px; overflow:hidden; min-width:90px; }
+  .progress-bar  { height:100%; border-radius:6px; transition:width .6s ease; }
+
+  .alert-strip { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+  .alert-chip {
+    background:#FADBD8; color:#C0392B; border-radius:20px;
+    padding:5px 14px; font-size:11px; font-weight:800;
+    border:1.5px solid #F1948A;
+  }
+  .alert-chip.ok { background:#D5F5E3; color:#1E8449; border-color:#82E0AA; }
+
   @media (max-width: 700px) {
     .topbar-meta { display: none; }
     .tab-btn { padding: 12px 14px; font-size: 12px; }
@@ -172,7 +188,8 @@
 </div>
 
 <div class="tabs-wrap">
-  <button class="tab-btn active"  onclick="switchTab('tiendas')"     id="tab-tiendas">&#127978; Tiendas</button>
+  <button class="tab-btn active"  onclick="switchTab('resumen')"     id="tab-resumen">&#9733; Resumen</button>
+  <button class="tab-btn"         onclick="switchTab('tiendas')"     id="tab-tiendas">&#127978; Tiendas</button>
   <button class="tab-btn"         onclick="switchTab('ecommerce')"   id="tab-ecommerce">&#128230; Ecommerce</button>
   <button class="tab-btn"         onclick="switchTab('tbc')"         id="tab-tbc">&#127381; TBC</button>
   <button class="tab-btn"         onclick="switchTab('recepciones')" id="tab-recepciones">&#128230; Recepciones</button>
@@ -180,8 +197,62 @@
 
 <div class="main">
 
+  <!-- ══ RESUMEN GENERAL ══ -->
+  <div class="tab-panel active" id="panel-resumen">
+
+    <div class="resumen-header">
+      <div>
+        <div class="resumen-titulo">&#9733; Resumen del Día</div>
+        <div class="resumen-fecha" id="resumen-fecha">—</div>
+      </div>
+      <button class="refresh-btn" onclick="reloadTodo()">&#8635; Actualizar todo</button>
+    </div>
+
+    <!-- KPIs globales -->
+    <div class="kpi-strip" id="kpis-resumen">
+      <div class="kpi-card"><div class="kpi-label">Picking Tiendas</div><div class="kpi-value"><div class="skeleton-cell" style="width:60px;height:28px"></div></div><div class="kpi-sub">cargando...</div></div>
+      <div class="kpi-card"><div class="kpi-label">Picking ECO</div><div class="kpi-value"><div class="skeleton-cell" style="width:60px;height:28px"></div></div><div class="kpi-sub">cargando...</div></div>
+      <div class="kpi-card"><div class="kpi-label">Embalaje ECO</div><div class="kpi-value"><div class="skeleton-cell" style="width:60px;height:28px"></div></div><div class="kpi-sub">cargando...</div></div>
+      <div class="kpi-card"><div class="kpi-label">Despacho Hoy</div><div class="kpi-value"><div class="skeleton-cell" style="width:60px;height:28px"></div></div><div class="kpi-sub">cargando...</div></div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert-strip" id="resumen-alertas"></div>
+
+    <!-- Despachos por seller hoy -->
+    <div class="table-wrap" style="margin-bottom:18px">
+      <div class="table-head">
+        <span class="table-title">&#128666; Despachos Hoy — por Seller</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Progreso</th>
+          </tr></thead>
+          <tbody id="tbody-resumen-desp"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operaciones del día -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="table-title">&#9881; Operaciones Hoy</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Área</th><th>Operación</th><th>Olas</th><th>Prom. Min</th><th>Límite</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tbody-resumen-ops"><tr><td colspan="6"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ══ TIENDAS ══ -->
-  <div class="tab-panel active" id="panel-tiendas">
+  <div class="tab-panel" id="panel-tiendas">
     <div class="filter-bar">
       <div class="filter-group">
         <label>Desde</label>
@@ -482,6 +553,7 @@ async function loadAllHubData() {
     saveLS(LS_HUB, { ECO: cache['ECO'], TIENDAS: cache['TIENDAS'] });
     applyFilters('ECO'); applyFilters('TIENDAS');
     document.getElementById('ts-value').textContent = new Date().toLocaleTimeString('es-CL');
+    renderResumen();
   } catch(e) {
     console.error('Hub fetch error:', e);
     const saved = loadLS(LS_HUB);
@@ -650,6 +722,7 @@ async function loadDespachos() {
       despachoDataFecha = (data.registrosFecha || []).filter(r => Number(r.comprometido) > 0);
       saveLS(LS_DESP, { seller: despachoData, fecha: despachoDataFecha });
       renderDespachos();
+      renderResumen();
     }
   } catch(e) {
     console.error('Despachos fetch error:', e);
@@ -795,6 +868,128 @@ function formatDate(iso) {
   if (!iso) return '—';
   try { const d=new Date(iso); return d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}); }
   catch { return iso; }
+}
+
+// ── Resumen General ─────────────────────────────────────────
+function reloadTodo() { loadAllHubData(); loadDespachos(); }
+
+function renderResumen() {
+  const hoy = todayStr();
+
+  // Fecha legible
+  const fechaLeg = new Date().toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('resumen-fecha').textContent = fechaLeg;
+
+  // Hub → filtrar a hoy
+  const filterHoy = arr => (arr||[]).filter(r => {
+    const f = r.inicio ? new Date(r.inicio) : null;
+    return f && f.toISOString().slice(0,10) === hoy;
+  });
+  const tPick = filterHoy(cache['TIENDAS']).filter(r => r.tipo === 'Picking');
+  const ePick = filterHoy(cache['ECO']).filter(r => r.tipo === 'Picking');
+  const eEmb  = filterHoy(cache['ECO']).filter(r => r.tipo === 'Embalaje');
+
+  const avg = arr => {
+    const m = arr.map(r => Number(r.minutos)).filter(m => m > 0);
+    return m.length ? Math.round(m.reduce((a,b) => a+b, 0) / m.length) : 0;
+  };
+  const avgTP = avg(tPick), avgEP = avg(ePick), avgEE = avg(eEmb);
+
+  // Despachos hoy
+  const despHoy     = (despachoDataFecha||[]).find(r => r.fecha === hoy) || {};
+  const despSellers = despachoData || [];
+  const dComp = Number(despHoy.comprometido)||0;
+  const dDesp = Number(despHoy.despachado)  ||0;
+  const dPct  = dComp > 0 ? (dDesp/dComp*100).toFixed(1) : 0;
+
+  // ── KPIs ────────────────────────────────────────────────────
+  const colPick = v => v === 0 ? '' : v <= 25 ? 'verde' : 'rojo';
+  const colEco  = v => v === 0 ? '' : v <= 45 ? 'verde' : 'rojo';
+  const colEmb  = v => v === 0 ? '' : v <= 60 ? 'verde' : 'rojo';
+  const colPct  = p => p >= 95 ? 'verde' : p >= 80 ? 'naranja' : p > 0 ? 'rojo' : '';
+
+  document.getElementById('kpis-resumen').innerHTML = `
+    <div class="kpi-card ${colPick(avgTP)}">
+      <div class="kpi-label">Picking Tiendas</div>
+      <div class="kpi-value">${tPick.length}</div>
+      <div class="kpi-sub">olas · prom ${avgTP||'—'} min</div>
+    </div>
+    <div class="kpi-card ${colEco(avgEP)}">
+      <div class="kpi-label">Picking ECO</div>
+      <div class="kpi-value">${ePick.length}</div>
+      <div class="kpi-sub">olas · prom ${avgEP||'—'} min</div>
+    </div>
+    <div class="kpi-card ${colEmb(avgEE)}">
+      <div class="kpi-label">Embalaje ECO</div>
+      <div class="kpi-value">${eEmb.length}</div>
+      <div class="kpi-sub">olas · prom ${avgEE||'—'} min</div>
+    </div>
+    <div class="kpi-card ${colPct(Number(dPct))}">
+      <div class="kpi-label">Despacho Hoy</div>
+      <div class="kpi-value">${dPct}%</div>
+      <div class="kpi-sub">${dDesp.toLocaleString('es-CL')} / ${dComp.toLocaleString('es-CL')} uds</div>
+    </div>`;
+
+  // ── Alertas ─────────────────────────────────────────────────
+  const alertas = [];
+  if (avgTP > 25) alertas.push({ txt: `&#9888; Picking Tiendas: ${avgTP} min prom (lim 25)`, ok: false });
+  if (avgEP > 45) alertas.push({ txt: `&#9888; Picking ECO: ${avgEP} min prom (lim 45)`, ok: false });
+  if (avgEE > 60) alertas.push({ txt: `&#9888; Embalaje ECO: ${avgEE} min prom (lim 60)`, ok: false });
+  if (dPct > 0 && dPct < 80) alertas.push({ txt: `&#9888; Despacho bajo: ${dPct}% cumplimiento`, ok: false });
+  if (!alertas.length && (tPick.length || ePick.length || dComp))
+    alertas.push({ txt: '&#10003; Todo dentro de parámetros', ok: true });
+
+  document.getElementById('resumen-alertas').innerHTML = alertas
+    .map(a => `<div class="alert-chip ${a.ok?'ok':''}">${a.txt}</div>`).join('');
+
+  // ── Despachos por seller ─────────────────────────────────────
+  if (!despSellers.length) {
+    document.getElementById('tbody-resumen-desp').innerHTML =
+      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos de despacho para hoy. Publica la nueva versión en Control Logístico.</div></td></tr>`;
+  } else {
+    document.getElementById('tbody-resumen-desp').innerHTML = despSellers.map(r => {
+      const pct      = r.comprometido > 0 ? (r.despachado/r.comprometido*100).toFixed(1) : 0;
+      const barColor = pct >= 95 ? '#1E8449' : pct >= 80 ? '#E67E22' : '#C0392B';
+      return `<tr>
+        <td style="font-weight:800">${r.seller}</td>
+        <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+        <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+        <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+        <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
+        <td style="font-weight:800">${pct}%</td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress-bar" style="width:${Math.min(pct,100)}%;background:${barColor}"></div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Operaciones ──────────────────────────────────────────────
+  const sem = (v, lim) => {
+    if (!v) return '—';
+    if (v <= lim*0.5) return `<span class="sem-verde">Bueno</span>`;
+    if (v <= lim)     return `<span class="sem-amarillo">Regular</span>`;
+    if (v <= lim*1.5) return `<span class="sem-rojo">Malo</span>`;
+    return `<span class="sem-negro">Crítico</span>`;
+  };
+  const ops = [
+    { area:'Tiendas', op:'Picking',  rows:tPick, lim:25 },
+    { area:'ECO',     op:'Picking',  rows:ePick, lim:45 },
+    { area:'ECO',     op:'Embalaje', rows:eEmb,  lim:60 },
+  ];
+  document.getElementById('tbody-resumen-ops').innerHTML = ops.map(o => {
+    const p = avg(o.rows);
+    return `<tr>
+      <td style="font-weight:800">${o.area}</td>
+      <td>${o.op}</td>
+      <td style="font-weight:800;color:#0055AA">${o.rows.length}</td>
+      <td style="font-weight:800">${p ? p+' min' : '—'}</td>
+      <td style="color:#7799AA;font-size:11px">${o.lim} min</td>
+      <td>${sem(p, o.lim)}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── Init ────────────────────────────────────────────────────
