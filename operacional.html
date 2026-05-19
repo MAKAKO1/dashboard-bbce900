@@ -218,22 +218,40 @@
       <button class="refresh-btn" id="refresh-btn-tiendas" onclick="loadData('TIENDAS')">&#8635; Actualizar</button>
     </div>
     <div class="kpi-strip" id="kpis-tiendas"></div>
-    <!-- Solo Picking para Tiendas -->
-    <div class="table-wrap">
-      <div class="table-head">
-        <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
-        <div class="view-toggle">
-          <button class="toggle-btn"        onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
-          <button class="toggle-btn active" onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
+    <div class="tables-grid">
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">&#128230; Picking <span class="count-badge" id="count-pick-tiendas">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn"        onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
+            <button class="toggle-btn active" onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead id="thead-pick-tiendas"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Pedido</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          </table>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <table>
-          <thead id="thead-pick-tiendas"><tr>
-            <th>Operario</th><th>Seller / Tienda</th><th>Pedido</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-          </tr></thead>
-          <tbody id="tbody-pick-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
-        </table>
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">&#128230; Embalaje <span class="count-badge" id="count-emb-tiendas">0</span></span>
+          <div class="view-toggle">
+            <button class="toggle-btn"        onclick="setView('emb-tiendas','detalle',this)">Detalle</button>
+            <button class="toggle-btn active" onclick="setView('emb-tiendas','resumen',this)">Resumen</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead id="thead-emb-tiendas"><tr>
+              <th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="tbody-emb-tiendas"><tr><td colspan="7"><div class="skeleton-cell"></div></td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -404,7 +422,7 @@ const HUB_URL  = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqU
 const DESP_URL = 'https://script.google.com/macros/s/AKfycbxn7Cr8ZR6m4Yj6ADEnyu6bEoFl1wq4Cl6zKDD3ova4qBb2EGQawThLJ_1U_SEiYUM7dw/exec';
 
 const cache = { TIENDAS: null, ECO: null };
-const viewState = { 'pick-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
+const viewState = { 'pick-tiendas': 'resumen', 'emb-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
 let despachoView      = 'fecha';
 let despachoData           = null;  // acumulado por seller
 let despachoDataFecha      = null;  // acumulado por fecha
@@ -568,9 +586,9 @@ function applyFilters(area) {
   const emb  = filtered.filter(r => r.tipo === 'Embalaje');
 
   if (area === 'TIENDAS') {
-    const lim = 25;
-    renderSubTable('tbody-pick-tiendas','count-pick-tiendas','thead-pick-tiendas', pick, lim, 'Pedido');
-    renderKPIs('TIENDAS', pick, 'kpis-tiendas', lim, lim);
+    renderSubTable('tbody-pick-tiendas','count-pick-tiendas','thead-pick-tiendas', pick, 25, 'Pedido');
+    renderSubTable('tbody-emb-tiendas', 'count-emb-tiendas', 'thead-emb-tiendas',  emb,  60, 'Ola');
+    renderKPIs('TIENDAS', filtered, 'kpis-tiendas', 25, 60);
   } else {
     renderSubTable('tbody-pick-ecommerce','count-pick-ecommerce','thead-pick-ecommerce', pick, 45, 'Picking');
     renderSubTable('tbody-emb-ecommerce', 'count-emb-ecommerce', 'thead-emb-ecommerce',  emb,  60, 'Picking');
@@ -647,7 +665,7 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
   const avgP=avg(pick), avgE=avg(emb);
   const colP = avgP===0?'':avgP<=limPick?'verde':'rojo';
   const colE = avgE===0?'':avgE<=limEmb?'verde':'rojo';
-  const embCard = area==='TIENDAS' ? '' : `
+  const embCard = `
     <div class="kpi-card">
       <div class="kpi-label">Olas Embalaje</div>
       <div class="kpi-value">${emb.length}</div>
@@ -673,7 +691,7 @@ function renderKPIs(area, rows, containerId, limPick, limEmb) {
     <div class="kpi-card naranja">
       <div class="kpi-label">Total registros</div>
       <div class="kpi-value">${rows.length}</div>
-      <div class="kpi-sub">picking${area==='TIENDAS'?'':' + embalaje'}</div>
+      <div class="kpi-sub">picking + embalaje</div>
     </div>`;
 }
 
