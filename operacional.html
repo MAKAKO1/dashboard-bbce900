@@ -575,9 +575,8 @@ function applyFilters(area) {
 
   const filtered = cache[area].filter(r => {
     const f = r.inicio ? new Date(r.inicio) : null;
-    if ((desdeD || hastaD) && !f) return false;
-    if (desdeD && f < desdeD) return false;
-    if (hastaD && f > hastaD) return false;
+    if (desdeD && f && f < desdeD) return false;
+    if (hastaD && f && f > hastaD) return false;
     if (q && !String(r.operario||'').toLowerCase().includes(q) &&
              !String(r.seller||'').toLowerCase().includes(q)) return false;
     return true;
