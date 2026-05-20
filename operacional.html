@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -756,7 +756,8 @@ function _groupByFecha(registros) {
   const map = {};
   registros.forEach(r => {
     if (!r.fecha) return;
-    if (!map[r.fecha]) map[r.fecha] = { fecha:r.fecha, comprometido:0, pickeado:0, embalado:0, despachado:0 };
+    if (!map[r.fecha]) map[r.fecha] = { fecha:r.fecha, pendiente_anterior:0, comprometido:0, pickeado:0, embalado:0, despachado:0 };
+    map[r.fecha].pendiente_anterior += Number(r.pendiente_anterior)||0;
     map[r.fecha].comprometido += Number(r.comprometido)||0;
     map[r.fecha].pickeado     += Number(r.pickeado)    ||0;
     map[r.fecha].embalado     += Number(r.embalado)    ||0;
@@ -840,7 +841,7 @@ function renderDespachos() {
 
   if (!registros.length) {
     document.getElementById('tbody-despachos').innerHTML =
-      `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
+      `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
     return;
   }
 
@@ -849,15 +850,17 @@ function renderDespachos() {
   const des  = data.reduce((a,r)=>a+r.despachado,0);
   const pct  = tot>0?(des/tot*100).toFixed(1):0;
   updateKpisDespachos(tot, des, pct, tot-des);
+  const fPend = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
   const fComp = data.reduce((a,r)=>a+r.comprometido,0);
   const fPick = data.reduce((a,r)=>a+r.pickeado,0);
   const fEmb  = data.reduce((a,r)=>a+r.embalado,0);
   const fDesp = data.reduce((a,r)=>a+r.despachado,0);
   const fPct  = fComp>0 ? (fDesp/fComp*100).toFixed(1) : 0;
-  document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+  document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Pend. Ant.</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
   document.getElementById('tbody-despachos').innerHTML =
     data.map(r => `<tr>
       <td style="font-weight:800">${r.fecha}</td>
+      <td style="color:#E67E22;font-weight:700">${(r.pendiente_anterior||0)>0 ? Number(r.pendiente_anterior).toLocaleString('es-CL') : '—'}</td>
       <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
       <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
       <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
@@ -867,6 +870,7 @@ function renderDespachos() {
     </tr>`).join('') +
     `<tr style="background:#F0F6FF;border-top:2px solid #CCE9FF">
       <td style="font-weight:900;color:#003366;font-size:12px">TOTAL</td>
+      <td style="font-weight:900;color:#E67E22">${fPend>0 ? Number(fPend).toLocaleString('es-CL') : '—'}</td>
       <td style="font-weight:900;color:#003366">${Number(fComp).toLocaleString('es-CL')}</td>
       <td style="font-weight:900;color:#003366">${Number(fPick).toLocaleString('es-CL')}</td>
       <td style="font-weight:900;color:#003366">${Number(fEmb).toLocaleString('es-CL')}</td>
