@@ -354,8 +354,13 @@
 
       <!-- KPIs Despachos -->
       <div class="kpi-strip">
+        <div class="kpi-card" style="border-left-color:#7B68EE">
+          <div class="kpi-label">Total Real</div>
+          <div class="kpi-value" id="kpi-total-real">—</div>
+          <div class="kpi-sub">comp. + pend. ant.</div>
+        </div>
         <div class="kpi-card">
-          <div class="kpi-label">Total Comprometido</div>
+          <div class="kpi-label">Comprometido Hoy</div>
           <div class="kpi-value" id="kpi-comprometido">—</div>
           <div class="kpi-sub">unidades</div>
         </div>
@@ -367,7 +372,7 @@
         <div class="kpi-card" id="kpi-card-pct">
           <div class="kpi-label">% Cumplimiento</div>
           <div class="kpi-value" id="kpi-pct">—</div>
-          <div class="kpi-sub">global</div>
+          <div class="kpi-sub">sobre total real</div>
         </div>
         <div class="kpi-card naranja">
           <div class="kpi-label">Pendiente</div>
@@ -789,39 +794,54 @@ function renderDespachos() {
       if (hastaVal && r.fecha > hastaVal) return false;
       if (sellerFilter && r.seller !== sellerFilter) return false;
       return true;
-    }).map(r => ({
-      ...r,
-      pct:    r.comprometido>0 ? (r.despachado/r.comprometido*100).toFixed(1) : 0,
-      estado: r.comprometido>0 ? (r.despachado>=r.comprometido?'Cumplido':r.despachado>0?'Parcial':'Pendiente') : ''
-    }));
+    }).map(r => {
+      const pant = r.pendiente_anterior || 0;
+      const real = r.comprometido + pant;
+      return {
+        ...r,
+        pct:    real>0 ? (r.despachado/real*100).toFixed(1) : 0,
+        estado: real>0 ? (r.despachado>=real?'Cumplido':r.despachado>0?'Parcial':'Pendiente') : ''
+      };
+    });
 
-    const tot = data.reduce((a,r)=>a+r.comprometido,0);
-    const des = data.reduce((a,r)=>a+r.despachado,0);
-    const pct = tot>0 ? (des/tot*100).toFixed(1) : 0;
-    updateKpisDespachos(tot, des, pct, tot-des);
-    document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Seller</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
+    const tot     = data.reduce((a,r)=>a+r.comprometido,0);
+    const totPend = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
+    const des     = data.reduce((a,r)=>a+r.despachado,0);
+    const totalReal = tot + totPend;
+    const pct = totalReal>0 ? (des/totalReal*100).toFixed(1) : 0;
+    updateKpisDespachos(tot, des, pct, totalReal-des, totalReal);
+    document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Seller</th><th>Pend. Ant.</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
     if (!data.length) {
-      document.getElementById('tbody-despachos').innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
+      document.getElementById('tbody-despachos').innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
       return;
     }
+    const tPend = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
     const tComp = data.reduce((a,r)=>a+r.comprometido,0);
     const tPick = data.reduce((a,r)=>a+r.pickeado,0);
     const tEmb  = data.reduce((a,r)=>a+r.embalado,0);
     const tDesp = data.reduce((a,r)=>a+r.despachado,0);
-    const tPct  = tComp>0 ? (tDesp/tComp*100).toFixed(1) : 0;
+    const tReal = tComp + tPend;
+    const tPct  = tReal>0 ? (tDesp/tReal*100).toFixed(1) : 0;
     document.getElementById('tbody-despachos').innerHTML =
-      data.map(r => `<tr>
-        <td style="color:#7799AA;font-size:11px">${r.fecha}</td>
-        <td style="font-weight:800">${r.seller}</td>
-        <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
-        <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
-        <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
-        <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
-        <td style="font-weight:800">${r.pct}%</td>
-        <td>${estadoBadge(r.estado)}</td>
-      </tr>`).join('') +
+      data.map(r => {
+        const pant = r.pendiente_anterior || 0;
+        const real = r.comprometido + pant;
+        const rpct = real>0 ? (r.despachado/real*100).toFixed(1) : 0;
+        return `<tr>
+          <td style="color:#7799AA;font-size:11px">${r.fecha}</td>
+          <td style="font-weight:800">${r.seller}</td>
+          <td style="color:#E67E22;font-weight:700">${pant>0 ? Number(pant).toLocaleString('es-CL') : '—'}</td>
+          <td>${Number(r.comprometido).toLocaleString('es-CL')}</td>
+          <td>${Number(r.pickeado).toLocaleString('es-CL')}</td>
+          <td>${Number(r.embalado).toLocaleString('es-CL')}</td>
+          <td style="font-weight:800">${Number(r.despachado).toLocaleString('es-CL')}</td>
+          <td style="font-weight:800">${rpct}%</td>
+          <td>${estadoBadge(r.estado)}</td>
+        </tr>`;
+      }).join('') +
       `<tr style="background:#F0F6FF;border-top:2px solid #CCE9FF">
         <td colspan="2" style="font-weight:900;color:#003366;font-size:12px">TOTAL</td>
+        <td style="font-weight:900;color:#E67E22">${tPend>0 ? Number(tPend).toLocaleString('es-CL') : '—'}</td>
         <td style="font-weight:900;color:#003366">${Number(tComp).toLocaleString('es-CL')}</td>
         <td style="font-weight:900;color:#003366">${Number(tPick).toLocaleString('es-CL')}</td>
         <td style="font-weight:900;color:#003366">${Number(tEmb).toLocaleString('es-CL')}</td>
@@ -849,8 +869,10 @@ function renderDespachos() {
   const tot  = data.reduce((a,r)=>a+r.comprometido,0);
   const des  = data.reduce((a,r)=>a+r.despachado,0);
   const pct  = tot>0?(des/tot*100).toFixed(1):0;
-  updateKpisDespachos(tot, des, pct, tot-des);
-  const fPend = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
+  const fPendAnt = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
+  const totalReal = tot + fPendAnt;
+  updateKpisDespachos(tot, des, pct, tot-des, totalReal);
+  const fPend = fPendAnt;
   const fComp = data.reduce((a,r)=>a+r.comprometido,0);
   const fPick = data.reduce((a,r)=>a+r.pickeado,0);
   const fEmb  = data.reduce((a,r)=>a+r.embalado,0);
@@ -880,13 +902,17 @@ function renderDespachos() {
     </tr>`;
 }
 
-function updateKpisDespachos(comp, desp, pct, pend) {
+function updateKpisDespachos(comp, desp, pct, pend, totalReal) {
+  const tr = totalReal != null ? totalReal : comp;
+  const realPct = tr > 0 ? (desp / tr * 100).toFixed(1) : 0;
+  const trEl = document.getElementById('kpi-total-real');
+  if (trEl) trEl.textContent = Number(tr).toLocaleString('es-CL');
   document.getElementById('kpi-comprometido').textContent = Number(comp).toLocaleString('es-CL');
   document.getElementById('kpi-despachado').textContent   = Number(desp).toLocaleString('es-CL');
-  document.getElementById('kpi-pct').textContent          = pct + '%';
-  document.getElementById('kpi-pendiente').textContent    = Number(pend).toLocaleString('es-CL');
+  document.getElementById('kpi-pct').textContent          = realPct + '%';
+  document.getElementById('kpi-pendiente').textContent    = Number(tr - desp).toLocaleString('es-CL');
   const card = document.getElementById('kpi-card-pct');
-  card.className = 'kpi-card ' + (pct>=95?'verde':pct>=80?'naranja':'rojo');
+  card.className = 'kpi-card ' + (realPct>=95?'verde':realPct>=80?'naranja':'rojo');
 }
 
 function estadoBadge(estado) {
