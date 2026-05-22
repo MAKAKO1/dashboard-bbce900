@@ -376,9 +376,9 @@
           <div class="kpi-sub">sobre total real</div>
         </div>
         <div class="kpi-card naranja">
-          <div class="kpi-label">Pendiente</div>
+          <div class="kpi-label">Por Pickear</div>
           <div class="kpi-value" id="kpi-pendiente">—</div>
-          <div class="kpi-sub">unidades</div>
+          <div class="kpi-sub">sin pickear aún</div>
         </div>
       </div>
 
@@ -809,10 +809,11 @@ function renderDespachos() {
 
     const tot     = data.reduce((a,r)=>a+r.comprometido,0);
     const totPend = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
+    const totPick = data.reduce((a,r)=>a+r.pickeado,0);
     const des     = data.reduce((a,r)=>a+r.despachado,0);
     const totalReal = tot + totPend;
     const pct = totalReal>0 ? (des/totalReal*100).toFixed(1) : 0;
-    updateKpisDespachos(tot, des, pct, totalReal-des, totalReal);
+    updateKpisDespachos(tot, des, pct, totPick, totalReal);
     document.getElementById('thead-despachos').innerHTML = '<tr><th>Fecha</th><th>Seller</th><th>Pend. Ant.</th><th>Comprometido</th><th>Pickeado</th><th>Embalado</th><th>Despachado</th><th>% Cumpl.</th><th>Estado</th></tr>';
     if (!data.length) {
       document.getElementById('tbody-despachos').innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
@@ -874,10 +875,10 @@ function renderDespachos() {
   const pct  = tot>0?(des/tot*100).toFixed(1):0;
   const fPendAnt = data.reduce((a,r)=>a+(r.pendiente_anterior||0),0);
   const totalReal = tot + fPendAnt;
-  updateKpisDespachos(tot, des, pct, tot-des, totalReal);
   const fPend = fPendAnt;
   const fComp = data.reduce((a,r)=>a+r.comprometido,0);
   const fPick = data.reduce((a,r)=>a+r.pickeado,0);
+  updateKpisDespachos(tot, des, pct, fPick, totalReal);
   const fEmb  = data.reduce((a,r)=>a+r.embalado,0);
   const fDesp = data.reduce((a,r)=>a+r.despachado,0);
   const fPct  = fComp>0 ? (fDesp/fComp*100).toFixed(1) : 0;
@@ -905,7 +906,7 @@ function renderDespachos() {
     </tr>`;
 }
 
-function updateKpisDespachos(comp, desp, pct, pend, totalReal) {
+function updateKpisDespachos(comp, desp, pct, pick, totalReal) {
   const tr = totalReal != null ? totalReal : comp;
   const realPct = tr > 0 ? (desp / tr * 100).toFixed(1) : 0;
   const trEl = document.getElementById('kpi-total-real');
@@ -913,7 +914,7 @@ function updateKpisDespachos(comp, desp, pct, pend, totalReal) {
   document.getElementById('kpi-comprometido').textContent = Number(comp).toLocaleString('es-CL');
   document.getElementById('kpi-despachado').textContent   = Number(desp).toLocaleString('es-CL');
   document.getElementById('kpi-pct').textContent          = realPct + '%';
-  document.getElementById('kpi-pendiente').textContent    = Number(tr - desp).toLocaleString('es-CL');
+  document.getElementById('kpi-pendiente').textContent    = Number(Math.max(0, tr - pick)).toLocaleString('es-CL');
   const card = document.getElementById('kpi-card-pct');
   card.className = 'kpi-card ' + (realPct>=95?'verde':realPct>=80?'naranja':'rojo');
 }
