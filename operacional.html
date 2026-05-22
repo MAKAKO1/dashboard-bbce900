@@ -507,7 +507,7 @@ function switchSubtab(area, sub) {
   });
   document.getElementById('subtab-' + area + '-' + sub).classList.add('active');
   document.getElementById('subpanel-' + area + '-' + sub).classList.add('active');
-  if (sub === 'despachos') renderDespachos();
+  if (sub === 'despachos') loadDespachos();
 }
 
 // ── localStorage cache ───────────────────────────────────────
@@ -712,7 +712,7 @@ async function reloadDespachos() {
 
 async function loadDespachos() {
   try {
-    const res  = await fetch(DESP_URL);
+    const res  = await fetch(DESP_URL + '?t=' + Date.now());
     const data = await res.json();
     if (data.ok) {
       despachoData           = (data.registros             || []).filter(r => Number(r.comprometido) > 0);
