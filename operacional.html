@@ -512,7 +512,7 @@ function switchSubtab(area, sub) {
 
 // ── localStorage cache ───────────────────────────────────────
 const LS_HUB  = 'dashcd_hub_v1';
-const LS_DESP = 'dashcd_desp_v1';
+const LS_DESP = 'dashcd_desp_v3';
 function saveLS(key, data) { try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(e){} }
 function loadLS(key) { try { const r = JSON.parse(localStorage.getItem(key)); return r || null; } catch(e){ return null; } }
 function showOfflineBanner(msg) {
@@ -727,14 +727,15 @@ async function loadDespachos() {
   } catch(e) {
     console.error('Despachos fetch error:', e);
     const saved = loadLS(LS_DESP);
-    if (saved) {
-      despachoData           = saved.data.seller || saved.data || [];
+    if (saved && saved.data && saved.data.fecha && saved.data.fecha.length > 0) {
+      despachoData           = saved.data.seller || [];
       despachoDataFecha      = saved.data.fecha  || [];
       despachoDataFechaXSell = saved.data.fxs    || [];
       renderDespachos();
     } else {
       document.getElementById('tbody-despachos').innerHTML =
-        `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#9888;</div>Sin datos. Verifica conexión.</div></td></tr>`;
+        `<tr><td colspan="9"><div class="empty-state"><div class="icon">&#9888;</div>Error al conectar con Control Logístico. Reintentando...<br><small style="color:#999">${String(e)}</small></div></td></tr>`;
+      setTimeout(loadDespachos, 5000);
     }
   }
 }
