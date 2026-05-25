@@ -437,7 +437,10 @@ let hubLoading        = false;
 
 let lastHubFetchAt  = null;
 let lastDespFetchAt = null;
-const TRIGGER_MINS  = 5;
+const TRIGGER_MINS  = 1;       // Hub trigger ahora es cada 1 min
+const CACHE_TTL_MS  = 90000;   // 90 seg — no re-fetchear si datos son frescos
+
+function _cacheIsStale(ts) { return !ts || (Date.now() - ts) > CACHE_TTL_MS; }
 
 function _fmtTime(d) {
   if (!d) return '—';
@@ -458,7 +461,7 @@ function _fmtCountdown(secs) {
 let countdownSecs = 60;
 function tickCountdown() {
   countdownSecs--;
-  if (countdownSecs <= 0) { countdownSecs = 60; loadAllHubData(); loadDespachos(); }
+  if (countdownSecs <= 0) { countdownSecs = 60; loadAllHubData(true); loadDespachos(true); }
 
   const hubSecs  = _secsUntilNext(lastHubFetchAt);
   const despSecs = _secsUntilNext(lastDespFetchAt);
@@ -506,7 +509,14 @@ function switchSubtab(area, sub) {
   });
   document.getElementById('subtab-' + area + '-' + sub).classList.add('active');
   document.getElementById('subpanel-' + area + '-' + sub).classList.add('active');
-  if (sub === 'despachos') loadDespachos();
+  if (sub === 'despachos') {
+    // Si hay datos frescos (< 90 seg) solo renderizar, sin fetch
+    if (despachoDataFecha && !_cacheIsStale(lastDespFetchAt)) {
+      renderDespachos();
+    } else {
+      loadDespachos();
+    }
+  }
 }
 
 // ── localStorage cache ───────────────────────────────────────
@@ -527,15 +537,18 @@ function showOfflineBanner(msg) {
 function hideOfflineBanner() { const b = document.getElementById('offline-banner'); if (b) b.remove(); }
 
 // ── Load Hub data via fetch ──────────────────────────────────
-async function loadAllHubData() {
+// silent=true → refresca en background sin mover UI ni mostrar spinner
+async function loadAllHubData(silent = false) {
   if (hubLoading) return;
   hubLoading = true;
-  ['tiendas','ecommerce'].forEach(slug => {
-    const btn = document.getElementById('refresh-btn-'+slug);
-    if (btn) { btn.classList.add('loading'); btn.textContent = 'Cargando...'; }
-  });
+  if (!silent) {
+    ['tiendas','ecommerce'].forEach(slug => {
+      const btn = document.getElementById('refresh-btn-'+slug);
+      if (btn) { btn.classList.add('loading'); btn.textContent = 'Cargando...'; }
+    });
+  }
   try {
-    const res  = await fetch(HUB_URL);
+    const res  = await fetch(HUB_URL + '?t=' + Date.now());
     const data = await res.json();
     hideOfflineBanner();
     const picking  = (data.picking  || []).map(r => ({ ...r, tipo:'Picking'  }));
@@ -556,14 +569,16 @@ async function loadAllHubData() {
       cache['TIENDAS'] = saved.data.TIENDAS;
       applyFilters('ECO'); applyFilters('TIENDAS');
       const mins = Math.round((Date.now() - saved.ts) / 60000);
-      showOfflineBanner('⚠️ Sin conexión — datos de hace ' + mins + ' min. Inicia sesión en Google para actualizar.');
+      if (!silent) showOfflineBanner('⚠️ Sin conexión — datos de hace ' + mins + ' min. Inicia sesión en Google para actualizar.');
     }
   }
   hubLoading = false;
-  ['tiendas','ecommerce'].forEach(slug => {
-    const btn = document.getElementById('refresh-btn-'+slug);
-    if (btn) { btn.classList.remove('loading'); btn.innerHTML='&#8635; Actualizar'; }
-  });
+  if (!silent) {
+    ['tiendas','ecommerce'].forEach(slug => {
+      const btn = document.getElementById('refresh-btn-'+slug);
+      if (btn) { btn.classList.remove('loading'); btn.innerHTML='&#8635; Actualizar'; }
+    });
+  }
 }
 function loadData(area) { loadAllHubData(); }
 
@@ -709,9 +724,10 @@ async function reloadDespachos() {
   if (btn) { btn.classList.remove('loading'); btn.innerHTML = '&#8635; Actualizar'; }
 }
 
-async function loadDespachos() {
+// silent=true → refresca datos en background sin tocar la UI hasta que llegue respuesta
+async function loadDespachos(silent = false) {
   const tbody = document.getElementById('tbody-despachos');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⏳</div>Cargando datos de Control Logístico...</div></td></tr>`;
+  if (!silent && tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⏳</div>Cargando datos de Control Logístico...</div></td></tr>`;
   try {
     const res  = await fetch(DESP_URL + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -724,9 +740,9 @@ async function loadDespachos() {
       lastDespFetchAt = Date.now();
       const clLastEl = document.getElementById('cl-last');
       if (clLastEl) clLastEl.textContent = _fmtTime(new Date());
-      renderDespachos();
+      renderDespachos(); // siempre renderiza al llegar datos frescos
     } else {
-      if (tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⚠️</div>Error en API: ${data.error || 'respuesta no válida'}</div></td></tr>`;
+      if (!silent && tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⚠️</div>Error en API: ${data.error || 'respuesta no válida'}</div></td></tr>`;
     }
   } catch(e) {
     console.error('Despachos fetch error:', e);
@@ -735,9 +751,9 @@ async function loadDespachos() {
       despachoData           = saved.data.seller || [];
       despachoDataFecha      = saved.data.fecha  || [];
       despachoDataFechaXSell = saved.data.fxs    || [];
-      renderDespachos();
+      if (!silent) renderDespachos();
     } else {
-      if (tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⚠️</div>Sin conexión con Control Logístico<br><small style="color:#999;font-size:10px">${String(e)}</small><br><button class="btn-apply" style="margin-top:10px" onclick="loadDespachos()">Reintentar</button></div></td></tr>`;
+      if (!silent && tbody) tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⚠️</div>Sin conexión con Control Logístico<br><small style="color:#999;font-size:10px">${String(e)}</small><br><button class="btn-apply" style="margin-top:10px" onclick="loadDespachos()">Reintentar</button></div></td></tr>`;
     }
   }
 }
