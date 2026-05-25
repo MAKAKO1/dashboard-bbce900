@@ -144,6 +144,12 @@
   .estado-atraso  { background: #FADBD8; color: #C0392B; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
   .estado-pend    { background: #EAF2FF; color: #2980B9; border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
 
+  .sem-encurso { background: #8E44AD; color: white; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 11px; white-space: nowrap; text-transform: uppercase; animation: pulse-enc .9s infinite alternate; }
+  @keyframes pulse-enc { from { opacity: 1; } to { opacity: .65; } }
+  .live-min { font-weight: 900; color: #8E44AD; }
+  tr.en-curso { background: #FAF0FF !important; }
+  tr.en-curso:hover { background: #F3E0FF !important; }
+
   .skeleton-cell { height: 13px; border-radius: 6px; background: linear-gradient(90deg,#EEF4FF 25%,#D6E8FF 50%,#EEF4FF 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
   @keyframes shimmer { to { background-position: -200% 0; } }
   .empty-state { text-align: center; padding: 36px 24px; color: #99AABB; font-weight: 800; }
@@ -183,9 +189,15 @@
     <a href="index.html" class="back-btn">&#8592; Inicio</a>
     <span class="topbar-title">&#128230; Control Operacional CD</span>
   </div>
-  <div class="topbar-meta" style="text-align:right;line-height:1.9;font-size:11px">
-    <div><span style="opacity:.65">Hub</span> &nbsp;últ. <span id="hub-last">—</span> &nbsp;·&nbsp; prox. <span id="hub-next" style="font-weight:900;color:#7FD4FF">—</span></div>
-    <div><span style="opacity:.65">CL &nbsp;</span> &nbsp;últ. <span id="cl-last">—</span> &nbsp;·&nbsp; prox. <span id="cl-next" style="font-weight:900;color:#7FD4FF">—</span></div>
+  <div class="topbar-meta" style="text-align:right;line-height:1.9;font-size:11px;display:flex;align-items:center;gap:20px">
+    <div style="text-align:right">
+      <div><span style="opacity:.65">Hub</span> &nbsp;últ. <span id="hub-last">—</span> &nbsp;·&nbsp; prox. <span id="hub-next" style="font-weight:900;color:#7FD4FF">—</span></div>
+      <div><span style="opacity:.65">CL &nbsp;</span> &nbsp;últ. <span id="cl-last">—</span> &nbsp;·&nbsp; prox. <span id="cl-next" style="font-weight:900;color:#7FD4FF">—</span></div>
+    </div>
+    <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:6px 14px;text-align:center;min-width:80px">
+      <div style="font-size:9px;opacity:.7;letter-spacing:.8px;text-transform:uppercase">Hora</div>
+      <div id="reloj-topbar" style="font-size:17px;font-weight:900;color:white;letter-spacing:1px;line-height:1.2">—</div>
+    </div>
   </div>
 </div>
 
@@ -457,6 +469,34 @@ function _fmtCountdown(secs) {
   return m + ':' + s;
 }
 
+// ── Reloj en tiempo real ─────────────────────────────────────
+function tickReloj() {
+  const el = document.getElementById('reloj-topbar');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+tickReloj();
+setInterval(tickReloj, 1000);
+
+// ── Contadores en vivo (registros "En curso") ────────────────
+function tickLiveTimers() {
+  const cells = document.querySelectorAll('[data-live-inicio]');
+  cells.forEach(cell => {
+    const ini = new Date(cell.dataset.liveInicio);
+    if (isNaN(ini)) return;
+    const mins = Math.floor((Date.now() - ini) / 60000);
+    const lim  = Number(cell.dataset.lim) || 999;
+    cell.textContent = mins + ' min';
+    // color dinámico
+    if (mins > lim * 1.5) { cell.style.color = '#2C3E50'; cell.style.fontWeight = '900'; }
+    else if (mins > lim)  { cell.style.color = '#C0392B'; cell.style.fontWeight = '900'; }
+    else if (mins > lim * 0.5) { cell.style.color = '#E67E22'; cell.style.fontWeight = '900'; }
+    else                       { cell.style.color = '#8E44AD'; cell.style.fontWeight = '900'; }
+  });
+}
+setInterval(tickLiveTimers, 10000); // cada 10 seg actualiza contadores
+
 // ── Auto-refresh countdown ───────────────────────────────────
 let countdownSecs = 60;
 function tickCountdown() {
@@ -664,17 +704,30 @@ function redrawTable(tableId, rows, lim, olaLabel) {
   } else {
     thead.innerHTML = `<tr><th>Operario</th><th>Seller / Tienda</th><th>${olaLabel||'Picking'}</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
     tbody.innerHTML = rows.map(r => {
-      const min = Number(r.minutos)||0;
-      return `<tr>
-        <td>${r.operario||'—'}</td>
+      const min    = Number(r.minutos) || 0;
+      const abierto = !r.fin && min === 0;
+      const inicioMs = r.inicio ? new Date(r.inicio).getTime() : 0;
+      const minsVivos = abierto && inicioMs ? Math.floor((Date.now() - inicioMs) / 60000) : 0;
+
+      const minCell = abierto
+        ? `<td><span data-live-inicio="${r.inicio}" data-lim="${lim}" class="live-min">${minsVivos} min</span></td>`
+        : `<td style="font-weight:800">${min || '—'}</td>`;
+
+      const estadoCell = abierto
+        ? `<td><span class="sem-encurso">🔴 En curso</span></td>`
+        : `<td>${min === 0 ? '—' : semaforo(min, lim)}</td>`;
+
+      return `<tr class="${abierto ? 'en-curso' : ''}">
+        <td style="font-weight:${abierto?'900':'700'}">${r.operario||'—'}</td>
         <td>${r.seller||'—'}</td>
         <td>${r.ola||'—'}</td>
         <td>${formatDate(r.inicio)}</td>
-        <td>${formatDate(r.fin)}</td>
-        <td style="font-weight:800">${min||'—'}</td>
-        <td>${min===0?'—':semaforo(min,lim)}</td>
+        <td>${abierto ? '<span style="color:#8E44AD;font-size:11px;font-weight:800">En curso</span>' : formatDate(r.fin)}</td>
+        ${minCell}
+        ${estadoCell}
       </tr>`;
     }).join('');
+    tickLiveTimers(); // actualizar inmediatamente al renderizar
   }
 }
 
