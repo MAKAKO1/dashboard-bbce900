@@ -251,52 +251,46 @@
 
   <!-- ECOMMERCE -->
   <div class="tab-panel" id="panel-ecommerce">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <!-- KPIs picking -->
-      <div class="kpi-strip" id="kpis-ecommerce" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
-      <!-- KPIs SAP -->
-      <div class="kpi-strip" id="kpis-sap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-
-      <!-- Picking + Embalaje -->
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="table-title">Picking + Embalaje — ECO</span>
-          <div class="table-controls">
-            <input class="filter-input" id="filter-ecommerce" placeholder="Buscar operario..." oninput="filterTable('ecommerce')" style="width:130px">
-            <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635;</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table id="table-ecommerce">
-            <thead><tr>
-              <th>Tipo</th><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
-            </tr></thead>
-            <tbody id="tbody-ecommerce"><tr class="skeleton-row"><td colspan="8"><div class="skeleton-cell"></div></td></tr></tbody>
-          </table>
+    <div class="kpi-strip" id="kpis-ecommerce"></div>
+    <div class="table-wrap" style="margin-bottom:14px">
+      <div class="table-head">
+        <span class="table-title">Picking + Embalaje — Ecommerce</span>
+        <div class="table-controls">
+          <input class="filter-input" id="filter-ecommerce" placeholder="Buscar operario..." oninput="filterTable('ecommerce')">
+          <button class="refresh-btn" id="refresh-btn-ecommerce" onclick="loadData('ECO')">&#8635; Actualizar</button>
         </div>
       </div>
+      <div style="overflow-x:auto">
+        <table id="table-ecommerce">
+          <thead><tr>
+            <th>Tipo</th><th>Operario</th><th>Seller / Tienda</th>
+            <th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="tbody-ecommerce"><tr class="skeleton-row"><td colspan="8"><div class="skeleton-cell"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
 
-      <!-- Pedidos Bajados SAP -->
+    <!-- Pedidos Bajados a SAP -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="table-wrap">
         <div class="table-head">
-          <span class="table-title">Pedidos Bajados a SAP</span>
-          <button class="refresh-btn" id="refresh-btn-sap" onclick="loadSAP()">&#8635;</button>
+          <span class="table-title">Pedidos Bajados a SAP — Flujo</span>
+          <button class="refresh-btn" id="refresh-btn-sap" onclick="loadSAP()">&#8635; Actualizar</button>
         </div>
-        <!-- Embudo -->
-        <div id="embudo-sap" style="padding:12px 16px"></div>
-        <!-- Por cliente -->
+        <div id="embudo-sap" style="padding:14px 16px"></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head"><span class="table-title">Por Marketplace</span></div>
         <div style="overflow-x:auto">
           <table id="table-clientes">
-            <thead><tr><th>Cliente</th><th>Pedidos</th><th>Unid.</th><th>% Cumpl.</th></tr></thead>
-            <tbody id="tbody-clientes"><tr class="skeleton-row"><td colspan="4"><div class="skeleton-cell"></div></td></tr></tbody>
+            <thead><tr><th>Cliente</th><th>Pedidos</th><th>Unidades</th><th>Entregadas</th><th>% Cumpl.</th></tr></thead>
+            <tbody id="tbody-clientes"><tr class="skeleton-row"><td colspan="5"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
-
     </div>
+    <div class="kpi-strip" id="kpis-sap" style="margin-top:14px"></div>
   </div>
 
   <!-- TBC -->
