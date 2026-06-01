@@ -272,9 +272,9 @@
         <div style="overflow-x:auto">
           <table id="table-ecommerce">
             <thead><tr>
-              <th>Tipo</th><th>Operario</th><th>Ola</th><th>Min</th><th>Estado</th>
+              <th>Tipo</th><th>Operario</th><th>Seller / Tienda</th><th>Ola</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th>
             </tr></thead>
-            <tbody id="tbody-ecommerce"><tr class="skeleton-row"><td colspan="5"><div class="skeleton-cell"></div></td></tr></tbody>
+            <tbody id="tbody-ecommerce"><tr class="skeleton-row"><td colspan="8"><div class="skeleton-cell"></div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -423,7 +423,10 @@ function renderTable(area, rows, filterText) {
     return `<tr>
       <td>${r.tipo}</td>
       <td>${r.operario || '—'}</td>
+      <td>${r.seller   || '—'}</td>
       <td>${r.ola      || '—'}</td>
+      <td>${formatDate(r.inicio)}</td>
+      <td>${formatDate(r.fin)}</td>
       <td style="font-weight:800">${minutos || '—'}</td>
       <td>${semTag}</td>
     </tr>`;
