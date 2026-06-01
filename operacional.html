@@ -537,7 +537,11 @@ function setHoyDespachos() {
   if (d) d.value = todayStr();
   if (h) h.value = todayStr();
 });
-// Despachos: sin filtro por defecto — muestra todo el historial disponible
+// Despachos: limpiar explícitamente para que el browser no restaure valores anteriores
+const _dd = document.getElementById('desde-despachos');
+const _dh = document.getElementById('hasta-despachos');
+if (_dd) _dd.value = '';
+if (_dh) _dh.value = '';
 
 
 // ── Tab / Subtab switching ──────────────────────────────────
@@ -555,6 +559,11 @@ function switchSubtab(area, sub) {
   document.getElementById('subtab-' + area + '-' + sub).classList.add('active');
   document.getElementById('subpanel-' + area + '-' + sub).classList.add('active');
   if (sub === 'despachos') {
+    // Limpiar filtros de fecha para evitar que queden valores del browser
+    const dd = document.getElementById('desde-despachos');
+    const dh = document.getElementById('hasta-despachos');
+    if (dd) dd.value = '';
+    if (dh) dh.value = '';
     // Si hay datos frescos (< 90 seg) solo renderizar, sin fetch
     if (despachoDataFecha && !_cacheIsStale(lastDespFetchAt)) {
       renderDespachos();
@@ -938,8 +947,12 @@ function renderDespachos() {
   });
 
   if (!registros.length) {
+    const tieneHistorial = (despachoDataFecha || []).length > 0;
     document.getElementById('tbody-despachos').innerHTML =
-      `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin datos para el período seleccionado.</div></td></tr>`;
+      `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>
+        Sin datos para el período seleccionado.
+        ${tieneHistorial ? `<br><button class="btn-apply" style="margin-top:10px" onclick="verTodoHistorial()">Ver todo el historial</button>` : ''}
+      </div></td></tr>`;
     return;
   }
 
@@ -978,6 +991,12 @@ function renderDespachos() {
       <td style="font-weight:900;color:#003366">${fPct}%</td>
       <td></td>
     </tr>`;
+}
+
+function verTodoHistorial() {
+  document.getElementById('desde-despachos').value = '';
+  document.getElementById('hasta-despachos').value = '';
+  renderDespachos();
 }
 
 function updateKpisDespachos(comp, desp, pct, pick, totalReal) {
