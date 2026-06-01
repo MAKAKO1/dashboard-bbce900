@@ -40,9 +40,20 @@
   }
   .topbar-meta {
     color: rgba(255,255,255,.75); font-size: 11px; font-weight: 700;
-    text-align: right;
+    text-align: right; display: flex; align-items: center; gap: 14px;
   }
   #ts-label { font-size: 10px; opacity: .7; display: block; }
+  .elapsed-badge {
+    background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3);
+    border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 800;
+    color: white; display: flex; align-items: center; gap: 5px;
+  }
+  .elapsed-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #2ECC71;
+    animation: pulse 2s infinite;
+  }
+  .elapsed-dot.stale { background: #E74C3C; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
   /* ── TABS ── */
   .tabs-wrap {
@@ -193,8 +204,14 @@
     <span class="topbar-title">&#128230; Control Operacional</span>
   </div>
   <div class="topbar-meta">
-    <span id="ts-label">Ultima actualizacion</span>
-    <span id="ts-value">—</span>
+    <div class="elapsed-badge">
+      <div class="elapsed-dot" id="elapsed-dot"></div>
+      <span id="elapsed-val">—</span>
+    </div>
+    <div>
+      <span id="ts-label">Ultima actualizacion</span>
+      <span id="ts-value">—</span>
+    </div>
   </div>
 </div>
 
@@ -320,10 +337,30 @@
 </div><!-- /main -->
 
 <script>
-const HUB_URL = 'https://script.google.com/macros/s/AKfycbymOP_NATgnmzOX_XcbH2Rurxl3WB1zpFxA4Lo4w5I5LirPwsJc7_GBLtnPpBNnldD5/exec';
+const HUB_URL = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUiv3yLccM6kfph_kL1O7TKJURaA_4oSiZiul7BgwF2Z4co/exec';
 
 // Cached raw data per area
 const cache = { TIENDAS: null, ECO: null };
+
+// ── Contador de tiempo desde última actualización ──────────
+let _lastUpdate = null;
+function _markUpdated() {
+  _lastUpdate = Date.now();
+  _tickElapsed();
+}
+function _tickElapsed() {
+  const dot = document.getElementById('elapsed-dot');
+  const val = document.getElementById('elapsed-val');
+  if (!_lastUpdate) { val.textContent = '—'; return; }
+  const sec = Math.floor((Date.now() - _lastUpdate) / 1000);
+  const min = Math.floor(sec / 60);
+  const s   = sec % 60;
+  val.textContent = min > 0 ? min + 'm ' + s + 's' : s + 's';
+  const stale = sec > 120;
+  dot.classList.toggle('stale', stale);
+  dot.title = stale ? 'Datos posiblemente desactualizados' : 'Datos recientes';
+}
+setInterval(_tickElapsed, 1000);
 
 // ── Tab switching ──────────────────────────────────────────
 function switchTab(name) {
@@ -351,6 +388,7 @@ async function loadData(area) {
     if (data.kpis && data.kpis.ultima_actualizacion) {
       document.getElementById('ts-value').textContent = data.kpis.ultima_actualizacion.replace('Ultima actualizacion: ', '');
     }
+    _markUpdated();
 
     // Merge picking + embalaje, tag each row with tipo
     const rows = [
@@ -513,6 +551,7 @@ async function loadSAP() {
     renderFechasSAP(rows);
 
     if (data.ts) document.getElementById('ts-value').textContent = new Date(data.ts).toLocaleString('es-CL');
+    _markUpdated();
   } catch(err) {
     document.getElementById('embudo-sap').innerHTML =
       `<div class="empty-state"><div class="icon">&#9888;</div>${err.message}</div>`;
