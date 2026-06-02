@@ -210,7 +210,6 @@
 <div class="tabs-wrap">
   <button class="tab-btn active"  onclick="switchTab('tiendas')"     id="tab-tiendas">&#127978; Tiendas</button>
   <button class="tab-btn"         onclick="switchTab('ecommerce')"   id="tab-ecommerce">&#128230; Ecommerce</button>
-  <button class="tab-btn"         onclick="switchTab('reportes')"    id="tab-reportes">&#128202; Reportes</button>
   <button class="tab-btn"         onclick="switchTab('tbc')"         id="tab-tbc">&#127381; TBC</button>
   <button class="tab-btn"         onclick="switchTab('recepciones')" id="tab-recepciones">&#128230; Recepciones</button>
 </div>
@@ -1121,106 +1120,5 @@ loadAllHubData();
 loadDespachos();
 </script>
 
-<!-- ══ REPORTES ══ -->
-<style>
-  /* ── REPORTES TAB — tema claro ── */
-  .rpt-card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,80,180,.08); overflow: hidden; margin-bottom: 0; }
-  .rpt-card-title { font-size: 13px; font-weight: 900; color: #003366; text-transform: uppercase; padding: 12px 18px; border-bottom: 1.5px solid #EEF4FF; }
-  .rpt-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 18px; }
-  .rpt-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 18px; }
-  .rpt-grid2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 18px; }
-  .rpt-grid-tend { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
-  .rpt-table { width: 100%; border-collapse: collapse; }
-  .rpt-table thead th { background: #F0F6FF; color: #0055AA; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; padding: 9px 14px; text-align: left; white-space: nowrap; }
-  .rpt-table th.n { text-align: right; }
-  .rpt-table tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
-  .rpt-table tbody tr:hover { background: #F8FBFF; }
-  .rpt-table tbody td { padding: 8px 14px; color: #1a1a1a; font-size: 12px; }
-  .rpt-table tbody td.n { text-align: right; font-weight: 800; color: #003366; }
-  .rpt-table tfoot td { padding: 8px 14px; font-weight: 900; color: #003366; font-size: 12px; background: #F0F6FF; border-top: 2px solid #CCE9FF; }
-  .rpt-table tfoot td.n { text-align: right; }
-  .rpt-badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
-  .rb-cerrada    { background:#D5F5E3; color:#1E8449; }
-  .rb-embalada   { background:#EDE0FF; color:#6C3483; }
-  .rb-pickeado   { background:#D6EAF8; color:#1A5276; }
-  .rb-parcial    { background:#FEF9E7; color:#E67E22; }
-  .rb-sinpick    { background:#FADBD8; color:#C0392B; }
-  .rb-abierta    { background:#FEF9E7; color:#E67E22; }
-  .rb-pick       { background:#D6EAF8; color:#1A5276; }
-  .rb-emb        { background:#EDE0FF; color:#6C3483; }
-  .rpt-prog-wrap { background:#EEF4FF; border-radius:4px; height:7px; overflow:hidden; min-width:60px; }
-  .rpt-prog-bar  { height:100%; border-radius:4px; }
-  .rpt-funnel-wrap { padding: 12px 16px; }
-  .rpt-funnel-item { margin-bottom: 7px; }
-  .rpt-funnel-label { display: flex; justify-content: space-between; margin-bottom: 3px; }
-  .rpt-funnel-name { font-size: 11px; font-weight: 800; color: #003366; text-transform: uppercase; }
-  .rpt-funnel-vals { font-size: 11px; color: #7799AA; font-weight: 700; }
-  .rpt-funnel-bar-wrap { background: #EEF4FF; border-radius: 4px; height: 18px; overflow: hidden; }
-  .rpt-funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 800; color: white; transition: width .8s; }
-  .rpt-funnel-arrow { text-align: center; color: #CCE9FF; font-size: 13px; margin: 2px 0; }
-  .rpt-sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 14px; }
-  .rpt-sla-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 14px 8px; text-align: center; }
-  .rpt-sla-value { font-size: 28px; font-weight: 900; line-height: 1; }
-  .rpt-sla-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #7799AA; margin-top: 5px; }
-  .rpt-lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 14px 14px; }
-  .rpt-lt-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 12px; text-align: center; }
-  .rpt-lt-value { font-size: 24px; font-weight: 900; color: #00AAFF; }
-  .rpt-lt-label { font-size: 10px; color: #7799AA; text-transform: uppercase; font-weight: 800; margin-top: 3px; }
-  .rpt-alertas { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 12px; padding: 16px; }
-  .rpt-alerta { background: #F8FBFF; border-radius: 12px; padding: 14px 16px; border-left: 4px solid; display: flex; gap: 10px; }
-  .rpt-alerta.rojo     { border-color:#C0392B; background:#FFF5F5; }
-  .rpt-alerta.amarillo { border-color:#F39C12; background:#FFFBF0; }
-  .rpt-alerta.verde    { border-color:#27AE60; background:#F0FFF6; }
-  .rpt-alerta-icon { font-size:20px; flex-shrink:0; }
-  .rpt-alerta-titulo { font-size:12px; font-weight:900; color:#003366; margin-bottom:3px; }
-  .rpt-alerta-desc   { font-size:11px; color:#7799AA; }
-  .rpt-alerta-pr     { font-size:10px; font-weight:800; text-transform:uppercase; margin-top:4px; }
-  .rpt-pr-alta  { color:#C0392B; } .rpt-pr-media { color:#E67E22; } .rpt-pr-baja { color:#27AE60; }
-  .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
-  .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
-  @media(max-width:1200px) { .rpt-grid4 { grid-template-columns:repeat(2,1fr); } }
-  @media(max-width:900px)  { .rpt-grid3,.rpt-grid2,.rpt-grid-tend { grid-template-columns:1fr; } }
-</style>
-
-<!-- PANEL REPORTES -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const main = document.querySelector('.main');
-
-  const panelRpt = document.createElement('div');
-  panelRpt.className = 'tab-panel';
-  panelRpt.id = 'panel-reportes';
-  panelRpt.innerHTML = `
-    <div class="subtabs-wrap">
-      <button class="subtab-btn active" onclick="switchRptTab('sap')" id="subtab-rpt-sap">&#128203; Pedidos SAP</button>
-      <button class="subtab-btn"        onclick="switchRptTab('op')"  id="subtab-rpt-op">&#128100; KPI Operarios</button>
-    </div>
-
-    <!-- ── Sub: Pedidos SAP ── -->
-    <div class="subpanel active" id="subpanel-rpt-sap">
-      <div id="rpt-sap-demo-banner" class="rpt-demo-banner" style="display:none">&#9888;&#65039; Datos de demostración — backend no disponible en localhost:3001. Inicia el servidor para ver datos reales.</div>
-      <div class="filter-bar">
-        <div class="filter-group"><label>Desde</label><input type="date" id="rpt-sap-desde"></div>
-        <span class="filter-sep">&#8594;</span>
-        <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
-        <button class="btn-hoy" onclick="rptSapSetAyer()">Ayer</button>
-        <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
-        <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800;align-self:center"></span>
-      </div>
-      <div class="kpi-strip" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
-        <div class="kpi-card"        ><div class="kpi-label">Pedidos</div><div class="kpi-value" id="rpt-k-ped">—</div><div class="kpi-sub">&#243;rdenes</div></div>
-        <div class="kpi-card"        ><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-k-uni">—</div><div class="kpi-sub">total</div></div>
-        <div class="kpi-card verde"  ><div class="kpi-label">Entregadas</div><div class="kpi-value" id="rpt-k-ent">—</div><div class="kpi-sub" id="rpt-k-ent-p">del total</div></div>
-        <div class="kpi-card naranja"><div class="kpi-label">Abiertas</div><div class="kpi-value" id="rpt-k-ab">—</div><div class="kpi-sub" id="rpt-k-ab-p">del total</div></div>
-        <div class="kpi-card" id="rpt-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-k-cumpl">—</div><div class="kpi-sub">ent/total</div></div>
-        <div class="kpi-card rojo"   ><div class="kpi-label">Backlog</div><div class="kpi-value" id="rpt-k-bl">—</div><div class="kpi-sub">sin pick+parcial</div></div>
-        <div class="kpi-card"        ><div class="kpi-label">LT SAP&#8594;Pick</div><div class="kpi-value" id="rpt-k-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
-        <div class="kpi-card"        ><div class="kpi-label">LT Pick&#8594;Cierre</div><div class="kpi-value" id="rpt-k-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
-      </div>
-      <div class="rpt-grid4">
-        <div class="rpt-card">
-          <div class="rpt-card-title">&#128202; Estado Operacional</div>
-  
-</script>
 </body>
 </html>

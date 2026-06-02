@@ -5,682 +5,543 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reportes — Dash CD</title>
 <link rel="icon" href="data:,">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Nunito', sans-serif; background: #0D1B2A; color: #E8F0FE; font-size: 12px; min-height: 100vh; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', Arial, sans-serif; font-size: 13px; background: #F0F6FF; min-height: 100vh; }
 
-/* HEADER */
-.header {
-  background: linear-gradient(135deg, #0D1B2A 0%, #1a2e4a 100%);
-  border-bottom: 2px solid #1E3A5F;
-  padding: 10px 20px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-}
-.header-left { display: flex; align-items: center; gap: 14px; }
-.logo-box { background: #00AAFF; border-radius: 10px; padding: 6px 12px; text-align: center; }
-.logo-box .l1 { font-family: 'Fredoka One'; font-size: 8px; color: white; display: block; }
-.logo-box .l2 { font-family: 'Fredoka One'; font-size: 14px; color: white; display: block; letter-spacing: 1px; }
-.title-box h1 { font-family: 'Fredoka One'; font-size: 20px; color: white; letter-spacing: .5px; }
-.title-box p  { font-size: 10px; color: #7BA7CC; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-top: 2px; }
-.header-right { text-align: right; }
-.update-label { font-size: 9px; color: #5A7A9C; text-transform: uppercase; font-weight: 800; letter-spacing: .5px; }
-.update-time  { font-size: 12px; color: #7BA7CC; font-weight: 800; }
-.back-link { display: block; margin-top: 4px; font-size: 10px; color: #5A7A9C; text-decoration: none; }
-.back-link:hover { color: #00AAFF; }
+  .topbar {
+    background: linear-gradient(135deg, #00AAFF 0%, #0055AA 100%);
+    padding: 0 24px; display: flex; align-items: center;
+    justify-content: space-between; height: 54px;
+    box-shadow: 0 2px 12px rgba(0,80,180,.3); position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .back-btn {
+    color: rgba(255,255,255,.85); font-size: 13px; font-weight: 800;
+    text-decoration: none; display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,.3);
+    transition: background .15s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.15); }
+  .topbar-title { color: white; font-size: 16px; font-weight: 900; text-transform: uppercase; }
+  .topbar-ts { color: rgba(255,255,255,.7); font-size: 11px; font-weight: 700; }
 
-/* MAIN TABS */
-.main-tabs { display: flex; gap: 4px; background: #0D1B2A; padding: 0 20px; border-bottom: 2px solid #1E3A5F; }
-.main-tab {
-  padding: 12px 24px 10px; font-size: 13px; font-weight: 800; color: #5A7A9C;
-  background: none; border: none; border-bottom: 3px solid transparent;
-  cursor: pointer; font-family: 'Nunito'; text-transform: uppercase; letter-spacing: .5px;
-  transition: color .15s, border-color .15s;
-}
-.main-tab:hover { color: #7BA7CC; }
-.main-tab.active { color: #00AAFF; border-bottom-color: #00AAFF; }
+  .tabs-wrap { background: white; border-bottom: 2px solid #CCE9FF; padding: 0 24px; display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 14px 22px 12px; font-family: 'Nunito', Arial; font-size: 13px;
+    font-weight: 800; color: #6699BB; background: none; border: none;
+    border-bottom: 3px solid transparent; cursor: pointer; transition: color .15s, border-color .15s;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { color: #0077BB; }
+  .tab-btn.active { color: #00AAFF; border-bottom-color: #00AAFF; }
 
-/* PANELS */
-.panel { display: none; }
-.panel.active { display: block; }
+  .main { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-/* FILTER BAR */
-.filter-bar {
-  background: #13263D; border-bottom: 1px solid #1E3A5F;
-  padding: 10px 20px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
-}
-.filter-group { display: flex; flex-direction: column; gap: 2px; }
-.filter-group label { font-size: 9px; font-weight: 800; color: #7BA7CC; text-transform: uppercase; letter-spacing: .5px; }
-.filter-group input, .filter-group select {
-  background: #1E3A5F; border: 1px solid #2E5A8F; border-radius: 8px;
-  color: white; padding: 5px 10px; font-size: 11px; font-family: 'Nunito'; outline: none; min-width: 110px;
-}
-.filter-group input:focus, .filter-group select:focus { border-color: #00AAFF; }
-.btn-aplicar {
-  background: #00AAFF; color: white; border: none; border-radius: 20px;
-  padding: 7px 18px; font-size: 11px; font-weight: 800; cursor: pointer;
-  font-family: 'Nunito'; text-transform: uppercase; transition: opacity .2s;
-}
-.btn-aplicar:hover { opacity: .85; }
-.btn-sec {
-  background: #1E3A5F; color: #7BA7CC; border: 1px solid #2E5A8F; border-radius: 20px;
-  padding: 7px 14px; font-size: 11px; font-weight: 800; cursor: pointer;
-  font-family: 'Nunito'; transition: all .2s;
-}
-.btn-sec:hover { border-color: #00AAFF; color: #00AAFF; }
+  .filter-bar {
+    background: white; border-radius: 14px; padding: 14px 20px;
+    margin-bottom: 18px; display: flex; flex-wrap: wrap; gap: 12px;
+    align-items: center; box-shadow: 0 2px 10px rgba(0,80,180,.08);
+  }
+  .filter-bar label { font-size: 11px; font-weight: 800; color: #0077BB; text-transform: uppercase; letter-spacing: .5px; }
+  .filter-bar input[type="date"], .filter-bar select {
+    border: 1.5px solid #CCE9FF; border-radius: 10px; padding: 7px 12px;
+    font-size: 12px; outline: none; font-family: 'Nunito', Arial; color: #1a1a1a; transition: border-color .2s;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: #00AAFF; }
+  .filter-group { display: flex; align-items: center; gap: 8px; }
+  .filter-sep { color: #CCE9FF; font-size: 16px; }
+  .btn-apply {
+    background: linear-gradient(135deg, #00AAFF, #0055AA); color: white;
+    border: none; border-radius: 20px; padding: 8px 20px; font-size: 12px;
+    font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial; text-transform: uppercase;
+  }
+  .btn-apply:hover { opacity: .88; }
+  .btn-sec {
+    background: #E8F6FF; color: #0077BB; border: 1.5px solid #99D4F5;
+    border-radius: 20px; padding: 7px 14px; font-size: 12px; font-weight: 800;
+    cursor: pointer; font-family: 'Nunito', Arial; text-transform: uppercase;
+  }
 
-/* MAIN CONTENT */
-.content { padding: 14px 16px; max-width: 1600px; margin: 0 auto; }
+  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .kpi-card { background: white; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 10px rgba(0,80,180,.08); border-left: 4px solid #00AAFF; }
+  .kpi-card.verde   { border-left-color: #1E8449; }
+  .kpi-card.naranja { border-left-color: #E67E22; }
+  .kpi-card.rojo    { border-left-color: #C0392B; }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: #7799AA; font-weight: 800; margin-bottom: 5px; }
+  .kpi-value { font-size: 26px; font-weight: 900; color: #003366; line-height: 1; }
+  .kpi-sub   { font-size: 10px; color: #99AABB; margin-top: 3px; font-weight: 700; text-transform: uppercase; }
 
-/* CARDS */
-.card { background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F; overflow: hidden; margin-bottom: 12px; }
-.card-title {
-  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px;
-  color: #7BA7CC; padding: 10px 14px 8px; border-bottom: 1px solid #1E3A5F;
-}
+  .rpt-card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,80,180,.08); overflow: hidden; }
+  .rpt-card-title { font-size: 13px; font-weight: 900; color: #003366; text-transform: uppercase; padding: 12px 18px; border-bottom: 1.5px solid #EEF4FF; }
+  .rpt-grid2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 18px; }
+  .rpt-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 18px; }
+  .rpt-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 18px; }
+  @media(max-width:1200px) { .rpt-grid4 { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:900px)  { .rpt-grid3,.rpt-grid2 { grid-template-columns: 1fr; } }
 
-/* KPI ROW */
-.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 12px; }
-.kpi-card {
-  background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F;
-  padding: 12px 14px; border-top: 3px solid #1E6BB8; position: relative;
-}
-.kpi-card.green  { border-top-color: #27AE60; }
-.kpi-card.red    { border-top-color: #C0392B; }
-.kpi-card.orange { border-top-color: #E67E22; }
-.kpi-card.yellow { border-top-color: #F1C40F; }
-.kpi-card.purple { border-top-color: #8E44AD; }
-.kpi-card.teal   { border-top-color: #17A589; }
-.kpi-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: #5A7A9C; margin-bottom: 4px; }
-.kpi-value { font-size: 24px; font-weight: 900; color: white; line-height: 1; }
-.kpi-sub   { font-size: 10px; color: #5A7A9C; margin-top: 3px; font-weight: 700; }
-.kpi-icon  { position: absolute; top: 10px; right: 12px; font-size: 20px; opacity: .4; }
+  .rpt-table { width: 100%; border-collapse: collapse; }
+  .rpt-table thead th { background: #F0F6FF; color: #0055AA; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; padding: 9px 14px; text-align: left; white-space: nowrap; }
+  .rpt-table th.n { text-align: right; }
+  .rpt-table tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
+  .rpt-table tbody tr:hover { background: #F8FBFF; }
+  .rpt-table tbody td { padding: 8px 14px; color: #1a1a1a; font-size: 12px; }
+  .rpt-table tbody td.n { text-align: right; font-weight: 800; color: #003366; }
+  .rpt-table tfoot td { padding: 8px 14px; font-weight: 900; color: #003366; font-size: 12px; background: #F0F6FF; border-top: 2px solid #CCE9FF; }
+  .rpt-table tfoot td.n { text-align: right; }
 
-/* TABLES */
-.dash-table { width: 100%; border-collapse: collapse; }
-.dash-table thead th {
-  background: #0D1B2A; color: #5A7A9C; font-size: 9px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .5px; padding: 7px 12px; text-align: left;
-  border-bottom: 1px solid #1E3A5F; white-space: nowrap;
-}
-.dash-table tbody tr { border-bottom: 1px solid #1A2E4A; transition: background .1s; }
-.dash-table tbody tr:hover { background: #1E3A5F; }
-.dash-table tbody td { padding: 7px 12px; color: #C8D8E8; font-size: 11px; }
-.dash-table tbody td.num { text-align: right; font-weight: 800; color: white; }
-.dash-table tfoot td { padding: 7px 12px; font-weight: 900; color: white; font-size: 11px; background: #0D1B2A; border-top: 1px solid #2E5A8F; }
-.dash-table tfoot td.num { text-align: right; }
+  .rpt-badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+  .rb-cerrada  { background:#D5F5E3; color:#1E8449; }
+  .rb-embalada { background:#EDE0FF; color:#6C3483; }
+  .rb-pickeado { background:#D6EAF8; color:#1A5276; }
+  .rb-parcial  { background:#FEF9E7; color:#E67E22; }
+  .rb-sinpick  { background:#FADBD8; color:#C0392B; }
+  .rb-abierta  { background:#FEF9E7; color:#E67E22; }
+  .rb-pick     { background:#D6EAF8; color:#1A5276; }
+  .rb-emb      { background:#EDE0FF; color:#6C3483; }
 
-/* BADGE */
-.badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
-.badge-pick { background: #1A3A6A; color: #3498DB; }
-.badge-emb  { background: #3A1A5A; color: #9B59B6; }
-.badge-cerrada { background: #1A4A2A; color: #27AE60; }
-.badge-abierta { background: #4A2A0A; color: #F39C12; }
-.badge-sin-pickear { background: #4A1A1A; color: #E74C3C; }
-.badge-parcial { background: #4A2E0A; color: #E67E22; }
-.badge-pickeado { background: #1A3A6A; color: #3498DB; }
-.badge-embalada { background: #3A1A5A; color: #9B59B6; }
-
-/* PROGRESS */
-.prog-wrap { background: #0D1B2A; border-radius: 4px; height: 6px; overflow: hidden; min-width: 60px; }
-.prog-bar  { height: 100%; border-radius: 4px; }
-.prog-green  { background: #27AE60; }
-.prog-yellow { background: #F39C12; }
-.prog-red    { background: #C0392B; }
-.prog-blue   { background: #3498DB; }
-
-/* EMBUDO */
-.funnel-wrap { padding: 8px 14px; }
-.funnel-item { margin-bottom: 5px; }
-.funnel-label { display: flex; justify-content: space-between; margin-bottom: 2px; }
-.funnel-name { font-size: 10px; font-weight: 800; color: #C8D8E8; text-transform: uppercase; }
-.funnel-vals { font-size: 10px; color: #7BA7CC; font-weight: 700; }
-.funnel-bar-wrap { background: #0D1B2A; border-radius: 4px; height: 16px; overflow: hidden; }
-.funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 800; color: white; transition: width .8s ease; }
-.funnel-arrow { text-align: center; color: #2E5A8F; font-size: 12px; margin: 1px 0; }
-
-/* SLA */
-.sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px; }
-.sla-card { background: #0D1B2A; border-radius: 10px; padding: 12px 10px; text-align: center; }
-.sla-value { font-size: 26px; font-weight: 900; line-height: 1; }
-.sla-label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #5A7A9C; margin-top: 3px; }
-.sla-venc { color: #E74C3C; } .sla-hoy { color: #F39C12; } .sla-fut { color: #27AE60; }
-
-/* LT */
-.lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-.lt-card { background: #0D1B2A; border-radius: 10px; padding: 10px; text-align: center; }
-.lt-value { font-size: 22px; font-weight: 900; color: #00AAFF; }
-.lt-label { font-size: 9px; color: #5A7A9C; text-transform: uppercase; font-weight: 800; margin-top: 3px; }
-
-/* ALERTAS */
-.alertas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; padding: 10px; }
-.alerta-card { background: #0D1B2A; border-radius: 10px; padding: 12px 14px; border-left: 4px solid; display: flex; gap: 10px; }
-.alerta-card.rojo     { border-color: #C0392B; background: #2D0D0D; }
-.alerta-card.amarillo { border-color: #F39C12; background: #2D1F0D; }
-.alerta-card.verde    { border-color: #27AE60; background: #0D2D1A; }
-.alerta-icon { font-size: 20px; flex-shrink: 0; }
-.alerta-titulo { font-size: 11px; font-weight: 900; color: white; margin-bottom: 3px; }
-.alerta-desc   { font-size: 10px; color: #9AACBE; font-weight: 700; }
-.alerta-prioridad { font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: .5px; }
-.pr-alta { color: #E74C3C; } .pr-media { color: #F39C12; } .pr-baja { color: #27AE60; }
-
-/* GRID LAYOUTS */
-.row2 { display: grid; grid-template-columns: 220px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.row3 { display: grid; grid-template-columns: 200px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.row4 { display: grid; grid-template-columns: 1fr 220px; gap: 10px; margin-bottom: 12px; }
-.row-op { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-
-/* MEDALS */
-.medal { font-size: 16px; }
-
-/* SPINNER */
-.loading-overlay {
-  position: fixed; inset: 0; background: rgba(13,27,42,.92);
-  z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
-}
-.spinner { width: 40px; height: 40px; border: 4px solid #1E3A5F; border-top-color: #00AAFF; border-radius: 50%; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { color: #7BA7CC; font-weight: 800; font-size: 13px; text-transform: uppercase; }
-.empty-msg { text-align: center; padding: 30px; color: #3A5A7A; font-weight: 800; font-size: 11px; text-transform: uppercase; }
-
-@media (max-width: 1100px) {
-  .kpi-row { grid-template-columns: repeat(3, 1fr); }
-  .row2, .row3, .row4, .row-op { grid-template-columns: 1fr; }
-}
+  .rpt-prog-wrap { background:#EEF4FF; border-radius:4px; height:7px; overflow:hidden; min-width:60px; }
+  .rpt-prog-bar  { height:100%; border-radius:4px; }
+  .rpt-funnel-wrap { padding: 12px 16px; }
+  .rpt-funnel-item { margin-bottom: 7px; }
+  .rpt-funnel-label { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .rpt-funnel-name { font-size: 11px; font-weight: 800; color: #003366; text-transform: uppercase; }
+  .rpt-funnel-vals { font-size: 11px; color: #7799AA; font-weight: 700; }
+  .rpt-funnel-bar-wrap { background: #EEF4FF; border-radius: 4px; height: 18px; overflow: hidden; }
+  .rpt-funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 800; color: white; transition: width .8s; }
+  .rpt-funnel-arrow { text-align: center; color: #CCE9FF; font-size: 13px; margin: 2px 0; }
+  .rpt-sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 14px; }
+  .rpt-sla-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 14px 8px; text-align: center; }
+  .rpt-sla-value { font-size: 28px; font-weight: 900; line-height: 1; }
+  .rpt-sla-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #7799AA; margin-top: 5px; }
+  .rpt-lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 14px 14px; }
+  .rpt-lt-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 12px; text-align: center; }
+  .rpt-lt-value { font-size: 24px; font-weight: 900; color: #00AAFF; }
+  .rpt-lt-label { font-size: 10px; color: #7799AA; text-transform: uppercase; font-weight: 800; margin-top: 3px; }
+  .rpt-alertas { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 12px; padding: 16px; }
+  .rpt-alerta { background: #F8FBFF; border-radius: 12px; padding: 14px 16px; border-left: 4px solid; display: flex; gap: 10px; }
+  .rpt-alerta.rojo     { border-color:#C0392B; background:#FFF5F5; }
+  .rpt-alerta.amarillo { border-color:#F39C12; background:#FFFBF0; }
+  .rpt-alerta.verde    { border-color:#27AE60; background:#F0FFF6; }
+  .rpt-alerta-icon { font-size:20px; flex-shrink:0; }
+  .rpt-alerta-titulo { font-size:12px; font-weight:900; color:#003366; margin-bottom:3px; }
+  .rpt-alerta-desc   { font-size:11px; color:#7799AA; }
+  .rpt-alerta-pr     { font-size:10px; font-weight:800; text-transform:uppercase; margin-top:4px; }
+  .rpt-pr-alta  { color:#C0392B; } .rpt-pr-media { color:#E67E22; } .rpt-pr-baja { color:#27AE60; }
+  .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
+  .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
 </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <span class="loading-text">Cargando reportes...</span>
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="back-btn">&#8592; Inicio</a>
+    <span class="topbar-title">&#128202; Reportes CD</span>
+  </div>
+  <span class="topbar-ts" id="rpt-reloj"></span>
 </div>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <div class="logo-box">
-      <span class="l1">The Brands</span>
-      <span class="l2">CLUB</span>
-    </div>
-    <div class="title-box">
-      <h1>Reportes CD</h1>
-      <p>Análisis Operacional · Centro de Distribución</p>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="update-label">Última actualización</div>
-    <div class="update-time" id="updateTime">—</div>
-    <a href="index.html" class="back-link">&#8592; Volver al menú</a>
-  </div>
+<div class="tabs-wrap">
+  <button class="tab-btn active" onclick="switchTab('sap')" id="tab-sap">&#128203; Pedidos SAP</button>
+  <button class="tab-btn"        onclick="switchTab('op')"  id="tab-op">&#128100; KPI Operarios</button>
 </div>
 
-<!-- MAIN TABS -->
-<div class="main-tabs">
-  <button class="main-tab active" onclick="switchTab('sap', this)">📋 Pedidos Bajados SAP</button>
-  <button class="main-tab"        onclick="switchTab('operarios', this)">👤 KPI Operarios</button>
-</div>
+<div class="main">
 
-<!-- ══════════════════════════════════════════════
-     PANEL SAP
-══════════════════════════════════════════════ -->
-<div class="panel active" id="panel-sap">
-  <div class="filter-bar">
-    <div class="filter-group">
-      <label>Desde (Recepción SAP)</label>
-      <input type="date" id="sap-desde">
+  <!-- ══ PEDIDOS SAP ══ -->
+  <div class="tab-panel active" id="panel-sap">
+    <div id="rpt-sap-demo-banner" class="rpt-demo-banner" style="display:none">
+      &#9888;&#65039; Datos de demostración — backend no disponible. Inicia el servidor local para ver datos reales.
     </div>
-    <div class="filter-group">
-      <label>Hasta</label>
-      <input type="date" id="sap-hasta">
+    <div class="filter-bar">
+      <div class="filter-group"><label>Desde</label><input type="date" id="rpt-sap-desde"></div>
+      <span class="filter-sep">&#8594;</span>
+      <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
+      <button class="btn-sec" onclick="rptSapSetAyer()">Ayer</button>
+      <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
+      <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
-    <button class="btn-sec" onclick="setSapHoy()">Ayer</button>
-    <button class="btn-aplicar" onclick="cargarSAP()">&#9654; Aplicar</button>
-  </div>
-
-  <div class="content">
-    <!-- KPIs SAP -->
-    <div class="kpi-row">
-      <div class="kpi-card" style="border-top-color:#00AAFF"><div class="kpi-icon">📋</div><div class="kpi-label">Pedidos Totales</div><div class="kpi-value" id="sk-pedidos">—</div><div class="kpi-sub">órdenes</div></div>
-      <div class="kpi-card"                                  ><div class="kpi-icon">📦</div><div class="kpi-label">Unidades Totales</div><div class="kpi-value" id="sk-unidades">—</div><div class="kpi-sub">unidades</div></div>
-      <div class="kpi-card green"                            ><div class="kpi-icon">✅</div><div class="kpi-label">Entregadas</div><div class="kpi-value" id="sk-entregadas">—</div><div class="kpi-sub" id="sk-ent-pct">del total</div></div>
-      <div class="kpi-card orange"                           ><div class="kpi-icon">⏳</div><div class="kpi-label">Abiertas</div><div class="kpi-value" id="sk-abiertas">—</div><div class="kpi-sub" id="sk-ab-pct">del total</div></div>
-      <div class="kpi-card" id="sk-cumpl-card"               ><div class="kpi-icon">🎯</div><div class="kpi-label">% Cumplimiento</div><div class="kpi-value" id="sk-cumpl">—</div><div class="kpi-sub">entregadas / total</div></div>
-      <div class="kpi-card red"                              ><div class="kpi-icon">🔴</div><div class="kpi-label">Backlog</div><div class="kpi-value" id="sk-backlog">—</div><div class="kpi-sub">sin pickear + parcial</div></div>
-      <div class="kpi-card teal"                             ><div class="kpi-icon">⚡</div><div class="kpi-label">LT SAP → Picking</div><div class="kpi-value" id="sk-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
-      <div class="kpi-card purple"                           ><div class="kpi-icon">🏁</div><div class="kpi-label">LT Picking → Cierre</div><div class="kpi-value" id="sk-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
+    <div class="kpi-strip">
+      <div class="kpi-card"        ><div class="kpi-label">Pedidos</div><div class="kpi-value" id="rpt-k-ped">—</div><div class="kpi-sub">&#243;rdenes</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-k-uni">—</div><div class="kpi-sub">total</div></div>
+      <div class="kpi-card verde"  ><div class="kpi-label">Entregadas</div><div class="kpi-value" id="rpt-k-ent">—</div><div class="kpi-sub" id="rpt-k-ent-p">del total</div></div>
+      <div class="kpi-card naranja"><div class="kpi-label">Abiertas</div><div class="kpi-value" id="rpt-k-ab">—</div><div class="kpi-sub" id="rpt-k-ab-p">del total</div></div>
+      <div class="kpi-card" id="rpt-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-k-cumpl">—</div><div class="kpi-sub">ent/total</div></div>
+      <div class="kpi-card rojo"   ><div class="kpi-label">Backlog</div><div class="kpi-value" id="rpt-k-bl">—</div><div class="kpi-sub">sin pick + parcial</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">LT SAP&#8594;Pick</div><div class="kpi-value" id="rpt-k-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">LT Pick&#8594;Cierre</div><div class="kpi-value" id="rpt-k-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
     </div>
-
-    <!-- Estado · Embudo · Marketplace -->
-    <div class="row2">
-      <div class="card">
-        <div class="card-title">📊 Estado Operacional</div>
-        <table class="dash-table">
-          <thead><tr><th>Estatus</th><th class="num">Ped.</th><th class="num">Unid.</th><th class="num">%</th></tr></thead>
-          <tbody id="s-tb-estatus"><tr><td colspan="4" class="empty-msg">Cargando...</td></tr></tbody>
-          <tfoot id="s-tf-estatus"></tfoot>
-        </table>
+    <div class="rpt-grid4" style="margin-bottom:18px">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128202; Estado Operacional</div>
+        <table class="rpt-table"><thead><tr><th>Estatus</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">%</th></tr></thead>
+        <tbody id="rpt-tb-est"><tr><td colspan="4" class="rpt-empty">Cargando...</td></tr></tbody>
+        <tfoot id="rpt-tf-est"></tfoot></table>
       </div>
-      <div class="card">
-        <div class="card-title">🔽 Flujo Operacional</div>
-        <div class="funnel-wrap" id="s-funnel"><div class="empty-msg">Cargando...</div></div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128281; Flujo Operacional</div>
+        <div class="rpt-funnel-wrap" id="rpt-funnel"><div class="rpt-empty">Cargando...</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">🛒 Marketplace</div>
-        <table class="dash-table">
-          <thead><tr><th>Cliente</th><th class="num">Ped.</th><th class="num">Unid.</th><th class="num">Cumpl.</th><th></th></tr></thead>
-          <tbody id="s-tb-clientes"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
-          <tfoot id="s-tf-clientes"></tfoot>
-        </table>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128722; Marketplace</div>
+        <table class="rpt-table"><thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">Cumpl.</th><th></th></tr></thead>
+        <tbody id="rpt-tb-cli"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
+        <tfoot id="rpt-tf-cli"></tfoot></table>
       </div>
-    </div>
-
-    <!-- SLA · Olas · Productividad -->
-    <div class="row3">
-      <div class="card">
-        <div class="card-title">📅 SLA Compromisos</div>
-        <div class="sla-cards">
-          <div class="sla-card"><div style="font-size:20px">🔴</div><div class="sla-value sla-venc" id="s-sla-venc">—</div><div class="sla-label">Vencidos</div></div>
-          <div class="sla-card"><div style="font-size:20px">🟡</div><div class="sla-value sla-hoy"  id="s-sla-hoy">—</div><div class="sla-label">Para Hoy</div></div>
-          <div class="sla-card"><div style="font-size:20px">🟢</div><div class="sla-value sla-fut"  id="s-sla-fut">—</div><div class="sla-label">Futuros</div></div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128205; SLA Compromisos</div>
+        <div class="rpt-sla-cards">
+          <div class="rpt-sla-card"><div style="font-size:20px">&#128308;</div><div class="rpt-sla-value" style="color:#C0392B" id="rpt-sla-v">—</div><div class="rpt-sla-label">Vencidos</div></div>
+          <div class="rpt-sla-card"><div style="font-size:20px">&#128993;</div><div class="rpt-sla-value" style="color:#E67E22" id="rpt-sla-h">—</div><div class="rpt-sla-label">Para Hoy</div></div>
+          <div class="rpt-sla-card"><div style="font-size:20px">&#128994;</div><div class="rpt-sla-value" style="color:#27AE60" id="rpt-sla-f">—</div><div class="rpt-sla-label">Futuros</div></div>
         </div>
-        <div class="lt-row">
-          <div class="lt-card"><div class="lt-value" id="s-lt1">—</div><div class="lt-label">SAP → Picking (h)</div></div>
-          <div class="lt-card"><div class="lt-value" id="s-lt2">—</div><div class="lt-label">Picking → Cierre (h)</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🌊 Olas de Picking</div>
-        <table class="dash-table">
-          <thead><tr><th>N° Ola</th><th class="num">Pedidos</th><th class="num">Unidades</th><th class="num">Abiertas</th><th>Estado</th></tr></thead>
-          <tbody id="s-tb-olas"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
-        </table>
-      </div>
-      <div class="card">
-        <div class="card-title">👤 Productividad SAP por Operador</div>
-        <table class="dash-table">
-          <thead><tr><th>#</th><th>Operador</th><th class="num">Pedidos</th><th class="num">Unidades</th><th class="num">Entreg.</th></tr></thead>
-          <tbody id="s-tb-prod"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Tendencia · Tipo Envío -->
-    <div class="row4">
-      <div class="card">
-        <div class="card-title">📈 Tendencia 7 Días (Recepción SAP)</div>
-        <div style="padding:10px;height:200px"><canvas id="s-chartTend"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🚚 Tipo de Envío</div>
-        <div style="padding:10px;height:200px;display:flex;align-items:center;justify-content:center">
-          <canvas id="s-chartEnvio" style="max-height:180px"></canvas>
+        <div class="rpt-lt-row">
+          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt1">—</div><div class="rpt-lt-label">SAP&#8594;Pick (h)</div></div>
+          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt2">—</div><div class="rpt-lt-label">Pick&#8594;Cierre (h)</div></div>
         </div>
       </div>
     </div>
-
-    <!-- Alertas -->
-    <div class="card">
-      <div class="card-title">🚨 Alertas Operacionales</div>
-      <div class="alertas-grid" id="s-alertas"><div class="empty-msg">Cargando...</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════
-     PANEL KPI OPERARIOS
-══════════════════════════════════════════════ -->
-<div class="panel" id="panel-operarios">
-  <div class="filter-bar">
-    <div class="filter-group">
-      <label>Desde</label>
-      <input type="date" id="op-desde">
-    </div>
-    <div class="filter-group">
-      <label>Hasta</label>
-      <input type="date" id="op-hasta">
-    </div>
-    <div class="filter-group">
-      <label>Tipo</label>
-      <select id="op-tipo">
-        <option value="todos">Todos</option>
-        <option value="Picking">Picking</option>
-        <option value="Embalaje">Embalaje</option>
-      </select>
-    </div>
-    <button class="btn-sec" onclick="setOpHoy()">Ayer</button>
-    <button class="btn-aplicar" onclick="cargarOperarios()">&#9654; Aplicar</button>
-  </div>
-
-  <div class="content">
-    <!-- KPIs Operarios -->
-    <div class="kpi-row" style="grid-template-columns:repeat(6,1fr)">
-      <div class="kpi-card" style="border-top-color:#00AAFF"><div class="kpi-icon">👥</div><div class="kpi-label">Operarios Activos</div><div class="kpi-value" id="ok-operarios">—</div><div class="kpi-sub">en el período</div></div>
-      <div class="kpi-card" style="border-top-color:#1E6BB8"><div class="kpi-icon">🌊</div><div class="kpi-label">Total Olas</div><div class="kpi-value" id="ok-olas">—</div><div class="kpi-sub">olas trabajadas</div></div>
-      <div class="kpi-card" style="border-top-color:#1E6BB8"><div class="kpi-icon">📋</div><div class="kpi-label">Pick Lists</div><div class="kpi-value" id="ok-listas">—</div><div class="kpi-sub">listas procesadas</div></div>
-      <div class="kpi-card green"                           ><div class="kpi-icon">📦</div><div class="kpi-label">Unidades Totales</div><div class="kpi-value" id="ok-unidades">—</div><div class="kpi-sub">procesadas</div></div>
-      <div class="kpi-card teal"                            ><div class="kpi-icon">⏱️</div><div class="kpi-label">Prom. Min/Lista</div><div class="kpi-value" id="ok-min">—</div><div class="kpi-sub">minutos</div></div>
-      <div class="kpi-card purple"                          ><div class="kpi-icon">⚡</div><div class="kpi-label">Unid./Hora Prom.</div><div class="kpi-value" id="ok-uph">—</div><div class="kpi-sub">productividad</div></div>
-    </div>
-
-    <!-- Tabla detalle + Tendencia -->
-    <div class="row-op">
-      <div class="card">
-        <div class="card-title">🏆 Ranking Operarios</div>
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Operario</th>
-              <th>Tipo</th>
-              <th class="num">Olas</th>
-              <th class="num">Pick Lists</th>
-              <th class="num">Unidades</th>
-              <th class="num">Min/Lista</th>
-              <th class="num">Unid./Hora</th>
-              <th>Rendimiento</th>
-            </tr>
-          </thead>
-          <tbody id="op-tabla"><tr><td colspan="9" class="empty-msg">Cargando...</td></tr></tbody>
-          <tfoot id="op-tfoot"></tfoot>
-        </table>
+    <div class="rpt-grid3" style="margin-bottom:18px">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#127754; Olas de Picking</div>
+        <table class="rpt-table"><thead><tr><th>N&#176; Ola</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Abiertas</th><th>Estado</th></tr></thead>
+        <tbody id="rpt-tb-olas"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
       </div>
-
-      <div class="card">
-        <div class="card-title">📈 Tendencia 14 Días — Unidades por Tipo</div>
-        <div style="padding:10px;height:300px"><canvas id="op-chartTend"></canvas></div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128100; Productividad Operador</div>
+        <table class="rpt-table"><thead><tr><th>#</th><th>Operador</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Entreg.</th></tr></thead>
+        <tbody id="rpt-tb-prod"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128666; Tipo de Env&#237;o</div>
+        <div style="padding:14px;height:230px;display:flex;align-items:center;justify-content:center"><canvas id="rpt-chart-envio"></canvas></div>
       </div>
     </div>
-
+    <div class="rpt-grid2" style="margin-bottom:18px">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128200; Tendencia 7 D&#237;as</div>
+        <div style="padding:14px;height:220px"><canvas id="rpt-chart-tend"></canvas></div>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128680; Alertas Operacionales</div>
+        <div class="rpt-alertas" id="rpt-alertas"><div class="rpt-empty">Cargando...</div></div>
+      </div>
+    </div>
   </div>
+
+  <!-- ══ KPI OPERARIOS ══ -->
+  <div class="tab-panel" id="panel-op">
+    <div id="rpt-op-demo-banner" class="rpt-demo-banner" style="display:none">
+      &#9888;&#65039; Datos de demostración — backend no disponible. Inicia el servidor local para ver datos reales.
+    </div>
+    <div class="filter-bar">
+      <div class="filter-group"><label>Desde</label><input type="date" id="rpt-op-desde"></div>
+      <span class="filter-sep">&#8594;</span>
+      <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-op-hasta"></div>
+      <div class="filter-group">
+        <label>Tipo</label>
+        <select id="rpt-op-tipo">
+          <option value="todos">Todos</option>
+          <option value="Picking">Picking</option>
+          <option value="Embalaje">Embalaje</option>
+        </select>
+      </div>
+      <button class="btn-sec" onclick="rptOpSetAyer()">Ayer</button>
+      <button class="btn-apply" onclick="rptCargarOp()">Aplicar</button>
+      <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi-card"      ><div class="kpi-label">Operarios</div><div class="kpi-value" id="rpt-ok-op">—</div><div class="kpi-sub">activos</div></div>
+      <div class="kpi-card"      ><div class="kpi-label">Olas</div><div class="kpi-value" id="rpt-ok-olas">—</div><div class="kpi-sub">trabajadas</div></div>
+      <div class="kpi-card"      ><div class="kpi-label">Pick Lists</div><div class="kpi-value" id="rpt-ok-listas">—</div><div class="kpi-sub">procesadas</div></div>
+      <div class="kpi-card verde"><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-ok-uni">—</div><div class="kpi-sub">procesadas</div></div>
+      <div class="kpi-card"      ><div class="kpi-label">Min / Lista</div><div class="kpi-value" id="rpt-ok-min">—</div><div class="kpi-sub">promedio</div></div>
+      <div class="kpi-card"      ><div class="kpi-label">Unid / Hora</div><div class="kpi-value" id="rpt-ok-uph">—</div><div class="kpi-sub">productividad</div></div>
+    </div>
+    <div class="rpt-grid2" style="margin-bottom:18px">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#127942; Ranking Operarios</div>
+        <div style="overflow-x:auto">
+          <table class="rpt-table">
+            <thead><tr><th>#</th><th>Operario</th><th>Tipo</th><th class="n">Olas</th><th class="n">Listas</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th class="n">Unid/Hora</th><th>Rendimiento</th></tr></thead>
+            <tbody id="rpt-op-tabla"><tr><td colspan="9" class="rpt-empty">Cargando...</td></tr></tbody>
+            <tfoot id="rpt-op-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128200; Tendencia 14 D&#237;as — Unidades por Tipo</div>
+        <div style="padding:14px;height:340px"><canvas id="rpt-op-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="config.js"></script>
 <script>
-// ── Utilidades ────────────────────────────────
-const MEDALS = ['🥇','🥈','🥉'];
-function fmtNum(n) { return Number(n||0).toLocaleString('es-CL'); }
-function fmtPct(a,b) { return b>0 ? (a/b*100).toFixed(1)+'%' : '—'; }
-function isoYesterday() {
-  const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10);
+function tickReloj() {
+  const el=document.getElementById('rpt-reloj');
+  if(el) el.textContent=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
-const ESTATUS_BADGE = { 'Sin Pickear':'badge-sin-pickear','Parcial':'badge-parcial','Pickeado':'badge-pickeado','Embalada':'badge-embalada','Cerrada':'badge-cerrada' };
-const ESTATUS_ORDER = ['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
-const FUNNEL_COLORS = { 'Sin Pickear':'#C0392B','Parcial':'#E67E22','Pickeado':'#3498DB','Embalada':'#8E44AD','Cerrada':'#27AE60' };
+tickReloj(); setInterval(tickReloj,1000);
 
-let chartSapTend=null, chartSapEnvio=null, chartOpTend=null;
-
-// ── Tabs ─────────────────────────────────────
-function switchTab(tab, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  btn.classList.add('active');
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='op'&&!document.getElementById('rpt-op-ts').textContent){rptInitOp();rptCargarOp();}
 }
 
-// ══════════════════════════════════════════════
-// PANEL SAP
-// ══════════════════════════════════════════════
-function setSapHoy() {
-  const y = isoYesterday();
-  document.getElementById('sap-desde').value = y;
-  document.getElementById('sap-hasta').value = y;
+const RPT_MOCK_SAP={
+  ok:true,
+  kpis:{total_pedidos:248,total_unidades:1842,total_entregadas:1456,total_abiertas:386,backlog:42,sla_vencidos:8,sla_hoy:24,sla_futuros:216,lead_time_sap_picking_hrs:3.2,lead_time_picking_cierre_hrs:1.8,cumplimiento:79.1},
+  por_estatus:[{estatus:'Cerrada',pedidos:156,unidades:1200,entregadas:1200,abiertas:0},{estatus:'Embalada',pedidos:22,unidades:256,entregadas:0,abiertas:256},{estatus:'Pickeado',pedidos:28,unidades:200,entregadas:0,abiertas:200},{estatus:'Parcial',pedidos:18,unidades:126,entregadas:0,abiertas:126},{estatus:'Sin Pickear',pedidos:24,unidades:60,entregadas:0,abiertas:60}],
+  por_cliente:[{cliente:'Falabella',pedidos:98,unidades:720,entregadas:580},{cliente:'Ripley',pedidos:72,unidades:540,entregadas:430},{cliente:'Paris',pedidos:48,unidades:360,entregadas:280},{cliente:'Mercado Libre',pedidos:30,unidades:222,entregadas:166}],
+  por_ola:[{num_ola:'OLA-0231',pedidos:45,unidades:320,abiertas:0},{num_ola:'OLA-0232',pedidos:38,unidades:280,abiertas:12},{num_ola:'OLA-0233',pedidos:30,unidades:210,abiertas:30}],
+  por_usuario:[{usuario:'DEMO OPERARIO A',pedidos:82,unidades:620,entregadas:500},{usuario:'DEMO OPERARIO B',pedidos:68,unidades:510,entregadas:400},{usuario:'DEMO OPERARIO C',pedidos:54,unidades:400,entregadas:310}],
+  por_tipo_envio:[{tipo_envio:'DOMICILIO',pedidos:180,unidades:1340},{tipo_envio:'TIENDA',pedidos:48,unidades:362},{tipo_envio:'EXPRESS',pedidos:20,unidades:140}],
+  tendencia:[{fecha:'2026-05-25',pedidos:210,unidades:1580,entregadas:1240},{fecha:'2026-05-26',pedidos:185,unidades:1420,entregadas:1100},{fecha:'2026-05-27',pedidos:230,unidades:1720,entregadas:1380},{fecha:'2026-05-28',pedidos:195,unidades:1480,entregadas:1150},{fecha:'2026-05-29',pedidos:220,unidades:1650,entregadas:1290},{fecha:'2026-05-30',pedidos:240,unidades:1800,entregadas:1400},{fecha:'2026-05-31',pedidos:248,unidades:1842,entregadas:1456}],
+};
+const RPT_MOCK_OP={
+  ok:true,
+  resumen:{total_operarios:18,total_olas:12,total_listas:145,total_unidades:2840,prom_min_lista:14.2,prom_unid_hora:48.5},
+  detalle:[{nombre:'DEMO OPERARIO A',tipo:'Picking',olas:4,pick_lists:52,min_prom_x_lista:12.1,unidades:840,unid_x_hora:58.2},{nombre:'DEMO OPERARIO B',tipo:'Picking',olas:3,pick_lists:48,min_prom_x_lista:14.5,unidades:720,unid_x_hora:49.6},{nombre:'DEMO OPERARIO C',tipo:'Embalaje',olas:2,pick_lists:24,min_prom_x_lista:18.2,unidades:480,unid_x_hora:39.4},{nombre:'DEMO OPERARIO D',tipo:'Picking',olas:2,pick_lists:21,min_prom_x_lista:16.0,unidades:420,unid_x_hora:44.1},{nombre:'DEMO OPERARIO E',tipo:'Embalaje',olas:1,pick_lists:18,min_prom_x_lista:20.1,unidades:380,unid_x_hora:35.2}],
+  tendencia:[{fecha:'2026-05-18',tipo:'Picking',unidades:1820,operarios:12,olas:8},{fecha:'2026-05-18',tipo:'Embalaje',unidades:980,operarios:6,olas:4},{fecha:'2026-05-19',tipo:'Picking',unidades:2100,operarios:14,olas:9},{fecha:'2026-05-19',tipo:'Embalaje',unidades:1100,operarios:7,olas:5},{fecha:'2026-05-25',tipo:'Picking',unidades:1950,operarios:13,olas:8},{fecha:'2026-05-25',tipo:'Embalaje',unidades:1050,operarios:6,olas:4},{fecha:'2026-05-31',tipo:'Picking',unidades:2160,operarios:14,olas:8},{fecha:'2026-05-31',tipo:'Embalaje',unidades:680,operarios:4,olas:4}],
+};
+
+function rptFmt(n){return Number(n||0).toLocaleString('es-CL');}
+function rptPct(a,b){return b>0?(a/b*100).toFixed(1)+'%':'—';}
+function rptAyer(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
+const MEDALS=['&#127941;','&#127942;','&#127943;'];
+const EST_ORDER=['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
+const EST_BADGE={'Sin Pickear':'rb-sinpick','Parcial':'rb-parcial','Pickeado':'rb-pickeado','Embalada':'rb-embalada','Cerrada':'rb-cerrada'};
+let chartTend=null,chartEnvio=null,chartOp=null;
+
+function rptSapSetAyer(){const y=rptAyer();document.getElementById('rpt-sap-desde').value=y;document.getElementById('rpt-sap-hasta').value=y;}
+
+async function rptCargarSap(){
+  const desde=document.getElementById('rpt-sap-desde').value;
+  const hasta=document.getElementById('rpt-sap-hasta').value;
+  const p=new URLSearchParams();
+  if(desde)p.set('desde',desde);
+  if(hasta)p.set('hasta',hasta);
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
+    const res=await fetch(BACKEND_URL+'/api/pedidos-sap/resumen?'+p,{signal:ctrl.signal});
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error);
+    document.getElementById('rpt-sap-demo-banner').style.display='none';
+    rptRenderSap(data);
+    document.getElementById('rpt-sap-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
+  }catch(e){
+    console.warn('Backend no disponible:',e.message);
+    document.getElementById('rpt-sap-demo-banner').style.display='flex';
+    rptRenderSap(RPT_MOCK_SAP);
+    document.getElementById('rpt-sap-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
+  }
 }
 
-async function cargarSAP() {
-  document.getElementById('loadingOverlay').style.display='flex';
-  const desde = document.getElementById('sap-desde').value;
-  const hasta  = document.getElementById('sap-hasta').value;
-  const p = new URLSearchParams();
-  if (desde) p.set('desde', desde);
-  if (hasta)  p.set('hasta',  hasta);
-  try {
-    const res  = await fetch(BACKEND_URL+'/api/pedidos-sap/resumen?'+p);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-    renderSAP(data);
-    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('es-CL');
-  } catch(e) { alert('Error SAP: '+e.message); }
-  finally { document.getElementById('loadingOverlay').style.display='none'; }
+function rptRenderSap(data){
+  const k=data.kpis;
+  document.getElementById('rpt-k-ped').textContent   =rptFmt(k.total_pedidos);
+  document.getElementById('rpt-k-uni').textContent   =rptFmt(k.total_unidades);
+  document.getElementById('rpt-k-ent').textContent   =rptFmt(k.total_entregadas);
+  document.getElementById('rpt-k-ent-p').textContent =rptPct(k.total_entregadas,k.total_unidades)+' del total';
+  document.getElementById('rpt-k-ab').textContent    =rptFmt(k.total_abiertas);
+  document.getElementById('rpt-k-ab-p').textContent  =rptPct(k.total_abiertas,k.total_unidades)+' del total';
+  document.getElementById('rpt-k-cumpl').textContent =(k.cumplimiento||0)+'%';
+  document.getElementById('rpt-k-bl').textContent    =rptFmt(k.backlog);
+  document.getElementById('rpt-k-lt1').textContent   =k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
+  document.getElementById('rpt-k-lt2').textContent   =k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
+  document.getElementById('rpt-lt1').textContent     =k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
+  document.getElementById('rpt-lt2').textContent     =k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
+  document.getElementById('rpt-sla-v').textContent   =rptFmt(k.sla_vencidos);
+  document.getElementById('rpt-sla-h').textContent   =rptFmt(k.sla_hoy);
+  document.getElementById('rpt-sla-f').textContent   =rptFmt(k.sla_futuros);
+  const pct=Number(k.cumplimiento||0);
+  document.getElementById('rpt-k-cumpl-card').className='kpi-card '+(pct>=80?'verde':pct>=60?'naranja':'rojo');
+  renderEstatus(data.por_estatus,k);
+  renderEmbudo(data.por_estatus,k);
+  renderClientes(data.por_cliente);
+  renderOlas(data.por_ola);
+  renderProd(data.por_usuario);
+  renderTend(data.tendencia);
+  renderEnvio(data.por_tipo_envio);
+  renderAlertas(data);
 }
 
-function renderSAP(data) {
-  const k = data.kpis;
-  // KPIs
-  document.getElementById('sk-pedidos').textContent    = fmtNum(k.total_pedidos);
-  document.getElementById('sk-unidades').textContent   = fmtNum(k.total_unidades);
-  document.getElementById('sk-entregadas').textContent = fmtNum(k.total_entregadas);
-  document.getElementById('sk-abiertas').textContent   = fmtNum(k.total_abiertas);
-  document.getElementById('sk-ent-pct').textContent    = fmtPct(k.total_entregadas, k.total_unidades)+' del total';
-  document.getElementById('sk-ab-pct').textContent     = fmtPct(k.total_abiertas, k.total_unidades)+' del total';
-  document.getElementById('sk-cumpl').textContent      = (k.cumplimiento||0)+'%';
-  document.getElementById('sk-backlog').textContent    = fmtNum(k.backlog);
-  document.getElementById('sk-lt1').textContent        = k.lead_time_sap_picking_hrs!=null ? k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('sk-lt2').textContent        = k.lead_time_picking_cierre_hrs!=null ? k.lead_time_picking_cierre_hrs+' h':'—';
-  document.getElementById('s-lt1').textContent         = k.lead_time_sap_picking_hrs!=null ? k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('s-lt2').textContent         = k.lead_time_picking_cierre_hrs!=null ? k.lead_time_picking_cierre_hrs+' h':'—';
-  const pct = Number(k.cumplimiento||0);
-  document.getElementById('sk-cumpl-card').className = 'kpi-card '+(pct>=80?'green':pct>=60?'yellow':'red');
-  // SLA
-  document.getElementById('s-sla-venc').textContent = fmtNum(k.sla_vencidos);
-  document.getElementById('s-sla-hoy').textContent  = fmtNum(k.sla_hoy);
-  document.getElementById('s-sla-fut').textContent  = fmtNum(k.sla_futuros);
-
-  renderSapEstatus(data.por_estatus, k);
-  renderSapEmbudo(data.por_estatus, k);
-  renderSapClientes(data.por_cliente, k);
-  renderSapOlas(data.por_ola);
-  renderSapProd(data.por_usuario);
-  renderSapTendencia(data.tendencia);
-  renderSapEnvio(data.por_tipo_envio);
-  renderSapAlertas(data);
+function renderEstatus(rows,k){
+  const tot=Number(k.total_pedidos)||1;
+  const map={};(rows||[]).forEach(r=>map[r.estatus]=r);
+  const all=[...EST_ORDER.filter(s=>map[s]).map(s=>map[s]),...(rows||[]).filter(r=>!EST_ORDER.includes(r.estatus))];
+  if(!all.length){document.getElementById('rpt-tb-est').innerHTML='<tr><td colspan="4" class="rpt-empty">Sin datos</td></tr>';return;}
+  const tP=all.reduce((a,r)=>a+Number(r.pedidos||0),0);
+  const tU=all.reduce((a,r)=>a+Number(r.unidades||0),0);
+  document.getElementById('rpt-tb-est').innerHTML=all.map(r=>`<tr><td><span class="rpt-badge ${EST_BADGE[r.estatus]||'rb-pickeado'}">${r.estatus}</span></td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${(Number(r.pedidos)/tot*100).toFixed(1)}%</td></tr>`).join('');
+  document.getElementById('rpt-tf-est').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n">100%</td></tr>`;
 }
 
-function renderSapEstatus(rows, k) {
-  const totalPed = Number(k.total_pedidos)||1;
-  const map = {}; (rows||[]).forEach(r => map[r.estatus]=r);
-  const all = [...ESTATUS_ORDER.filter(s=>map[s]).map(s=>map[s]), ...(rows||[]).filter(r=>!ESTATUS_ORDER.includes(r.estatus))];
-  if (!all.length) { document.getElementById('s-tb-estatus').innerHTML='<tr><td colspan="4" class="empty-msg">Sin datos</td></tr>'; return; }
-  const totP = all.reduce((a,r)=>a+Number(r.pedidos||0),0);
-  const totU = all.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('s-tb-estatus').innerHTML = all.map(r => {
-    const bc = ESTATUS_BADGE[r.estatus]||'badge-pickeado';
-    return `<tr><td><span class="badge ${bc}">${r.estatus}</span></td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num">${totalPed>0?(Number(r.pedidos)/totalPed*100).toFixed(1)+'%':'—'}</td></tr>`;
-  }).join('');
-  document.getElementById('s-tf-estatus').innerHTML = `<tr><td style="font-weight:900">TOTAL</td><td class="num">${fmtNum(totP)}</td><td class="num">${fmtNum(totU)}</td><td class="num">100%</td></tr>`;
-}
-
-function renderSapEmbudo(rows, k) {
-  const totalPed = Number(k.total_pedidos)||1;
-  const map = {}; (rows||[]).forEach(r => map[r.estatus]=r);
-  const etapas = [
-    {label:'Comprometido', key:null,         color:'#1565C0'},
-    {label:'Sin Pickear',  key:'Sin Pickear', color:'#C0392B'},
-    {label:'Parcial',      key:'Parcial',     color:'#E67E22'},
-    {label:'Pickeado',     key:'Pickeado',    color:'#3498DB'},
-    {label:'Embalada',     key:'Embalada',    color:'#8E44AD'},
-    {label:'Cerrada',      key:'Cerrada',     color:'#27AE60'},
-  ];
-  let html = '';
-  etapas.forEach((e,i) => {
-    const ped = e.key ? Number((map[e.key]||{}).pedidos||0) : totalPed;
-    const pct = totalPed>0 ? Math.round(ped/totalPed*100) : 0;
-    if (i>0) html += '<div class="funnel-arrow">↓</div>';
-    html += `<div class="funnel-item"><div class="funnel-label"><span class="funnel-name">${e.label}</span><span class="funnel-vals">${fmtNum(ped)} · ${pct}%</span></div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.max(pct,3)}%;background:${e.color}">${pct>=15?pct+'%':''}</div></div></div>`;
+function renderEmbudo(rows,k){
+  const tot=Number(k.total_pedidos)||1;
+  const map={};(rows||[]).forEach(r=>map[r.estatus]=r);
+  const etapas=[{l:'Comprometido',k:null,c:'#0077BB'},{l:'Sin Pickear',k:'Sin Pickear',c:'#C0392B'},{l:'Parcial',k:'Parcial',c:'#E67E22'},{l:'Pickeado',k:'Pickeado',c:'#3498DB'},{l:'Embalada',k:'Embalada',c:'#8E44AD'},{l:'Cerrada',k:'Cerrada',c:'#27AE60'}];
+  let html='';
+  etapas.forEach((e,i)=>{
+    const n=e.k?Number((map[e.k]||{}).pedidos||0):tot;
+    const pct=Math.round(n/tot*100);
+    if(i>0)html+='<div class="rpt-funnel-arrow">&#8595;</div>';
+    html+=`<div class="rpt-funnel-item"><div class="rpt-funnel-label"><span class="rpt-funnel-name">${e.l}</span><span class="rpt-funnel-vals">${rptFmt(n)} · ${pct}%</span></div><div class="rpt-funnel-bar-wrap"><div class="rpt-funnel-bar" style="width:${Math.max(pct,3)}%;background:${e.c}">${pct>=15?pct+'%':''}</div></div></div>`;
   });
-  document.getElementById('s-funnel').innerHTML = html;
+  document.getElementById('rpt-funnel').innerHTML=html;
 }
 
-function renderSapClientes(rows, k) {
-  if (!rows||!rows.length) { document.getElementById('s-tb-clientes').innerHTML='<tr><td colspan="5" class="empty-msg">Sin datos</td></tr>'; return; }
-  const totP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
-  const totU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
-  const totE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
-  document.getElementById('s-tb-clientes').innerHTML = rows.map(r => {
-    const pct = Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
-    const col = pct>=80?'prog-green':pct>=60?'prog-yellow':'prog-red';
-    return `<tr><td style="font-weight:800;color:white">${r.cliente}</td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num">${pct}%</td><td style="min-width:70px"><div class="prog-wrap"><div class="prog-bar ${col}" style="width:${pct}%"></div></div></td></tr>`;
+function renderClientes(rows){
+  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
+  const tP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
+  const tU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
+  const tE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
+  document.getElementById('rpt-tb-cli').innerHTML=rows.map(r=>{
+    const pct=Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
+    const col=pct>=80?'#27AE60':pct>=60?'#E67E22':'#C0392B';
+    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${pct}%</td><td style="min-width:60px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
   }).join('');
-  const pctTot=totU>0?Math.round(totE/totU*100):0;
-  document.getElementById('s-tf-clientes').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="num">${fmtNum(totP)}</td><td class="num">${fmtNum(totU)}</td><td class="num">${pctTot}%</td><td></td></tr>`;
+  const pT=tU>0?Math.round(tE/tU*100):0;
+  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n">${pT}%</td><td></td></tr>`;
 }
 
-function renderSapOlas(rows) {
-  if (!rows||!rows.length) { document.getElementById('s-tb-olas').innerHTML='<tr><td colspan="5" class="empty-msg">Sin olas</td></tr>'; return; }
-  document.getElementById('s-tb-olas').innerHTML = rows.slice(0,15).map(r => {
+function renderOlas(rows){
+  if(!rows||!rows.length){document.getElementById('rpt-tb-olas').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin olas</td></tr>';return;}
+  document.getElementById('rpt-tb-olas').innerHTML=rows.slice(0,15).map(r=>{
     const ab=Number(r.abiertas||0);
-    const badge=ab>0?'<span class="badge badge-abierta">Abierta</span>':'<span class="badge badge-cerrada">Cerrada</span>';
-    return `<tr><td style="font-weight:800;color:#00AAFF">${r.num_ola||'—'}</td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num" style="color:${ab>0?'#E74C3C':'#27AE60'}">${fmtNum(ab)}</td><td>${badge}</td></tr>`;
+    return `<tr><td style="font-weight:800;color:#0077BB">${r.num_ola||'—'}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:${ab>0?'#C0392B':'#27AE60'};font-weight:800">${rptFmt(ab)}</td><td><span class="rpt-badge ${ab>0?'rb-abierta':'rb-cerrada'}">${ab>0?'Abierta':'Cerrada'}</span></td></tr>`;
   }).join('');
 }
 
-function renderSapProd(rows) {
-  if (!rows||!rows.length) { document.getElementById('s-tb-prod').innerHTML='<tr><td colspan="5" class="empty-msg">Sin datos</td></tr>'; return; }
-  document.getElementById('s-tb-prod').innerHTML = rows.map((r,i)=>`<tr>
-    <td style="text-align:center;font-size:15px">${MEDALS[i]||i+1}</td>
-    <td style="font-weight:800;color:white">${r.usuario}</td>
-    <td class="num">${fmtNum(r.pedidos)}</td>
-    <td class="num">${fmtNum(r.unidades)}</td>
-    <td class="num" style="color:#27AE60">${fmtNum(r.entregadas)}</td>
-  </tr>`).join('');
+function renderProd(rows){
+  if(!rows||!rows.length){document.getElementById('rpt-tb-prod').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
+  document.getElementById('rpt-tb-prod').innerHTML=rows.map((r,i)=>`<tr><td style="text-align:center;font-size:15px">${MEDALS[i]||i+1}</td><td style="font-weight:800;color:#003366">${r.usuario}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#27AE60;font-weight:900">${rptFmt(r.entregadas)}</td></tr>`).join('');
 }
 
-function renderSapTendencia(rows) {
-  if (!rows||!rows.length) return;
+function renderTend(rows){
+  if(!rows||!rows.length)return;
   const labels=rows.map(r=>new Date(r.fecha).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  if (chartSapTend) chartSapTend.destroy();
-  chartSapTend = new Chart(document.getElementById('s-chartTend'),{
-    type:'bar', data:{ labels, datasets:[
-      {label:'Pedidos',   data:rows.map(r=>Number(r.pedidos||0)),    backgroundColor:'#1565C088', borderColor:'#1565C0', borderWidth:1},
-      {label:'Entregadas',data:rows.map(r=>Number(r.entregadas||0)), backgroundColor:'#27AE6088', borderColor:'#27AE60', borderWidth:1},
+  if(chartTend)chartTend.destroy();
+  chartTend=new Chart(document.getElementById('rpt-chart-tend'),{
+    type:'bar',data:{labels,datasets:[
+      {label:'Pedidos',data:rows.map(r=>Number(r.pedidos||0)),backgroundColor:'#00AAFF55',borderColor:'#0077BB',borderWidth:1.5},
+      {label:'Entregadas',data:rows.map(r=>Number(r.entregadas||0)),backgroundColor:'#27AE6055',borderColor:'#1E8449',borderWidth:1.5},
     ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#7BA7CC', font:{size:10,family:'Nunito'} } } },
-      scales:{ x:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} }, y:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} } }
-    }
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Nunito'}}}},
+      scales:{x:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}},y:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}}}
   });
 }
 
-function renderSapEnvio(rows) {
-  if (!rows||!rows.length) return;
-  if (chartSapEnvio) chartSapEnvio.destroy();
-  chartSapEnvio = new Chart(document.getElementById('s-chartEnvio'),{
+function renderEnvio(rows){
+  if(!rows||!rows.length)return;
+  if(chartEnvio)chartEnvio.destroy();
+  chartEnvio=new Chart(document.getElementById('rpt-chart-envio'),{
     type:'doughnut',
-    data:{ labels:rows.map(r=>r.tipo_envio), datasets:[{ data:rows.map(r=>Number(r.pedidos||0)), backgroundColor:['#1565C0','#27AE60','#E67E22','#8E44AD'], borderColor:'#13263D', borderWidth:2 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{color:'#7BA7CC',font:{size:10,family:'Nunito'},boxWidth:12,padding:8} } } }
+    data:{labels:rows.map(r=>r.tipo_envio),datasets:[{data:rows.map(r=>Number(r.pedidos||0)),backgroundColor:['#0077BB','#27AE60','#E67E22','#8E44AD','#C0392B'],borderColor:'white',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#555',font:{size:10,family:'Nunito'},boxWidth:12,padding:6}}}}
   });
 }
 
-function renderSapAlertas(data) {
-  const k=data.kpis; const alertas=[];
-  if (Number(k.sla_vencidos)>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${fmtNum(k.sla_vencidos)} pedidos con SLA VENCIDO`,desc:'Fecha compromiso pasada y sin cerrar',pr:'Alta'});
-  if (Number(k.backlog)>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${fmtNum(k.backlog)} pedidos en Backlog`,desc:'Sin Pickear o Parciales pendientes',pr:'Alta'});
+function renderAlertas(data){
+  const k=data.kpis;const al=[];
+  if(Number(k.sla_vencidos)>0)al.push({t:'rojo',i:'&#128308;',ti:`${rptFmt(k.sla_vencidos)} pedidos con SLA vencido`,d:'Fecha compromiso pasada sin cerrar',p:'Alta'});
+  if(Number(k.backlog)>0)al.push({t:'rojo',i:'&#128308;',ti:`${rptFmt(k.backlog)} en Backlog`,d:'Sin pickear o parciales pendientes',p:'Alta'});
   const olasAb=(data.por_ola||[]).filter(o=>Number(o.abiertas||0)>0);
-  if (olasAb.length>0) alertas.push({tipo:'amarillo',icon:'🟡',titulo:`${olasAb.length} ola(s) con pedidos abiertos`,desc:olasAb.slice(0,3).map(o=>`Ola ${o.num_ola}: ${o.abiertas}`).join(' · '),pr:'Media'});
-  const clBajos=(data.por_cliente||[]).filter(c=>Number(c.unidades)>0&&(Number(c.entregadas)/Number(c.unidades)*100)<60);
-  if (clBajos.length>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${clBajos.length} marketplace(s) bajo 60% cumplimiento`,desc:clBajos.map(c=>`${c.cliente}: ${Math.round(Number(c.entregadas)/Number(c.unidades)*100)}%`).join(' · '),pr:'Alta'});
-  if (Number(k.sla_hoy)>0) alertas.push({tipo:'amarillo',icon:'🟡',titulo:`${fmtNum(k.sla_hoy)} pedidos con compromiso HOY`,desc:'Deben cerrarse antes del fin del día',pr:'Media'});
-  if (Number(k.cumplimiento||0)>=80) alertas.push({tipo:'verde',icon:'✅',titulo:`Cumplimiento ${k.cumplimiento}% — Dentro del objetivo`,desc:'Operación dentro de parámetros normales',pr:'Baja'});
-  if (!alertas.length) alertas.push({tipo:'verde',icon:'✅',titulo:'Sin alertas operacionales',desc:'Todos los indicadores en rango normal',pr:'Baja'});
-  document.getElementById('s-alertas').innerHTML=alertas.map(a=>`<div class="alerta-card ${a.tipo}"><div class="alerta-icon">${a.icon}</div><div><div class="alerta-titulo">${a.titulo}</div><div class="alerta-desc">${a.desc}</div><div class="alerta-prioridad pr-${a.pr==='Alta'?'alta':a.pr==='Media'?'media':'baja'}">Prioridad ${a.pr}</div></div></div>`).join('');
+  if(olasAb.length)al.push({t:'amarillo',i:'&#128993;',ti:`${olasAb.length} ola(s) con pedidos abiertos`,d:olasAb.slice(0,3).map(o=>`Ola ${o.num_ola}: ${o.abiertas}`).join(' · '),p:'Media'});
+  const clBaj=(data.por_cliente||[]).filter(c=>Number(c.unidades)>0&&(Number(c.entregadas)/Number(c.unidades)*100)<60);
+  if(clBaj.length)al.push({t:'rojo',i:'&#128308;',ti:`${clBaj.length} marketplace(s) bajo 60%`,d:clBaj.map(c=>`${c.cliente}: ${Math.round(Number(c.entregadas)/Number(c.unidades)*100)}%`).join(' · '),p:'Alta'});
+  if(Number(k.sla_hoy)>0)al.push({t:'amarillo',i:'&#128993;',ti:`${rptFmt(k.sla_hoy)} pedidos compromiso HOY`,d:'Deben cerrarse antes del fin del día',p:'Media'});
+  if(Number(k.cumplimiento||0)>=80)al.push({t:'verde',i:'&#9989;',ti:`Cumplimiento ${k.cumplimiento}% — Objetivo alcanzado`,d:'Operación dentro de parámetros normales',p:'Baja'});
+  if(!al.length)al.push({t:'verde',i:'&#9989;',ti:'Sin alertas activas',d:'Todos los indicadores en rango normal',p:'Baja'});
+  document.getElementById('rpt-alertas').innerHTML=al.map(a=>`<div class="rpt-alerta ${a.t}"><div class="rpt-alerta-icon">${a.i}</div><div><div class="rpt-alerta-titulo">${a.ti}</div><div class="rpt-alerta-desc">${a.d}</div><div class="rpt-alerta-pr rpt-pr-${a.p==='Alta'?'alta':a.p==='Media'?'media':'baja'}">Prioridad ${a.p}</div></div></div>`).join('');
 }
 
-// ══════════════════════════════════════════════
-// PANEL OPERARIOS
-// ══════════════════════════════════════════════
-function setOpHoy() {
-  const y = isoYesterday();
-  document.getElementById('op-desde').value = y;
-  document.getElementById('op-hasta').value = y;
+function rptOpSetAyer(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
+function rptInitOp(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
+
+async function rptCargarOp(){
+  const desde=document.getElementById('rpt-op-desde').value;
+  const hasta=document.getElementById('rpt-op-hasta').value;
+  const tipo=document.getElementById('rpt-op-tipo').value;
+  const p=new URLSearchParams();
+  if(desde)p.set('desde',desde);
+  if(hasta)p.set('hasta',hasta);
+  if(tipo&&tipo!=='todos')p.set('tipo',tipo);
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
+    const res=await fetch(BACKEND_URL+'/api/kpi-operarios?'+p,{signal:ctrl.signal});
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error);
+    document.getElementById('rpt-op-demo-banner').style.display='none';
+    rptRenderOp(data);
+    document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
+  }catch(e){
+    console.warn('Backend no disponible:',e.message);
+    document.getElementById('rpt-op-demo-banner').style.display='flex';
+    rptRenderOp(RPT_MOCK_OP);
+    document.getElementById('rpt-op-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
+  }
 }
 
-async function cargarOperarios() {
-  document.getElementById('loadingOverlay').style.display='flex';
-  const desde = document.getElementById('op-desde').value;
-  const hasta  = document.getElementById('op-hasta').value;
-  const tipo   = document.getElementById('op-tipo').value;
-  const p = new URLSearchParams();
-  if (desde) p.set('desde', desde);
-  if (hasta)  p.set('hasta',  hasta);
-  if (tipo && tipo!=='todos') p.set('tipo', tipo);
-  try {
-    const res  = await fetch(BACKEND_URL+'/api/kpi-operarios?'+p);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-    renderOperarios(data);
-    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('es-CL');
-  } catch(e) { alert('Error operarios: '+e.message); }
-  finally { document.getElementById('loadingOverlay').style.display='none'; }
-}
-
-function renderOperarios(data) {
-  const r = data.resumen || {};
-  document.getElementById('ok-operarios').textContent = fmtNum(r.total_operarios);
-  document.getElementById('ok-olas').textContent      = fmtNum(r.total_olas);
-  document.getElementById('ok-listas').textContent    = fmtNum(r.total_listas);
-  document.getElementById('ok-unidades').textContent  = fmtNum(r.total_unidades);
-  document.getElementById('ok-min').textContent       = r.prom_min_lista!=null ? r.prom_min_lista+' min':'—';
-  document.getElementById('ok-uph').textContent       = r.prom_unid_hora!=null ? r.prom_unid_hora:'—';
-
-  // Tabla ranking
-  const rows = data.detalle || [];
-  const maxUnid = rows.length ? Math.max(...rows.map(r=>Number(r.unidades||0))) : 1;
-  if (!rows.length) { document.getElementById('op-tabla').innerHTML='<tr><td colspan="9" class="empty-msg">Sin datos</td></tr>'; return; }
-  const totOlas  = rows.reduce((a,r)=>a+Number(r.olas||0),0);
-  const totListas= rows.reduce((a,r)=>a+Number(r.pick_lists||0),0);
-  const totUnid  = rows.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('op-tabla').innerHTML = rows.map((r,i) => {
-    const badge = r.tipo==='Picking'?'badge-pick':'badge-emb';
-    const pctBar = maxUnid>0 ? Math.round(Number(r.unidades)/maxUnid*100):0;
-    const col = pctBar>=80?'prog-blue':pctBar>=50?'prog-green':'prog-yellow';
-    return `<tr>
-      <td style="text-align:center">${MEDALS[i]||i+1}</td>
-      <td style="font-weight:800;color:white">${r.nombre}</td>
-      <td><span class="badge ${badge}">${r.tipo}</span></td>
-      <td class="num">${fmtNum(r.olas)}</td>
-      <td class="num">${fmtNum(r.pick_lists)}</td>
-      <td class="num">${fmtNum(r.unidades)}</td>
-      <td class="num">${r.min_prom_x_lista!=null?r.min_prom_x_lista+' min':'—'}</td>
-      <td class="num" style="color:#00AAFF;font-weight:900">${r.unid_x_hora!=null?r.unid_x_hora:'—'}</td>
-      <td style="min-width:80px"><div class="prog-wrap"><div class="prog-bar ${col}" style="width:${pctBar}%"></div></div></td>
-    </tr>`;
+function rptRenderOp(data){
+  const r=data.resumen||{};
+  document.getElementById('rpt-ok-op').textContent    =rptFmt(r.total_operarios);
+  document.getElementById('rpt-ok-olas').textContent  =rptFmt(r.total_olas);
+  document.getElementById('rpt-ok-listas').textContent=rptFmt(r.total_listas);
+  document.getElementById('rpt-ok-uni').textContent   =rptFmt(r.total_unidades);
+  document.getElementById('rpt-ok-min').textContent   =r.prom_min_lista!=null?r.prom_min_lista+' min':'—';
+  document.getElementById('rpt-ok-uph').textContent   =r.prom_unid_hora!=null?r.prom_unid_hora:'—';
+  const rows=data.detalle||[];
+  const maxU=rows.length?Math.max(...rows.map(r=>Number(r.unidades||0))):1;
+  if(!rows.length){document.getElementById('rpt-op-tabla').innerHTML='<tr><td colspan="9" class="rpt-empty">Sin datos</td></tr>';return;}
+  const tO=rows.reduce((a,r)=>a+Number(r.olas||0),0);
+  const tL=rows.reduce((a,r)=>a+Number(r.pick_lists||0),0);
+  const tU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
+  document.getElementById('rpt-op-tabla').innerHTML=rows.map((r,i)=>{
+    const pct=maxU>0?Math.round(Number(r.unidades)/maxU*100):0;
+    const col=r.tipo==='Picking'?'#0077BB':'#8E44AD';
+    return `<tr><td style="text-align:center">${MEDALS[i]||i+1}</td><td style="font-weight:800;color:#003366">${r.nombre}</td><td><span class="rpt-badge ${r.tipo==='Picking'?'rb-pick':'rb-emb'}">${r.tipo}</span></td><td class="n">${rptFmt(r.olas)}</td><td class="n">${rptFmt(r.pick_lists)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${r.min_prom_x_lista!=null?r.min_prom_x_lista+' min':'—'}</td><td class="n" style="color:#0077BB;font-weight:900">${r.unid_x_hora!=null?r.unid_x_hora:'—'}</td><td style="min-width:80px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
   }).join('');
-  document.getElementById('op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td class="num">${fmtNum(totOlas)}</td><td class="num">${fmtNum(totListas)}</td><td class="num">${fmtNum(totUnid)}</td><td class="num">—</td><td class="num">—</td><td></td></tr>`;
-
-  // Chart tendencia
-  renderOpTendencia(data.tendencia);
+  document.getElementById('rpt-op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td class="n">—</td><td></td></tr>`;
+  renderOpChart(data.tendencia);
 }
 
-function renderOpTendencia(rows) {
-  if (!rows||!rows.length) return;
+function renderOpChart(rows){
+  if(!rows||!rows.length)return;
   const fechas=[...new Set(rows.map(r=>r.fecha))].sort();
   const labels=fechas.map(f=>new Date(f).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  const pickData = fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Picking'); return r?Number(r.unidades):0;});
-  const embData  = fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Embalaje'); return r?Number(r.unidades):0;});
-  if (chartOpTend) chartOpTend.destroy();
-  chartOpTend = new Chart(document.getElementById('op-chartTend'),{
-    type:'bar', data:{ labels, datasets:[
-      {label:'Picking', data:pickData, backgroundColor:'#3498DB88', borderColor:'#3498DB', borderWidth:1},
-      {label:'Embalaje',data:embData,  backgroundColor:'#8E44AD88', borderColor:'#8E44AD', borderWidth:1},
+  const pick=fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Picking');return r?Number(r.unidades):0;});
+  const emb =fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Embalaje');return r?Number(r.unidades):0;});
+  if(chartOp)chartOp.destroy();
+  chartOp=new Chart(document.getElementById('rpt-op-chart'),{
+    type:'bar',data:{labels,datasets:[
+      {label:'Picking',data:pick,backgroundColor:'#0077BB55',borderColor:'#0055AA',borderWidth:1.5},
+      {label:'Embalaje',data:emb,backgroundColor:'#8E44AD55',borderColor:'#6C3483',borderWidth:1.5},
     ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#7BA7CC', font:{size:10,family:'Nunito'} } } },
-      scales:{ x:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} }, y:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} } }
-    }
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Nunito'}}}},
+      scales:{x:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}},y:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}}}
   });
 }
 
-// ── Init ─────────────────────────────────────
-function init() {
-  const y = isoYesterday();
-  document.getElementById('sap-desde').value = y;
-  document.getElementById('sap-hasta').value = y;
-  document.getElementById('op-desde').value  = y;
-  document.getElementById('op-hasta').value  = y;
-  cargarSAP();
-}
-init();
+(function init(){
+  const y=rptAyer();
+  document.getElementById('rpt-sap-desde').value=y;
+  document.getElementById('rpt-sap-hasta').value=y;
+  rptCargarSap();
+})();
 </script>
 </body>
 </html>
