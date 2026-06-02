@@ -123,6 +123,11 @@
     font-family: 'Nunito', Arial; transition: all .15s; text-transform: uppercase;
   }
   .toggle-btn.active { background: #00AAFF; color: white; border-color: #00AAFF; }
+  .toggle-btn.top5-btn.active { background: linear-gradient(135deg,#F59E0B,#D97706); border-color: #D97706; color: white; }
+  .top5-rank-1 { background: #FFFBEB !important; }
+  .top5-rank-2 { background: #F8FBFF !important; }
+  .top5-rank-3 { background: #FFF8F4 !important; }
+  .top5-medal  { font-size: 17px; text-align: center; line-height: 1; }
 
   table { width: 100%; border-collapse: collapse; }
   thead th {
@@ -238,6 +243,7 @@
           <div class="view-toggle">
             <button class="toggle-btn"        onclick="setView('pick-tiendas','detalle',this)">Detalle</button>
             <button class="toggle-btn active" onclick="setView('pick-tiendas','resumen',this)">Resumen</button>
+            <button class="toggle-btn top5-btn" onclick="cycleTop5('pick-tiendas',this)">⭐ TOP5</button>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -255,6 +261,7 @@
           <div class="view-toggle">
             <button class="toggle-btn"        onclick="setView('emb-tiendas','detalle',this)">Detalle</button>
             <button class="toggle-btn active" onclick="setView('emb-tiendas','resumen',this)">Resumen</button>
+            <button class="toggle-btn top5-btn" onclick="cycleTop5('emb-tiendas',this)">⭐ TOP5</button>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -304,6 +311,7 @@
             <div class="view-toggle">
               <button class="toggle-btn"        onclick="setView('pick-ecommerce','detalle',this)">Detalle</button>
               <button class="toggle-btn active" onclick="setView('pick-ecommerce','resumen',this)">Resumen</button>
+              <button class="toggle-btn top5-btn" onclick="cycleTop5('pick-ecommerce',this)">⭐ TOP5</button>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -321,6 +329,7 @@
             <div class="view-toggle">
               <button class="toggle-btn"        onclick="setView('emb-ecommerce','detalle',this)">Detalle</button>
               <button class="toggle-btn active" onclick="setView('emb-ecommerce','resumen',this)">Resumen</button>
+              <button class="toggle-btn top5-btn" onclick="cycleTop5('emb-ecommerce',this)">⭐ TOP5</button>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -441,6 +450,7 @@ const DESP_URL = 'https://script.google.com/macros/s/AKfycbwS_VDoSbjoTqRvLSOaGYO
 
 const cache = { TIENDAS: null, ECO: null };
 const viewState = { 'pick-tiendas': 'resumen', 'emb-tiendas': 'resumen', 'pick-ecommerce': 'resumen', 'emb-ecommerce': 'resumen' }, tableData = {};
+const top5State = {}; // tableId → null | 'tiempo' | 'olas'
 let despachoView      = 'fecha';
 let despachoData           = null;  // acumulado por seller
 let despachoDataFecha      = null;  // acumulado por fecha
@@ -674,9 +684,74 @@ function applyFilters(area) {
 // ── View state ──────────────────────────────────────────────
 function setView(tableId, mode, btn) {
   viewState[tableId] = mode;
+  top5State[tableId] = null;
   btn.closest('.view-toggle').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const t5btn = btn.closest('.view-toggle').querySelector('.top5-btn');
+  if (t5btn) t5btn.textContent = '⭐ TOP5';
   if (tableData[tableId]) redrawTable(tableId, tableData[tableId].rows, tableData[tableId].lim, tableData[tableId].olaLabel);
+}
+
+function cycleTop5(tableId, btn) {
+  const cur = top5State[tableId] || null;
+  const next = cur === null ? 'tiempo' : cur === 'tiempo' ? 'olas' : null;
+  top5State[tableId] = next;
+  const wrap = btn.closest('.view-toggle');
+  if (next === null) {
+    btn.classList.remove('active');
+    btn.textContent = '⭐ TOP5';
+    // reactivar el modo anterior
+    const prevMode = viewState[tableId] || 'resumen';
+    wrap.querySelectorAll('.toggle-btn:not(.top5-btn)').forEach(b => {
+      b.classList.toggle('active', b.textContent.toLowerCase() === prevMode);
+    });
+  } else {
+    wrap.querySelectorAll('.toggle-btn:not(.top5-btn)').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn.textContent = next === 'tiempo' ? '⏱ Top5 Tiempo' : '📦 Top5 Olas';
+  }
+  if (tableData[tableId]) redrawTable(tableId, tableData[tableId].rows, tableData[tableId].lim, tableData[tableId].olaLabel);
+}
+
+function renderTop5(tableId, rows, lim, olaLabel, criterion) {
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  const rowCls = ['top5-rank-1','top5-rank-2','top5-rank-3','',''];
+  const thead = document.getElementById('thead-' + tableId);
+  const tbody = document.getElementById('tbody-' + tableId);
+  const grouped = {};
+  rows.forEach(function(r) {
+    const op = String(r.operario||'—').trim();
+    if (!grouped[op]) grouped[op] = { sellers: new Set(), count: 0, mins: [] };
+    grouped[op].count++;
+    if (r.seller) grouped[op].sellers.add(String(r.seller).trim());
+    const m = Number(r.minutos); if (m > 0) grouped[op].mins.push(m);
+  });
+  var entries = Object.entries(grouped).map(function(pair) {
+    var g = pair[1];
+    var promMins = g.mins.length ? Math.round(g.mins.reduce(function(a,b){return a+b;},0)/g.mins.length) : null;
+    return { op: pair[0], count: g.count, sellers: Array.from(g.sellers), promMins: promMins };
+  });
+  if (criterion === 'tiempo') {
+    entries = entries.filter(function(e){ return e.promMins !== null; }).sort(function(a,b){ return a.promMins - b.promMins; });
+  } else {
+    entries = entries.sort(function(a,b){ return b.count - a.count; });
+  }
+  var top5 = entries.slice(0, 5);
+  if (!top5.length) {
+    thead.innerHTML = '<tr><th>#</th><th>Operario</th><th>Sellers</th><th>Olas</th><th>Prom. Min</th></tr>';
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📊</div>Sin datos para ranking.</div></td></tr>';
+    return;
+  }
+  thead.innerHTML = '<tr><th style="text-align:center">#</th><th>Operario</th><th>Sellers</th><th style="text-align:center">Olas</th><th style="text-align:center">Prom. Min</th></tr>';
+  tbody.innerHTML = top5.map(function(e, i) {
+    return '<tr class="' + (rowCls[i]||'') + '">' +
+      '<td class="top5-medal">' + medals[i] + '</td>' +
+      '<td style="font-weight:900;color:#003366;font-size:13px">' + e.op + '</td>' +
+      '<td style="font-size:11px;color:#6699BB">' + (e.sellers.join(', ')||'—') + '</td>' +
+      '<td style="font-weight:800;color:#0055AA;text-align:center">' + e.count + '</td>' +
+      '<td style="font-weight:800;text-align:center">' + (e.promMins !== null ? e.promMins + ' min' : '—') + '</td>' +
+      '</tr>';
+  }).join('');
 }
 
 function renderSubTable(tbodyId, countId, theadId, rows, lim, olaLabel) {
@@ -687,6 +762,8 @@ function renderSubTable(tbodyId, countId, theadId, rows, lim, olaLabel) {
 }
 
 function redrawTable(tableId, rows, lim, olaLabel) {
+  const t5 = top5State[tableId] || null;
+  if (t5) { renderTop5(tableId, rows, lim, olaLabel, t5); return; }
   const mode  = viewState[tableId] || 'detalle';
   const thead = document.getElementById('thead-' + tableId);
   const tbody = document.getElementById('tbody-' + tableId);
