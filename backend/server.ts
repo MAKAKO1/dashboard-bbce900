@@ -74,12 +74,20 @@ app.get('/api/pedidos-sap/resumen', async (req, res) => {
             COUNT(*) FILTER (WHERE fec_compromiso = CURRENT_DATE)::int                                    AS sla_hoy,
             COUNT(*) FILTER (WHERE fec_compromiso > CURRENT_DATE)::int                                    AS sla_futuros,
             ROUND(AVG(
-              (fec_lista_picking - fecha_recepcion) * 24.0
-            ) FILTER (WHERE fec_lista_picking IS NOT NULL AND fecha_recepcion IS NOT NULL), 1)
+              EXTRACT(EPOCH FROM (
+                (fec_lista_picking  + hora_creacion_picking::time) -
+                (fecha_recepcion    + hora_recepcion::time)
+              )) / 3600.0
+            ) FILTER (WHERE fec_lista_picking IS NOT NULL AND fecha_recepcion IS NOT NULL
+                        AND hora_creacion_picking IS NOT NULL AND hora_recepcion IS NOT NULL), 1)
               AS lead_time_sap_picking_hrs,
             ROUND(AVG(
-              (fec_actual_picking - fec_lista_picking) * 24.0
-            ) FILTER (WHERE fec_actual_picking IS NOT NULL AND fec_lista_picking IS NOT NULL), 1)
+              EXTRACT(EPOCH FROM (
+                (fec_actual_picking + hora_cierre_status::time) -
+                (fec_lista_picking  + hora_creacion_picking::time)
+              )) / 3600.0
+            ) FILTER (WHERE fec_actual_picking IS NOT NULL AND fec_lista_picking IS NOT NULL
+                        AND hora_cierre_status IS NOT NULL AND hora_creacion_picking IS NOT NULL), 1)
               AS lead_time_picking_cierre_hrs
           FROM gold_layer.fact_pedidos_bajados_cl ${where}
         `, params),
