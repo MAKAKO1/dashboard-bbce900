@@ -210,10 +210,9 @@
 <div class="tabs-wrap">
   <button class="tab-btn active"  onclick="switchTab('tiendas')"     id="tab-tiendas">&#127978; Tiendas</button>
   <button class="tab-btn"         onclick="switchTab('ecommerce')"   id="tab-ecommerce">&#128230; Ecommerce</button>
+  <button class="tab-btn"         onclick="switchTab('reportes')"    id="tab-reportes">&#128202; Reportes</button>
   <button class="tab-btn"         onclick="switchTab('tbc')"         id="tab-tbc">&#127381; TBC</button>
   <button class="tab-btn"         onclick="switchTab('recepciones')" id="tab-recepciones">&#128230; Recepciones</button>
-  <button class="tab-btn"         onclick="switchTab('pedidos-sap')" id="tab-pedidos-sap">&#128203; Pedidos SAP</button>
-  <button class="tab-btn"         onclick="switchTab('kpi-operarios')" id="tab-kpi-operarios">&#128100; KPI Operarios</button>
 </div>
 
 <div class="main">
@@ -1122,456 +1121,106 @@ loadAllHubData();
 loadDespachos();
 </script>
 
-<!-- ══ PEDIDOS SAP ══ -->
+<!-- ══ REPORTES ══ -->
 <style>
-  /* Estilos dark para paneles SAP y KPI Operarios */
-  #panel-pedidos-sap, #panel-kpi-operarios {
-    background: #0D1B2A; min-height: calc(100vh - 120px); padding: 16px 20px;
-  }
-  .rpt-filter-bar {
-    background: #13263D; border-radius: 12px; padding: 12px 18px;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px;
-    border: 1px solid #1E3A5F;
-  }
-  .rpt-filter-bar label { font-size: 9px; font-weight: 800; color: #7BA7CC; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 3px; }
-  .rpt-filter-bar input, .rpt-filter-bar select {
-    background: #1E3A5F; border: 1px solid #2E5A8F; border-radius: 8px;
-    color: white; padding: 5px 10px; font-size: 11px; font-family: 'Nunito', Arial; outline: none; min-width: 110px;
-  }
-  .rpt-btn-apply {
-    background: #00AAFF; color: white; border: none; border-radius: 20px;
-    padding: 7px 18px; font-size: 11px; font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial;
-  }
-  .rpt-btn-sec {
-    background: #1E3A5F; color: #7BA7CC; border: 1px solid #2E5A8F; border-radius: 20px;
-    padding: 7px 14px; font-size: 11px; font-weight: 800; cursor: pointer; font-family: 'Nunito', Arial;
-  }
-  .rpt-kpi-row { display: grid; grid-template-columns: repeat(8,1fr); gap: 10px; margin-bottom: 12px; }
-  .rpt-kpi { background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F; border-top: 3px solid #1E6BB8; padding: 11px 13px; position: relative; }
-  .rpt-kpi.green  { border-top-color: #27AE60; }
-  .rpt-kpi.red    { border-top-color: #C0392B; }
-  .rpt-kpi.orange { border-top-color: #E67E22; }
-  .rpt-kpi.teal   { border-top-color: #17A589; }
-  .rpt-kpi.purple { border-top-color: #8E44AD; }
-  .rpt-kpi.cyan   { border-top-color: #00AAFF; }
-  .rpt-kpi-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: #5A7A9C; margin-bottom: 3px; }
-  .rpt-kpi-value { font-size: 22px; font-weight: 900; color: white; line-height: 1; }
-  .rpt-kpi-sub   { font-size: 10px; color: #5A7A9C; margin-top: 2px; font-weight: 700; }
-  .rpt-kpi-icon  { position: absolute; top: 8px; right: 10px; font-size: 18px; opacity: .35; }
-  .rpt-row2 { display: grid; grid-template-columns: 210px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .rpt-row3 { display: grid; grid-template-columns: 190px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .rpt-row4 { display: grid; grid-template-columns: 1fr 210px; gap: 10px; margin-bottom: 12px; }
-  .rpt-row-op { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .rpt-card { background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F; overflow: hidden; }
-  .rpt-card-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #7BA7CC; padding: 9px 13px 7px; border-bottom: 1px solid #1E3A5F; }
+  /* ── REPORTES TAB — tema claro ── */
+  .rpt-card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,80,180,.08); overflow: hidden; margin-bottom: 0; }
+  .rpt-card-title { font-size: 13px; font-weight: 900; color: #003366; text-transform: uppercase; padding: 12px 18px; border-bottom: 1.5px solid #EEF4FF; }
+  .rpt-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 18px; }
+  .rpt-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 18px; }
+  .rpt-grid2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; margin-bottom: 18px; }
+  .rpt-grid-tend { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
   .rpt-table { width: 100%; border-collapse: collapse; }
-  .rpt-table thead th { background: #0D1B2A; color: #5A7A9C; font-size: 9px; font-weight: 800; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid #1E3A5F; white-space: nowrap; }
-  .rpt-table tbody tr { border-bottom: 1px solid #1A2E4A; }
-  .rpt-table tbody tr:hover { background: #1E3A5F; }
-  .rpt-table tbody td { padding: 6px 10px; color: #C8D8E8; font-size: 11px; }
-  .rpt-table tbody td.n { text-align: right; font-weight: 800; color: white; }
-  .rpt-table tfoot td { padding: 6px 10px; font-weight: 900; color: white; font-size: 11px; background: #0D1B2A; border-top: 1px solid #2E5A8F; }
+  .rpt-table thead th { background: #F0F6FF; color: #0055AA; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; padding: 9px 14px; text-align: left; white-space: nowrap; }
+  .rpt-table th.n { text-align: right; }
+  .rpt-table tbody tr { border-top: 1px solid #F0F4FA; transition: background .1s; }
+  .rpt-table tbody tr:hover { background: #F8FBFF; }
+  .rpt-table tbody td { padding: 8px 14px; color: #1a1a1a; font-size: 12px; }
+  .rpt-table tbody td.n { text-align: right; font-weight: 800; color: #003366; }
+  .rpt-table tfoot td { padding: 8px 14px; font-weight: 900; color: #003366; font-size: 12px; background: #F0F6FF; border-top: 2px solid #CCE9FF; }
   .rpt-table tfoot td.n { text-align: right; }
-  .rpt-badge { display: inline-block; border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
-  .rb-cerrada    { background:#1A4A2A; color:#27AE60; }
-  .rb-embalada   { background:#3A1A5A; color:#9B59B6; }
-  .rb-pickeado   { background:#1A3A6A; color:#3498DB; }
-  .rb-parcial    { background:#4A2E0A; color:#E67E22; }
-  .rb-sinpick    { background:#4A1A1A; color:#E74C3C; }
-  .rb-abierta    { background:#4A2A0A; color:#F39C12; }
-  .rb-pick       { background:#1A3A6A; color:#3498DB; }
-  .rb-emb        { background:#3A1A5A; color:#9B59B6; }
-  .rpt-prog-wrap { background:#0D1B2A; border-radius:4px; height:5px; overflow:hidden; min-width:50px; }
+  .rpt-badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+  .rb-cerrada    { background:#D5F5E3; color:#1E8449; }
+  .rb-embalada   { background:#EDE0FF; color:#6C3483; }
+  .rb-pickeado   { background:#D6EAF8; color:#1A5276; }
+  .rb-parcial    { background:#FEF9E7; color:#E67E22; }
+  .rb-sinpick    { background:#FADBD8; color:#C0392B; }
+  .rb-abierta    { background:#FEF9E7; color:#E67E22; }
+  .rb-pick       { background:#D6EAF8; color:#1A5276; }
+  .rb-emb        { background:#EDE0FF; color:#6C3483; }
+  .rpt-prog-wrap { background:#EEF4FF; border-radius:4px; height:7px; overflow:hidden; min-width:60px; }
   .rpt-prog-bar  { height:100%; border-radius:4px; }
-  .rpt-funnel-wrap { padding: 8px 12px; }
-  .rpt-funnel-item { margin-bottom: 5px; }
-  .rpt-funnel-label { display: flex; justify-content: space-between; margin-bottom: 2px; }
-  .rpt-funnel-name { font-size: 10px; font-weight: 800; color: #C8D8E8; text-transform: uppercase; }
-  .rpt-funnel-vals { font-size: 10px; color: #7BA7CC; }
-  .rpt-funnel-bar-wrap { background: #0D1B2A; border-radius: 4px; height: 15px; overflow: hidden; }
-  .rpt-funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: 800; color: white; transition: width .8s; }
-  .rpt-funnel-arrow { text-align: center; color: #2E5A8F; font-size: 12px; margin: 1px 0; }
-  .rpt-sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 8px; }
-  .rpt-sla-card { background: #0D1B2A; border-radius: 8px; padding: 10px 8px; text-align: center; }
-  .rpt-sla-value { font-size: 22px; font-weight: 900; line-height: 1; }
-  .rpt-sla-label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #5A7A9C; margin-top: 2px; }
-  .rpt-lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
-  .rpt-lt-card { background: #0D1B2A; border-radius: 8px; padding: 8px; text-align: center; }
-  .rpt-lt-value { font-size: 20px; font-weight: 900; color: #00AAFF; }
-  .rpt-lt-label { font-size: 9px; color: #5A7A9C; text-transform: uppercase; font-weight: 800; margin-top: 2px; }
-  .rpt-alertas { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 8px; padding: 10px; }
-  .rpt-alerta { background: #0D1B2A; border-radius: 10px; padding: 10px 12px; border-left: 4px solid; display: flex; gap: 8px; }
-  .rpt-alerta.rojo     { border-color:#C0392B; background:#2D0D0D; }
-  .rpt-alerta.amarillo { border-color:#F39C12; background:#2D1F0D; }
-  .rpt-alerta.verde    { border-color:#27AE60; background:#0D2D1A; }
-  .rpt-alerta-icon { font-size:18px; flex-shrink:0; }
-  .rpt-alerta-titulo { font-size:11px; font-weight:900; color:white; margin-bottom:2px; }
-  .rpt-alerta-desc   { font-size:10px; color:#9AACBE; }
-  .rpt-alerta-pr     { font-size:9px; font-weight:800; text-transform:uppercase; margin-top:3px; }
-  .rpt-pr-alta  { color:#E74C3C; } .rpt-pr-media { color:#F39C12; } .rpt-pr-baja { color:#27AE60; }
-  .rpt-empty { text-align:center; padding:24px; color:#3A5A7A; font-weight:800; font-size:11px; text-transform:uppercase; }
-  @media(max-width:1100px) {
-    .rpt-kpi-row { grid-template-columns:repeat(4,1fr); }
-    .rpt-row2,.rpt-row3,.rpt-row4,.rpt-row-op { grid-template-columns:1fr; }
-  }
+  .rpt-funnel-wrap { padding: 12px 16px; }
+  .rpt-funnel-item { margin-bottom: 7px; }
+  .rpt-funnel-label { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .rpt-funnel-name { font-size: 11px; font-weight: 800; color: #003366; text-transform: uppercase; }
+  .rpt-funnel-vals { font-size: 11px; color: #7799AA; font-weight: 700; }
+  .rpt-funnel-bar-wrap { background: #EEF4FF; border-radius: 4px; height: 18px; overflow: hidden; }
+  .rpt-funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 800; color: white; transition: width .8s; }
+  .rpt-funnel-arrow { text-align: center; color: #CCE9FF; font-size: 13px; margin: 2px 0; }
+  .rpt-sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 14px; }
+  .rpt-sla-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 14px 8px; text-align: center; }
+  .rpt-sla-value { font-size: 28px; font-weight: 900; line-height: 1; }
+  .rpt-sla-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #7799AA; margin-top: 5px; }
+  .rpt-lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 14px 14px; }
+  .rpt-lt-card { background: #F8FBFF; border-radius: 12px; border: 1.5px solid #EEF4FF; padding: 12px; text-align: center; }
+  .rpt-lt-value { font-size: 24px; font-weight: 900; color: #00AAFF; }
+  .rpt-lt-label { font-size: 10px; color: #7799AA; text-transform: uppercase; font-weight: 800; margin-top: 3px; }
+  .rpt-alertas { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 12px; padding: 16px; }
+  .rpt-alerta { background: #F8FBFF; border-radius: 12px; padding: 14px 16px; border-left: 4px solid; display: flex; gap: 10px; }
+  .rpt-alerta.rojo     { border-color:#C0392B; background:#FFF5F5; }
+  .rpt-alerta.amarillo { border-color:#F39C12; background:#FFFBF0; }
+  .rpt-alerta.verde    { border-color:#27AE60; background:#F0FFF6; }
+  .rpt-alerta-icon { font-size:20px; flex-shrink:0; }
+  .rpt-alerta-titulo { font-size:12px; font-weight:900; color:#003366; margin-bottom:3px; }
+  .rpt-alerta-desc   { font-size:11px; color:#7799AA; }
+  .rpt-alerta-pr     { font-size:10px; font-weight:800; text-transform:uppercase; margin-top:4px; }
+  .rpt-pr-alta  { color:#C0392B; } .rpt-pr-media { color:#E67E22; } .rpt-pr-baja { color:#27AE60; }
+  .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
+  .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  @media(max-width:1200px) { .rpt-grid4 { grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:900px)  { .rpt-grid3,.rpt-grid2,.rpt-grid-tend { grid-template-columns:1fr; } }
 </style>
 
-<!-- PANEL PEDIDOS SAP -->
+<!-- PANEL REPORTES -->
 <script>
-// Inyectar paneles después de que el DOM cargue
 document.addEventListener('DOMContentLoaded', function() {
   const main = document.querySelector('.main');
 
-  // Panel Pedidos SAP
-  const panelSap = document.createElement('div');
-  panelSap.className = 'tab-panel';
-  panelSap.id = 'panel-pedidos-sap';
-  panelSap.innerHTML = `
-    <div class="rpt-filter-bar">
-      <div><label>Desde (Recepción SAP)</label><input type="date" id="rpt-sap-desde"></div>
-      <div><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
-      <button class="rpt-btn-sec" onclick="rptSapSetAyer()">Ayer</button>
-      <button class="rpt-btn-apply" onclick="rptCargarSap()">&#9654; Aplicar</button>
-      <span id="rpt-sap-ts" style="margin-left:auto;font-size:10px;color:#5A7A9C;font-weight:800;align-self:center"></span>
+  const panelRpt = document.createElement('div');
+  panelRpt.className = 'tab-panel';
+  panelRpt.id = 'panel-reportes';
+  panelRpt.innerHTML = `
+    <div class="subtabs-wrap">
+      <button class="subtab-btn active" onclick="switchRptTab('sap')" id="subtab-rpt-sap">&#128203; Pedidos SAP</button>
+      <button class="subtab-btn"        onclick="switchRptTab('op')"  id="subtab-rpt-op">&#128100; KPI Operarios</button>
     </div>
-    <div class="rpt-kpi-row">
-      <div class="rpt-kpi cyan"><div class="rpt-kpi-icon">📋</div><div class="rpt-kpi-label">Pedidos</div><div class="rpt-kpi-value" id="rpt-k-ped">—</div><div class="rpt-kpi-sub">órdenes</div></div>
-      <div class="rpt-kpi"     ><div class="rpt-kpi-icon">📦</div><div class="rpt-kpi-label">Unidades</div><div class="rpt-kpi-value" id="rpt-k-uni">—</div><div class="rpt-kpi-sub">total</div></div>
-      <div class="rpt-kpi green"><div class="rpt-kpi-icon">✅</div><div class="rpt-kpi-label">Entregadas</div><div class="rpt-kpi-value" id="rpt-k-ent">—</div><div class="rpt-kpi-sub" id="rpt-k-ent-p">del total</div></div>
-      <div class="rpt-kpi orange"><div class="rpt-kpi-icon">⏳</div><div class="rpt-kpi-label">Abiertas</div><div class="rpt-kpi-value" id="rpt-k-ab">—</div><div class="rpt-kpi-sub" id="rpt-k-ab-p">del total</div></div>
-      <div class="rpt-kpi" id="rpt-k-cumpl-card"><div class="rpt-kpi-icon">🎯</div><div class="rpt-kpi-label">Cumplimiento</div><div class="rpt-kpi-value" id="rpt-k-cumpl">—</div><div class="rpt-kpi-sub">ent/total</div></div>
-      <div class="rpt-kpi red"><div class="rpt-kpi-icon">🔴</div><div class="rpt-kpi-label">Backlog</div><div class="rpt-kpi-value" id="rpt-k-bl">—</div><div class="rpt-kpi-sub">sin pick+parcial</div></div>
-      <div class="rpt-kpi teal"><div class="rpt-kpi-icon">⚡</div><div class="rpt-kpi-label">LT SAP→Pick</div><div class="rpt-kpi-value" id="rpt-k-lt1">—</div><div class="rpt-kpi-sub">horas prom.</div></div>
-      <div class="rpt-kpi purple"><div class="rpt-kpi-icon">🏁</div><div class="rpt-kpi-label">LT Pick→Cierre</div><div class="rpt-kpi-value" id="rpt-k-lt2">—</div><div class="rpt-kpi-sub">horas prom.</div></div>
-    </div>
-    <div class="rpt-row2">
-      <div class="rpt-card">
-        <div class="rpt-card-title">📊 Estado Operacional</div>
-        <table class="rpt-table"><thead><tr><th>Estatus</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">%</th></tr></thead>
-        <tbody id="rpt-tb-est"><tr><td colspan="4" class="rpt-empty">Cargando...</td></tr></tbody>
-        <tfoot id="rpt-tf-est"></tfoot></table>
+
+    <!-- ── Sub: Pedidos SAP ── -->
+    <div class="subpanel active" id="subpanel-rpt-sap">
+      <div id="rpt-sap-demo-banner" class="rpt-demo-banner" style="display:none">&#9888;&#65039; Datos de demostración — backend no disponible en localhost:3001. Inicia el servidor para ver datos reales.</div>
+      <div class="filter-bar">
+        <div class="filter-group"><label>Desde</label><input type="date" id="rpt-sap-desde"></div>
+        <span class="filter-sep">&#8594;</span>
+        <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
+        <button class="btn-hoy" onclick="rptSapSetAyer()">Ayer</button>
+        <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
+        <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800;align-self:center"></span>
       </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">🔽 Flujo Operacional</div>
-        <div class="rpt-funnel-wrap" id="rpt-funnel"><div class="rpt-empty">Cargando...</div></div>
+      <div class="kpi-strip" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+        <div class="kpi-card"        ><div class="kpi-label">Pedidos</div><div class="kpi-value" id="rpt-k-ped">—</div><div class="kpi-sub">&#243;rdenes</div></div>
+        <div class="kpi-card"        ><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-k-uni">—</div><div class="kpi-sub">total</div></div>
+        <div class="kpi-card verde"  ><div class="kpi-label">Entregadas</div><div class="kpi-value" id="rpt-k-ent">—</div><div class="kpi-sub" id="rpt-k-ent-p">del total</div></div>
+        <div class="kpi-card naranja"><div class="kpi-label">Abiertas</div><div class="kpi-value" id="rpt-k-ab">—</div><div class="kpi-sub" id="rpt-k-ab-p">del total</div></div>
+        <div class="kpi-card" id="rpt-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-k-cumpl">—</div><div class="kpi-sub">ent/total</div></div>
+        <div class="kpi-card rojo"   ><div class="kpi-label">Backlog</div><div class="kpi-value" id="rpt-k-bl">—</div><div class="kpi-sub">sin pick+parcial</div></div>
+        <div class="kpi-card"        ><div class="kpi-label">LT SAP&#8594;Pick</div><div class="kpi-value" id="rpt-k-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
+        <div class="kpi-card"        ><div class="kpi-label">LT Pick&#8594;Cierre</div><div class="kpi-value" id="rpt-k-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
       </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">🛒 Marketplace</div>
-        <table class="rpt-table"><thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">Cumpl.</th><th></th></tr></thead>
-        <tbody id="rpt-tb-cli"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
-        <tfoot id="rpt-tf-cli"></tfoot></table>
-      </div>
-    </div>
-    <div class="rpt-row3">
-      <div class="rpt-card">
-        <div class="rpt-card-title">📅 SLA Compromisos</div>
-        <div class="rpt-sla-cards">
-          <div class="rpt-sla-card"><div style="font-size:18px">🔴</div><div class="rpt-sla-value" style="color:#E74C3C" id="rpt-sla-v">—</div><div class="rpt-sla-label">Vencidos</div></div>
-          <div class="rpt-sla-card"><div style="font-size:18px">🟡</div><div class="rpt-sla-value" style="color:#F39C12" id="rpt-sla-h">—</div><div class="rpt-sla-label">Para Hoy</div></div>
-          <div class="rpt-sla-card"><div style="font-size:18px">🟢</div><div class="rpt-sla-value" style="color:#27AE60" id="rpt-sla-f">—</div><div class="rpt-sla-label">Futuros</div></div>
-        </div>
-        <div class="rpt-lt-row">
-          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt1">—</div><div class="rpt-lt-label">SAP→Pick (h)</div></div>
-          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt2">—</div><div class="rpt-lt-label">Pick→Cierre (h)</div></div>
-        </div>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">🌊 Olas de Picking</div>
-        <table class="rpt-table"><thead><tr><th>N° Ola</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Abiertas</th><th>Estado</th></tr></thead>
-        <tbody id="rpt-tb-olas"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">👤 Productividad por Operador</div>
-        <table class="rpt-table"><thead><tr><th>#</th><th>Operador</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Entreg.</th></tr></thead>
-        <tbody id="rpt-tb-prod"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
-      </div>
-    </div>
-    <div class="rpt-row4">
-      <div class="rpt-card"><div class="rpt-card-title">📈 Tendencia 7 Días</div><div style="padding:10px;height:190px"><canvas id="rpt-chart-tend"></canvas></div></div>
-      <div class="rpt-card"><div class="rpt-card-title">🚚 Tipo de Envío</div><div style="padding:10px;height:190px;display:flex;align-items:center;justify-content:center"><canvas id="rpt-chart-envio" style="max-height:170px"></canvas></div></div>
-    </div>
-    <div class="rpt-card"><div class="rpt-card-title">🚨 Alertas Operacionales</div><div class="rpt-alertas" id="rpt-alertas"><div class="rpt-empty">Cargando...</div></div></div>
-  `;
-  main.appendChild(panelSap);
-
-  // Panel KPI Operarios
-  const panelOp = document.createElement('div');
-  panelOp.className = 'tab-panel';
-  panelOp.id = 'panel-kpi-operarios';
-  panelOp.innerHTML = `
-    <div class="rpt-filter-bar">
-      <div><label>Desde</label><input type="date" id="rpt-op-desde"></div>
-      <div><label>Hasta</label><input type="date" id="rpt-op-hasta"></div>
-      <div><label>Tipo</label><select id="rpt-op-tipo"><option value="todos">Todos</option><option value="Picking">Picking</option><option value="Embalaje">Embalaje</option></select></div>
-      <button class="rpt-btn-sec" onclick="rptOpSetAyer()">Ayer</button>
-      <button class="rpt-btn-apply" onclick="rptCargarOp()">&#9654; Aplicar</button>
-      <span id="rpt-op-ts" style="margin-left:auto;font-size:10px;color:#5A7A9C;font-weight:800;align-self:center"></span>
-    </div>
-    <div class="rpt-kpi-row" style="grid-template-columns:repeat(6,1fr)">
-      <div class="rpt-kpi cyan"  ><div class="rpt-kpi-icon">👥</div><div class="rpt-kpi-label">Operarios</div><div class="rpt-kpi-value" id="rpt-ok-op">—</div><div class="rpt-kpi-sub">activos</div></div>
-      <div class="rpt-kpi"       ><div class="rpt-kpi-icon">🌊</div><div class="rpt-kpi-label">Olas</div><div class="rpt-kpi-value" id="rpt-ok-olas">—</div><div class="rpt-kpi-sub">trabajadas</div></div>
-      <div class="rpt-kpi"       ><div class="rpt-kpi-icon">📋</div><div class="rpt-kpi-label">Pick Lists</div><div class="rpt-kpi-value" id="rpt-ok-listas">—</div><div class="rpt-kpi-sub">procesadas</div></div>
-      <div class="rpt-kpi green" ><div class="rpt-kpi-icon">📦</div><div class="rpt-kpi-label">Unidades</div><div class="rpt-kpi-value" id="rpt-ok-uni">—</div><div class="rpt-kpi-sub">procesadas</div></div>
-      <div class="rpt-kpi teal"  ><div class="rpt-kpi-icon">⏱️</div><div class="rpt-kpi-label">Prom Min/Lista</div><div class="rpt-kpi-value" id="rpt-ok-min">—</div><div class="rpt-kpi-sub">minutos</div></div>
-      <div class="rpt-kpi purple"><div class="rpt-kpi-icon">⚡</div><div class="rpt-kpi-label">Unid/Hora Prom</div><div class="rpt-kpi-value" id="rpt-ok-uph">—</div><div class="rpt-kpi-sub">productividad</div></div>
-    </div>
-    <div class="rpt-row-op">
-      <div class="rpt-card">
-        <div class="rpt-card-title">🏆 Ranking Operarios</div>
-        <table class="rpt-table">
-          <thead><tr><th>#</th><th>Operario</th><th>Tipo</th><th class="n">Olas</th><th class="n">Listas</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th class="n">Unid/Hora</th><th>Rendimiento</th></tr></thead>
-          <tbody id="rpt-op-tabla"><tr><td colspan="9" class="rpt-empty">Cargando...</td></tr></tbody>
-          <tfoot id="rpt-op-tfoot"></tfoot>
-        </table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">📈 Tendencia 14 Días — Unidades por Tipo</div>
-        <div style="padding:10px;height:290px"><canvas id="rpt-op-chart"></canvas></div>
-      </div>
-    </div>
-  `;
-  main.appendChild(panelOp);
-});
-</script>
-
-<script>
-// ── Utilidades RPT ────────────────────────────────────────
-function rptFmt(n)       { return Number(n||0).toLocaleString('es-CL'); }
-function rptPct(a,b)     { return b>0?(a/b*100).toFixed(1)+'%':'—'; }
-function rptAyer()       { const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
-const RPT_MEDALS = ['🥇','🥈','🥉'];
-const RPT_EST_ORDER = ['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
-const RPT_EST_BADGE = { 'Sin Pickear':'rb-sinpick','Parcial':'rb-parcial','Pickeado':'rb-pickeado','Embalada':'rb-embalada','Cerrada':'rb-cerrada' };
-let rptChartTend=null, rptChartEnvio=null, rptChartOp=null;
-
-// ── SAP ───────────────────────────────────────────────────
-function rptSapSetAyer() {
-  const y=rptAyer();
-  document.getElementById('rpt-sap-desde').value=y;
-  document.getElementById('rpt-sap-hasta').value=y;
-}
-function rptInitSap() {
-  const y=rptAyer();
-  document.getElementById('rpt-sap-desde').value=y;
-  document.getElementById('rpt-sap-hasta').value=y;
-}
-
-async function rptCargarSap() {
-  const desde=document.getElementById('rpt-sap-desde').value;
-  const hasta =document.getElementById('rpt-sap-hasta').value;
-  const p=new URLSearchParams();
-  if(desde) p.set('desde',desde);
-  if(hasta)  p.set('hasta', hasta);
-  try {
-    const res=await fetch(BACKEND_URL+'/api/pedidos-sap/resumen?'+p);
-    const data=await res.json();
-    if(!data.ok) throw new Error(data.error);
-    rptRenderSap(data);
-    document.getElementById('rpt-sap-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
-  } catch(e) { alert('Error SAP: '+e.message); }
-}
-
-function rptRenderSap(data) {
-  const k=data.kpis;
-  document.getElementById('rpt-k-ped').textContent    = rptFmt(k.total_pedidos);
-  document.getElementById('rpt-k-uni').textContent    = rptFmt(k.total_unidades);
-  document.getElementById('rpt-k-ent').textContent    = rptFmt(k.total_entregadas);
-  document.getElementById('rpt-k-ent-p').textContent  = rptPct(k.total_entregadas,k.total_unidades)+' del total';
-  document.getElementById('rpt-k-ab').textContent     = rptFmt(k.total_abiertas);
-  document.getElementById('rpt-k-ab-p').textContent   = rptPct(k.total_abiertas,k.total_unidades)+' del total';
-  document.getElementById('rpt-k-cumpl').textContent  = (k.cumplimiento||0)+'%';
-  document.getElementById('rpt-k-bl').textContent     = rptFmt(k.backlog);
-  document.getElementById('rpt-k-lt1').textContent    = k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('rpt-k-lt2').textContent    = k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
-  document.getElementById('rpt-lt1').textContent      = k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('rpt-lt2').textContent      = k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
-  document.getElementById('rpt-sla-v').textContent    = rptFmt(k.sla_vencidos);
-  document.getElementById('rpt-sla-h').textContent    = rptFmt(k.sla_hoy);
-  document.getElementById('rpt-sla-f').textContent    = rptFmt(k.sla_futuros);
-  const pct=Number(k.cumplimiento||0);
-  document.getElementById('rpt-k-cumpl-card').className='rpt-kpi '+(pct>=80?'green':pct>=60?'yellow':'red');
-  rptRenderEstatus(data.por_estatus,k);
-  rptRenderEmbudo(data.por_estatus,k);
-  rptRenderClientes(data.por_cliente);
-  rptRenderOlas(data.por_ola);
-  rptRenderProd(data.por_usuario);
-  rptRenderTend(data.tendencia);
-  rptRenderEnvio(data.por_tipo_envio);
-  rptRenderAlertas(data);
-}
-
-function rptRenderEstatus(rows,k) {
-  const totalPed=Number(k.total_pedidos)||1;
-  const map={}; (rows||[]).forEach(r=>map[r.estatus]=r);
-  const all=[...RPT_EST_ORDER.filter(s=>map[s]).map(s=>map[s]),...(rows||[]).filter(r=>!RPT_EST_ORDER.includes(r.estatus))];
-  if(!all.length){document.getElementById('rpt-tb-est').innerHTML='<tr><td colspan="4" class="rpt-empty">Sin datos</td></tr>';return;}
-  const totP=all.reduce((a,r)=>a+Number(r.pedidos||0),0);
-  const totU=all.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('rpt-tb-est').innerHTML=all.map(r=>`<tr><td><span class="rpt-badge ${RPT_EST_BADGE[r.estatus]||'rb-pickeado'}">${r.estatus}</span></td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${totalPed>0?(Number(r.pedidos)/totalPed*100).toFixed(1)+'%':'—'}</td></tr>`).join('');
-  document.getElementById('rpt-tf-est').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(totP)}</td><td class="n">${rptFmt(totU)}</td><td class="n">100%</td></tr>`;
-}
-
-function rptRenderEmbudo(rows,k) {
-  const totalPed=Number(k.total_pedidos)||1;
-  const map={}; (rows||[]).forEach(r=>map[r.estatus]=r);
-  const etapas=[{l:'Comprometido',k:null,c:'#1565C0'},{l:'Sin Pickear',k:'Sin Pickear',c:'#C0392B'},{l:'Parcial',k:'Parcial',c:'#E67E22'},{l:'Pickeado',k:'Pickeado',c:'#3498DB'},{l:'Embalada',k:'Embalada',c:'#8E44AD'},{l:'Cerrada',k:'Cerrada',c:'#27AE60'}];
-  let html='';
-  etapas.forEach((e,i)=>{
-    const ped=e.k?Number((map[e.k]||{}).pedidos||0):totalPed;
-    const pct=totalPed>0?Math.round(ped/totalPed*100):0;
-    if(i>0) html+='<div class="rpt-funnel-arrow">↓</div>';
-    html+=`<div class="rpt-funnel-item"><div class="rpt-funnel-label"><span class="rpt-funnel-name">${e.l}</span><span class="rpt-funnel-vals">${rptFmt(ped)} · ${pct}%</span></div><div class="rpt-funnel-bar-wrap"><div class="rpt-funnel-bar" style="width:${Math.max(pct,3)}%;background:${e.c}">${pct>=15?pct+'%':''}</div></div></div>`;
-  });
-  document.getElementById('rpt-funnel').innerHTML=html;
-}
-
-function rptRenderClientes(rows) {
-  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
-  const totP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
-  const totU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
-  const totE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
-  document.getElementById('rpt-tb-cli').innerHTML=rows.map(r=>{
-    const pct=Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
-    const col=pct>=80?'#27AE60':pct>=60?'#F39C12':'#C0392B';
-    return `<tr><td style="font-weight:800;color:white">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${pct}%</td><td style="min-width:60px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
-  }).join('');
-  const pctTot=totU>0?Math.round(totE/totU*100):0;
-  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(totP)}</td><td class="n">${rptFmt(totU)}</td><td class="n">${pctTot}%</td><td></td></tr>`;
-}
-
-function rptRenderOlas(rows) {
-  if(!rows||!rows.length){document.getElementById('rpt-tb-olas').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin olas</td></tr>';return;}
-  document.getElementById('rpt-tb-olas').innerHTML=rows.slice(0,15).map(r=>{
-    const ab=Number(r.abiertas||0);
-    return `<tr><td style="font-weight:800;color:#00AAFF">${r.num_ola||'—'}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:${ab>0?'#E74C3C':'#27AE60'}">${rptFmt(ab)}</td><td><span class="rpt-badge ${ab>0?'rb-abierta':'rb-cerrada'}">${ab>0?'Abierta':'Cerrada'}</span></td></tr>`;
-  }).join('');
-}
-
-function rptRenderProd(rows) {
-  if(!rows||!rows.length){document.getElementById('rpt-tb-prod').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
-  document.getElementById('rpt-tb-prod').innerHTML=rows.map((r,i)=>`<tr><td style="text-align:center;font-size:14px">${RPT_MEDALS[i]||i+1}</td><td style="font-weight:800;color:white">${r.usuario}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#27AE60">${rptFmt(r.entregadas)}</td></tr>`).join('');
-}
-
-function rptRenderTend(rows) {
-  if(!rows||!rows.length) return;
-  const labels=rows.map(r=>new Date(r.fecha).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  if(rptChartTend) rptChartTend.destroy();
-  rptChartTend=new Chart(document.getElementById('rpt-chart-tend'),{
-    type:'bar', data:{labels, datasets:[
-      {label:'Pedidos',   data:rows.map(r=>Number(r.pedidos||0)),    backgroundColor:'#1565C088',borderColor:'#1565C0',borderWidth:1},
-      {label:'Entregadas',data:rows.map(r=>Number(r.entregadas||0)), backgroundColor:'#27AE6088',borderColor:'#27AE60',borderWidth:1},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#7BA7CC',font:{size:10,family:'Nunito'}}}},
-      scales:{x:{ticks:{color:'#5A7A9C',font:{size:9}},grid:{color:'#1E3A5F'}},y:{ticks:{color:'#5A7A9C',font:{size:9}},grid:{color:'#1E3A5F'}}}}
-  });
-}
-
-function rptRenderEnvio(rows) {
-  if(!rows||!rows.length) return;
-  if(rptChartEnvio) rptChartEnvio.destroy();
-  rptChartEnvio=new Chart(document.getElementById('rpt-chart-envio'),{
-    type:'doughnut',
-    data:{labels:rows.map(r=>r.tipo_envio),datasets:[{data:rows.map(r=>Number(r.pedidos||0)),backgroundColor:['#1565C0','#27AE60','#E67E22','#8E44AD'],borderColor:'#13263D',borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#7BA7CC',font:{size:10,family:'Nunito'},boxWidth:12,padding:6}}}}
-  });
-}
-
-function rptRenderAlertas(data) {
-  const k=data.kpis; const al=[];
-  if(Number(k.sla_vencidos)>0) al.push({t:'rojo',i:'🔴',ti:`${rptFmt(k.sla_vencidos)} pedidos con SLA vencido`,d:'Fecha compromiso pasada sin cerrar',p:'Alta'});
-  if(Number(k.backlog)>0)      al.push({t:'rojo',i:'🔴',ti:`${rptFmt(k.backlog)} en Backlog`,d:'Sin pickear o parciales pendientes',p:'Alta'});
-  const olasAb=(data.por_ola||[]).filter(o=>Number(o.abiertas||0)>0);
-  if(olasAb.length) al.push({t:'amarillo',i:'🟡',ti:`${olasAb.length} ola(s) con pedidos abiertos`,d:olasAb.slice(0,3).map(o=>`Ola ${o.num_ola}: ${o.abiertas}`).join(' · '),p:'Media'});
-  const clBaj=(data.por_cliente||[]).filter(c=>Number(c.unidades)>0&&(Number(c.entregadas)/Number(c.unidades)*100)<60);
-  if(clBaj.length) al.push({t:'rojo',i:'🔴',ti:`${clBaj.length} marketplace(s) bajo 60%`,d:clBaj.map(c=>`${c.cliente}: ${Math.round(Number(c.entregadas)/Number(c.unidades)*100)}%`).join(' · '),p:'Alta'});
-  if(Number(k.sla_hoy)>0) al.push({t:'amarillo',i:'🟡',ti:`${rptFmt(k.sla_hoy)} pedidos compromiso HOY`,d:'Deben cerrarse antes del fin del día',p:'Media'});
-  if(Number(k.cumplimiento||0)>=80) al.push({t:'verde',i:'✅',ti:`Cumplimiento ${k.cumplimiento}% — Objetivo alcanzado`,d:'Operación dentro de parámetros normales',p:'Baja'});
-  if(!al.length) al.push({t:'verde',i:'✅',ti:'Sin alertas',d:'Todos los indicadores en rango normal',p:'Baja'});
-  document.getElementById('rpt-alertas').innerHTML=al.map(a=>`<div class="rpt-alerta ${a.t}"><div class="rpt-alerta-icon">${a.i}</div><div><div class="rpt-alerta-titulo">${a.ti}</div><div class="rpt-alerta-desc">${a.d}</div><div class="rpt-alerta-pr rpt-pr-${a.p==='Alta'?'alta':a.p==='Media'?'media':'baja'}">Prioridad ${a.p}</div></div></div>`).join('');
-}
-
-// ── KPI OPERARIOS ─────────────────────────────────────────
-function rptOpSetAyer() {
-  const y=rptAyer();
-  document.getElementById('rpt-op-desde').value=y;
-  document.getElementById('rpt-op-hasta').value=y;
-}
-function rptInitOp() {
-  const y=rptAyer();
-  document.getElementById('rpt-op-desde').value=y;
-  document.getElementById('rpt-op-hasta').value=y;
-}
-
-async function rptCargarOp() {
-  const desde=document.getElementById('rpt-op-desde').value;
-  const hasta =document.getElementById('rpt-op-hasta').value;
-  const tipo  =document.getElementById('rpt-op-tipo').value;
-  const p=new URLSearchParams();
-  if(desde) p.set('desde',desde);
-  if(hasta)  p.set('hasta', hasta);
-  if(tipo&&tipo!=='todos') p.set('tipo',tipo);
-  try {
-    const res=await fetch(BACKEND_URL+'/api/kpi-operarios?'+p);
-    const data=await res.json();
-    if(!data.ok) throw new Error(data.error);
-    rptRenderOp(data);
-    document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
-  } catch(e) { alert('Error operarios: '+e.message); }
-}
-
-function rptRenderOp(data) {
-  const r=data.resumen||{};
-  document.getElementById('rpt-ok-op').textContent    = rptFmt(r.total_operarios);
-  document.getElementById('rpt-ok-olas').textContent  = rptFmt(r.total_olas);
-  document.getElementById('rpt-ok-listas').textContent= rptFmt(r.total_listas);
-  document.getElementById('rpt-ok-uni').textContent   = rptFmt(r.total_unidades);
-  document.getElementById('rpt-ok-min').textContent   = r.prom_min_lista!=null?r.prom_min_lista+' min':'—';
-  document.getElementById('rpt-ok-uph').textContent   = r.prom_unid_hora!=null?r.prom_unid_hora:'—';
-  const rows=data.detalle||[];
-  const maxU=rows.length?Math.max(...rows.map(r=>Number(r.unidades||0))):1;
-  if(!rows.length){document.getElementById('rpt-op-tabla').innerHTML='<tr><td colspan="9" class="rpt-empty">Sin datos</td></tr>';return;}
-  const totO=rows.reduce((a,r)=>a+Number(r.olas||0),0);
-  const totL=rows.reduce((a,r)=>a+Number(r.pick_lists||0),0);
-  const totU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('rpt-op-tabla').innerHTML=rows.map((r,i)=>{
-    const pctBar=maxU>0?Math.round(Number(r.unidades)/maxU*100):0;
-    const col=r.tipo==='Picking'?'#3498DB':'#8E44AD';
-    return `<tr><td style="text-align:center">${RPT_MEDALS[i]||i+1}</td><td style="font-weight:800;color:white">${r.nombre}</td><td><span class="rpt-badge ${r.tipo==='Picking'?'rb-pick':'rb-emb'}">${r.tipo}</span></td><td class="n">${rptFmt(r.olas)}</td><td class="n">${rptFmt(r.pick_lists)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${r.min_prom_x_lista!=null?r.min_prom_x_lista+' min':'—'}</td><td class="n" style="color:#00AAFF;font-weight:900">${r.unid_x_hora!=null?r.unid_x_hora:'—'}</td><td style="min-width:70px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pctBar}%;background:${col}"></div></div></td></tr>`;
-  }).join('');
-  document.getElementById('rpt-op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td class="n">${rptFmt(totO)}</td><td class="n">${rptFmt(totL)}</td><td class="n">${rptFmt(totU)}</td><td class="n">—</td><td class="n">—</td><td></td></tr>`;
-  rptRenderOpChart(data.tendencia);
-}
-
-function rptRenderOpChart(rows) {
-  if(!rows||!rows.length) return;
-  const fechas=[...new Set(rows.map(r=>r.fecha))].sort();
-  const labels=fechas.map(f=>new Date(f).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  const pick=fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Picking'); return r?Number(r.unidades):0;});
-  const emb =fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Embalaje'); return r?Number(r.unidades):0;});
-  if(rptChartOp) rptChartOp.destroy();
-  rptChartOp=new Chart(document.getElementById('rpt-op-chart'),{
-    type:'bar', data:{labels, datasets:[
-      {label:'Picking', data:pick, backgroundColor:'#3498DB88',borderColor:'#3498DB',borderWidth:1},
-      {label:'Embalaje',data:emb,  backgroundColor:'#8E44AD88',borderColor:'#8E44AD',borderWidth:1},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#7BA7CC',font:{size:10,family:'Nunito'}}}},
-      scales:{x:{ticks:{color:'#5A7A9C',font:{size:9}},grid:{color:'#1E3A5F'}},y:{ticks:{color:'#5A7A9C',font:{size:9}},grid:{color:'#1E3A5F'}}}}
-  });
-}
-
-// Inicializar cuando se cambia a estos tabs
-const _origSwitchTab = switchTab;
-switchTab = function(tab) {
-  _origSwitchTab(tab);
-  if(tab==='pedidos-sap' && !document.getElementById('rpt-sap-ts').textContent) {
-    rptInitSap(); rptCargarSap();
-  }
-  if(tab==='kpi-operarios' && !document.getElementById('rpt-op-ts').textContent) {
-    rptInitOp(); rptCargarOp();
-  }
-};
+      <div class="rpt-grid4">
+        <div class="rpt-card">
+          <div class="rpt-card-title">&#128202; Estado Operacional</div>
+  
 </script>
 </body>
 </html>
