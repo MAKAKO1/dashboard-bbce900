@@ -244,6 +244,14 @@
       <span class="filter-sep">&#8594;</span>
       <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-op-hasta"></div>
       <div class="filter-group">
+        <label>&#193;rea</label>
+        <select id="rpt-op-almacen">
+          <option value="todos">Todas las &#225;reas</option>
+          <option value="BBCE">BBCE — Tiendas</option>
+          <option value="BBMV">BBMV — Ecommerce</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <label>Tipo</label>
         <select id="rpt-op-tipo">
           <option value="todos">Todos</option>
@@ -255,27 +263,49 @@
       <button class="btn-apply" onclick="rptCargarOp()">Aplicar</button>
       <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
-    <div class="kpi-strip">
-      <div class="kpi-card"      ><div class="kpi-label">Operarios</div><div class="kpi-value" id="rpt-ok-op">—</div><div class="kpi-sub">activos</div></div>
-      <div class="kpi-card"      ><div class="kpi-label">Olas</div><div class="kpi-value" id="rpt-ok-olas">—</div><div class="kpi-sub">trabajadas</div></div>
-      <div class="kpi-card"      ><div class="kpi-label">Pick Lists</div><div class="kpi-value" id="rpt-ok-listas">—</div><div class="kpi-sub">procesadas</div></div>
-      <div class="kpi-card verde"><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-ok-uni">—</div><div class="kpi-sub">procesadas</div></div>
-      <div class="kpi-card"      ><div class="kpi-label">Min / Lista</div><div class="kpi-value" id="rpt-ok-min">—</div><div class="kpi-sub">promedio</div></div>
-      <div class="kpi-card"      ><div class="kpi-label">Unid / Hora</div><div class="kpi-value" id="rpt-ok-uph">—</div><div class="kpi-sub">productividad</div></div>
+
+    <!-- KPIs globales -->
+    <div class="kpi-strip" style="margin-bottom:12px">
+      <div class="kpi-card"        ><div class="kpi-label">Total Operarios</div><div class="kpi-value" id="rpt-ok-op">—</div><div class="kpi-sub">en movimiento</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">Operarios BBCE</div><div class="kpi-value" id="rpt-ok-op-bbce">—</div><div class="kpi-sub">Tiendas</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">Operarios BBMV</div><div class="kpi-value" id="rpt-ok-op-bbmv">—</div><div class="kpi-sub">Ecommerce</div></div>
+      <div class="kpi-card verde"  ><div class="kpi-label">Picking Total</div><div class="kpi-value" id="rpt-ok-pickeado">—</div><div class="kpi-sub">unidades pickeadas</div></div>
+      <div class="kpi-card naranja"><div class="kpi-label">Embalaje Total</div><div class="kpi-value" id="rpt-ok-embalado">—</div><div class="kpi-sub">unidades embaladas</div></div>
     </div>
+    <!-- KPIs por área -->
+    <div class="rpt-grid2" style="margin-bottom:18px">
+      <div class="rpt-card" style="border-top:3px solid #0077BB">
+        <div class="rpt-card-title" style="color:#0077BB">&#127978; BBCE — Tiendas</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px">
+          <div style="text-align:center"><div class="kpi-label">Picking Total</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbce-pick">—</div><div class="kpi-sub">unidades</div></div>
+          <div style="text-align:center"><div class="kpi-label">Min/Lista Pick</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbce-min">—</div><div class="kpi-sub">promedio</div></div>
+          <div style="text-align:center"><div class="kpi-label">Operarios</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbce-op">—</div><div class="kpi-sub">activos</div></div>
+        </div>
+      </div>
+      <div class="rpt-card" style="border-top:3px solid #27AE60">
+        <div class="rpt-card-title" style="color:#27AE60">&#128230; BBMV — Ecommerce</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px">
+          <div style="text-align:center"><div class="kpi-label">Olas</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbmv-olas">—</div><div class="kpi-sub">trabajadas</div></div>
+          <div style="text-align:center"><div class="kpi-label">Pick Lists</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbmv-listas">—</div><div class="kpi-sub">procesadas</div></div>
+          <div style="text-align:center"><div class="kpi-label">Min/Lista Pick</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbmv-min">—</div><div class="kpi-sub">promedio</div></div>
+          <div style="text-align:center"><div class="kpi-label">Operarios</div><div style="font-size:22px;font-weight:900;color:#003366" id="rpt-ok-bbmv-op">—</div><div class="kpi-sub">activos</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="rpt-grid2" style="margin-bottom:18px">
       <div class="rpt-card">
         <div class="rpt-card-title">&#127942; Ranking Operarios</div>
         <div style="overflow-x:auto">
           <table class="rpt-table">
-            <thead><tr><th>#</th><th>Operario</th><th>Tipo</th><th class="n">Olas</th><th class="n">Listas</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th class="n">Unid/Hora</th><th>Rendimiento</th></tr></thead>
+            <thead><tr><th>#</th><th>Operario</th><th>&#193;rea</th><th>Tipo</th><th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr></thead>
             <tbody id="rpt-op-tabla"><tr><td colspan="9" class="rpt-empty">Cargando...</td></tr></tbody>
             <tfoot id="rpt-op-tfoot"></tfoot>
           </table>
         </div>
       </div>
       <div class="rpt-card">
-        <div class="rpt-card-title">&#128200; Tendencia 14 D&#237;as — Unidades por Tipo</div>
+        <div class="rpt-card-title">&#128200; Tendencia 14 D&#237;as — por &#193;rea</div>
         <div style="padding:14px;height:340px"><canvas id="rpt-op-chart"></canvas></div>
       </div>
     </div>
@@ -311,9 +341,31 @@ const RPT_MOCK_SAP={
 };
 const RPT_MOCK_OP={
   ok:true,
-  resumen:{total_operarios:18,total_olas:12,total_listas:145,total_unidades:2840,prom_min_lista:14.2,prom_unid_hora:48.5},
-  detalle:[{nombre:'DEMO OPERARIO A',tipo:'Picking',olas:4,pick_lists:52,min_prom_x_lista:12.1,unidades:840,unid_x_hora:58.2},{nombre:'DEMO OPERARIO B',tipo:'Picking',olas:3,pick_lists:48,min_prom_x_lista:14.5,unidades:720,unid_x_hora:49.6},{nombre:'DEMO OPERARIO C',tipo:'Embalaje',olas:2,pick_lists:24,min_prom_x_lista:18.2,unidades:480,unid_x_hora:39.4},{nombre:'DEMO OPERARIO D',tipo:'Picking',olas:2,pick_lists:21,min_prom_x_lista:16.0,unidades:420,unid_x_hora:44.1},{nombre:'DEMO OPERARIO E',tipo:'Embalaje',olas:1,pick_lists:18,min_prom_x_lista:20.1,unidades:380,unid_x_hora:35.2}],
-  tendencia:[{fecha:'2026-05-18',tipo:'Picking',unidades:1820,operarios:12,olas:8},{fecha:'2026-05-18',tipo:'Embalaje',unidades:980,operarios:6,olas:4},{fecha:'2026-05-19',tipo:'Picking',unidades:2100,operarios:14,olas:9},{fecha:'2026-05-19',tipo:'Embalaje',unidades:1100,operarios:7,olas:5},{fecha:'2026-05-25',tipo:'Picking',unidades:1950,operarios:13,olas:8},{fecha:'2026-05-25',tipo:'Embalaje',unidades:1050,operarios:6,olas:4},{fecha:'2026-05-31',tipo:'Picking',unidades:2160,operarios:14,olas:8},{fecha:'2026-05-31',tipo:'Embalaje',unidades:680,operarios:4,olas:4}],
+  resumen:{
+    total_operarios:38, operarios_bbce:8, operarios_bbmv:30,
+    total_olas:245, total_listas:3840,
+    total_unidades:12480, total_pickeado:8240, total_embalado:4240,
+    unidades_bbce:3200, olas_bbmv:220, listas_bbmv:3600,
+    prom_min_picking:55.2, prom_min_embalaje:2.8
+  },
+  detalle:[
+    {nombre:'LogisticaP33',almacen:'BBMV',tipo:'Picking',olas:17,pick_lists:312,min_prom_x_lista:41.9,unidades:701,unid_x_hora:3},
+    {nombre:'LogisticaP04',almacen:'BBMV',tipo:'Embalaje',olas:15,pick_lists:257,min_prom_x_lista:1.9,unidades:522,unid_x_hora:65},
+    {nombre:'DemoTiendaA', almacen:'BBCE',tipo:'Picking',olas:8, pick_lists:180,min_prom_x_lista:22.5,unidades:920,unid_x_hora:18},
+    {nombre:'LogisticaP26',almacen:'BBMV',tipo:'Picking',olas:14,pick_lists:256,min_prom_x_lista:37.3,unidades:504,unid_x_hora:3},
+    {nombre:'LogisticaP05',almacen:'BBMV',tipo:'Embalaje',olas:11,pick_lists:194,min_prom_x_lista:2.5,unidades:375,unid_x_hora:47},
+    {nombre:'DemoTiendaB', almacen:'BBCE',tipo:'Picking',olas:7, pick_lists:160,min_prom_x_lista:24.1,unidades:800,unid_x_hora:16},
+    {nombre:'LogisticaP01',almacen:'BBMV',tipo:'Embalaje',olas:9, pick_lists:215,min_prom_x_lista:2.0,unidades:340,unid_x_hora:48},
+    {nombre:'LogisticaP37',almacen:'BBMV',tipo:'Picking',olas:13,pick_lists:212,min_prom_x_lista:60.7,unidades:426,unid_x_hora:2},
+  ],
+  tendencia:[
+    {fecha:'2026-05-25',almacen:'BBCE',tipo:'Picking',unidades:2800,olas:58,pick_lists:1200,operarios:8},
+    {fecha:'2026-05-25',almacen:'BBMV',tipo:'Picking',unidades:4200,olas:98,pick_lists:1800,operarios:18},
+    {fecha:'2026-05-25',almacen:'BBMV',tipo:'Embalaje',unidades:3100,olas:72,pick_lists:1400,operarios:14},
+    {fecha:'2026-05-31',almacen:'BBCE',tipo:'Picking',unidades:3200,olas:65,pick_lists:1350,operarios:8},
+    {fecha:'2026-05-31',almacen:'BBMV',tipo:'Picking',unidades:5100,olas:112,pick_lists:2100,operarios:20},
+    {fecha:'2026-05-31',almacen:'BBMV',tipo:'Embalaje',unidades:3900,olas:85,pick_lists:1680,operarios:15},
+  ],
 };
 
 function rptFmt(n){return Number(n||0).toLocaleString('es-CL');}
@@ -468,6 +520,12 @@ function renderAlertas(data){
   document.getElementById('rpt-alertas').innerHTML=al.map(a=>`<div class="rpt-alerta ${a.t}"><div class="rpt-alerta-icon">${a.i}</div><div><div class="rpt-alerta-titulo">${a.ti}</div><div class="rpt-alerta-desc">${a.d}</div><div class="rpt-alerta-pr rpt-pr-${a.p==='Alta'?'alta':a.p==='Media'?'media':'baja'}">Prioridad ${a.p}</div></div></div>`).join('');
 }
 
+// Acorta "LogisticaP02" → "P02", nombres normales quedan igual
+function fmtNombre(n){
+  const m=String(n).match(/[Ll]ogistica(P\d+)/i);
+  return m?m[1]:n;
+}
+
 function rptOpSetAyer(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
 function rptInitOp(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
 
@@ -475,10 +533,12 @@ async function rptCargarOp(){
   const desde=document.getElementById('rpt-op-desde').value;
   const hasta=document.getElementById('rpt-op-hasta').value;
   const tipo=document.getElementById('rpt-op-tipo').value;
+  const almacen=document.getElementById('rpt-op-almacen').value;
   const p=new URLSearchParams();
   if(desde)p.set('desde',desde);
   if(hasta)p.set('hasta',hasta);
   if(tipo&&tipo!=='todos')p.set('tipo',tipo);
+  if(almacen&&almacen!=='todos')p.set('almacen',almacen);
   try{
     const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
     const res=await fetch(BACKEND_URL+'/api/kpi-operarios?'+p,{signal:ctrl.signal});
@@ -497,24 +557,58 @@ async function rptCargarOp(){
 
 function rptRenderOp(data){
   const r=data.resumen||{};
-  document.getElementById('rpt-ok-op').textContent    =rptFmt(r.total_operarios);
-  document.getElementById('rpt-ok-olas').textContent  =rptFmt(r.total_olas);
-  document.getElementById('rpt-ok-listas').textContent=rptFmt(r.total_listas);
-  document.getElementById('rpt-ok-uni').textContent   =rptFmt(r.total_unidades);
-  document.getElementById('rpt-ok-min').textContent   =r.prom_min_lista!=null?r.prom_min_lista+' min':'—';
-  document.getElementById('rpt-ok-uph').textContent   =r.prom_unid_hora!=null?r.prom_unid_hora:'—';
   const rows=data.detalle||[];
-  const maxU=rows.length?Math.max(...rows.map(r=>Number(r.unidades||0))):1;
-  if(!rows.length){document.getElementById('rpt-op-tabla').innerHTML='<tr><td colspan="9" class="rpt-empty">Sin datos</td></tr>';return;}
-  const tO=rows.reduce((a,r)=>a+Number(r.olas||0),0);
-  const tL=rows.reduce((a,r)=>a+Number(r.pick_lists||0),0);
-  const tU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('rpt-op-tabla').innerHTML=rows.map((r,i)=>{
-    const pct=maxU>0?Math.round(Number(r.unidades)/maxU*100):0;
-    const col=r.tipo==='Picking'?'#0077BB':'#8E44AD';
-    return `<tr><td style="text-align:center">${MEDALS[i]||i+1}</td><td style="font-weight:800;color:#003366">${r.nombre}</td><td><span class="rpt-badge ${r.tipo==='Picking'?'rb-pick':'rb-emb'}">${r.tipo}</span></td><td class="n">${rptFmt(r.olas)}</td><td class="n">${rptFmt(r.pick_lists)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${r.min_prom_x_lista!=null?r.min_prom_x_lista+' min':'—'}</td><td class="n" style="color:#0077BB;font-weight:900">${r.unid_x_hora!=null?r.unid_x_hora:'—'}</td><td style="min-width:80px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
+
+  // KPIs globales
+  document.getElementById('rpt-ok-op').textContent      =rptFmt(r.total_operarios);
+  document.getElementById('rpt-ok-op-bbce').textContent =rptFmt(r.operarios_bbce);
+  document.getElementById('rpt-ok-op-bbmv').textContent =rptFmt(r.operarios_bbmv);
+  document.getElementById('rpt-ok-pickeado').textContent=rptFmt(r.total_pickeado);
+  document.getElementById('rpt-ok-embalado').textContent=rptFmt(r.total_embalado);
+
+  // Cards por área — calcular min/lista desde detalle
+  const dBBCEpick=rows.filter(x=>x.almacen==='BBCE'&&x.tipo==='Picking');
+  const dBBMVpick=rows.filter(x=>x.almacen==='BBMV'&&x.tipo==='Picking');
+  const avgMin=(arr)=>arr.length?+(arr.reduce((a,x)=>a+Number(x.min_prom_x_lista||0),0)/arr.length).toFixed(1):null;
+  const opCount=(alm)=>[...new Set(rows.filter(x=>x.almacen===alm).map(x=>x.nombre))].length;
+
+  document.getElementById('rpt-ok-bbce-pick').textContent=rptFmt(r.unidades_bbce);
+  document.getElementById('rpt-ok-bbce-min').textContent =(avgMin(dBBCEpick)!=null?avgMin(dBBCEpick)+' min':'—');
+  document.getElementById('rpt-ok-bbce-op').textContent  =rptFmt(r.operarios_bbce||opCount('BBCE'));
+  document.getElementById('rpt-ok-bbmv-olas').textContent  =rptFmt(r.olas_bbmv);
+  document.getElementById('rpt-ok-bbmv-listas').textContent=rptFmt(r.listas_bbmv);
+  document.getElementById('rpt-ok-bbmv-min').textContent   =(avgMin(dBBMVpick)!=null?avgMin(dBBMVpick)+' min':'—');
+  document.getElementById('rpt-ok-bbmv-op').textContent    =rptFmt(r.operarios_bbmv||opCount('BBMV'));
+
+  // Tabla ranking
+  if(!rows.length){document.getElementById('rpt-op-tabla').innerHTML='<tr><td colspan="9" class="rpt-empty">Sin datos para el período</td></tr>';return;}
+  const maxU=Math.max(...rows.map(x=>Number(x.unidades||0)),1);
+  const tO=rows.reduce((a,x)=>a+Number(x.olas||0),0);
+  const tL=rows.reduce((a,x)=>a+Number(x.pick_lists||0),0);
+  const tU=rows.reduce((a,x)=>a+Number(x.unidades||0),0);
+
+  document.getElementById('rpt-op-tabla').innerHTML=rows.map((x,i)=>{
+    const pct=Math.round(Number(x.unidades)/maxU*100);
+    const esBBCE=x.almacen==='BBCE';
+    const colArea=esBBCE?'#0077BB':'#27AE60';
+    const badgeArea=`<span style="background:${esBBCE?'#D6EAF8':'#D5F5E3'};color:${colArea};border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800">${x.almacen||'—'}</span>`;
+    const badgeTipo=`<span class="rpt-badge ${x.tipo==='Picking'?'rb-pick':'rb-emb'}">${x.tipo}</span>`;
+    const metricaPrinc=esBBCE
+      ? `<td class="n" style="font-weight:900;color:#0077BB">${rptFmt(x.unidades)}</td>`
+      : `<td class="n"><span style="font-weight:900;color:#27AE60">${rptFmt(x.olas)}</span> / <span style="color:#6699BB;font-size:11px">${rptFmt(x.pick_lists)}</span></td>`;
+    return `<tr>
+      <td style="text-align:center">${MEDALS[i]||i+1}</td>
+      <td style="font-weight:800;color:#003366">${fmtNombre(x.nombre)}</td>
+      <td>${badgeArea}</td>
+      <td>${badgeTipo}</td>
+      <td class="n">${rptFmt(x.olas)}</td>
+      <td class="n">${rptFmt(x.pick_lists)}</td>
+      ${metricaPrinc}
+      <td class="n">${x.min_prom_x_lista!=null?x.min_prom_x_lista+' min':'—'}</td>
+      <td style="min-width:80px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${x.tipo==='Picking'?'#0077BB':'#8E44AD'}"></div></div></td>
+    </tr>`;
   }).join('');
-  document.getElementById('rpt-op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td class="n">—</td><td></td></tr>`;
+  document.getElementById('rpt-op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td></td><td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td></td></tr>`;
   renderOpChart(data.tendencia);
 }
 
@@ -522,17 +616,23 @@ function renderOpChart(rows){
   if(!rows||!rows.length)return;
   const fechas=[...new Set(rows.map(r=>r.fecha))].sort();
   const labels=fechas.map(f=>new Date(f).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  const pick=fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Picking');return r?Number(r.unidades):0;});
-  const emb =fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Embalaje');return r?Number(r.unidades):0;});
+  // BBCE: unidades picking / BBMV: olas (volumen de trabajo eco)
+  const bbce=fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.almacen==='BBCE');return r?Number(r.unidades):0;});
+  const bbmvOlas=fechas.map(f=>{const rs=rows.filter(x=>x.fecha===f&&x.almacen==='BBMV');return rs.reduce((a,x)=>a+Number(x.olas||0),0);});
   if(chartOp)chartOp.destroy();
   chartOp=new Chart(document.getElementById('rpt-op-chart'),{
     type:'bar',data:{labels,datasets:[
-      {label:'Picking',data:pick,backgroundColor:'#0077BB55',borderColor:'#0055AA',borderWidth:1.5},
-      {label:'Embalaje',data:emb,backgroundColor:'#8E44AD55',borderColor:'#6C3483',borderWidth:1.5},
+      {label:'BBCE — Unid. Pickeadas',data:bbce,   backgroundColor:'#0077BB55',borderColor:'#0055AA',borderWidth:1.5,yAxisID:'y'},
+      {label:'BBMV — Olas',          data:bbmvOlas,backgroundColor:'#27AE6055',borderColor:'#1E8449',borderWidth:1.5,yAxisID:'y1'},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Nunito'}}}},
-      scales:{x:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}},y:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}}}
+      scales:{
+        y: {position:'left', ticks:{color:'#0055AA',font:{size:9}},grid:{color:'#EEF4FF'},title:{display:true,text:'Unidades',color:'#0055AA',font:{size:9}}},
+        y1:{position:'right',ticks:{color:'#1E8449',font:{size:9}},grid:{drawOnChartArea:false},title:{display:true,text:'Olas',color:'#1E8449',font:{size:9}}},
+        x: {ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}
+      }
+    }
   });
 }
 

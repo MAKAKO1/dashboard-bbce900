@@ -211,62 +211,88 @@ app.get('/api/pedidos-sap', async (req, res) => {
 });
 
 // GET /api/kpi-operarios — desde mart_kpi_operarios_cl
-// Parámetros: desde, hasta (fecha), tipo (Picking|Embalaje|todos)
+// Parámetros: desde, hasta (fecha), tipo (Picking|Embalaje|todos), almacen (BBCE|BBMV|todos)
 app.get('/api/kpi-operarios', async (req, res) => {
   try {
-    const { desde, hasta, tipo } = req.query as { desde?: string; hasta?: string; tipo?: string };
+    const { desde, hasta, tipo, almacen } = req.query as {
+      desde?: string; hasta?: string; tipo?: string; almacen?: string;
+    };
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     const d = desde || yesterday;
     const h = hasta  || yesterday;
-    const params: (string | undefined)[] = [d, h];
-    const tipoFilter = tipo && tipo !== 'todos' ? `AND tipo = $3` : '';
-    if (tipo && tipo !== 'todos') params.push(tipo);
+
+    // Construir filtros dinámicos
+    const params: string[] = [d, h];
+    let extraFilters = '';
+    if (tipo && tipo !== 'todos') {
+      params.push(tipo);
+      extraFilters += ` AND tipo = $${params.length}`;
+    }
+    if (almacen && almacen !== 'todos') {
+      params.push(almacen.toUpperCase());
+      extraFilters += ` AND almacen = $${params.length}`;
+    }
 
     const [resumen, detalle, tendencia] = await Promise.all([
+
+      // KPIs globales + desglose por área
       pool.query(`
         SELECT
-          COUNT(DISTINCT nombre)::int          AS total_operarios,
-          COALESCE(SUM(olas),0)::int           AS total_olas,
-          COALESCE(SUM(pick_lists),0)::int     AS total_listas,
-          COALESCE(SUM(unidades),0)::int       AS total_unidades,
-          ROUND(AVG(min_prom_x_lista),1)       AS prom_min_lista,
-          ROUND(AVG(unid_x_hora),1)            AS prom_unid_hora
+          COUNT(DISTINCT nombre)::int                                          AS total_operarios,
+          COUNT(DISTINCT nombre) FILTER (WHERE almacen = 'BBCE')::int         AS operarios_bbce,
+          COUNT(DISTINCT nombre) FILTER (WHERE almacen = 'BBMV')::int         AS operarios_bbmv,
+          COALESCE(SUM(olas),0)::int                                          AS total_olas,
+          COALESCE(SUM(pick_lists),0)::int                                    AS total_listas,
+          COALESCE(SUM(unidades),0)::int                                      AS total_unidades,
+          COALESCE(SUM(unidades) FILTER (WHERE tipo = 'Picking'),0)::int      AS total_pickeado,
+          COALESCE(SUM(unidades) FILTER (WHERE tipo = 'Embalaje'),0)::int     AS total_embalado,
+          COALESCE(SUM(unidades) FILTER (WHERE almacen = 'BBCE'),0)::int      AS unidades_bbce,
+          COALESCE(SUM(olas)     FILTER (WHERE almacen = 'BBMV'),0)::int      AS olas_bbmv,
+          COALESCE(SUM(pick_lists) FILTER (WHERE almacen = 'BBMV'),0)::int    AS listas_bbmv,
+          ROUND(AVG(min_prom_x_lista) FILTER (WHERE tipo = 'Picking'),1)      AS prom_min_picking,
+          ROUND(AVG(min_prom_x_lista) FILTER (WHERE tipo = 'Embalaje'),1)     AS prom_min_embalaje
         FROM gold_layer.mart_kpi_operarios_cl
-        WHERE fecha >= $1 AND fecha <= $2 ${tipoFilter}
+        WHERE fecha >= $1 AND fecha <= $2${extraFilters}
       `, params),
 
+      // Detalle por operario + área
       pool.query(`
         SELECT
-          nombre, tipo,
+          nombre,
+          almacen,
+          tipo,
           SUM(olas)::int                        AS olas,
           SUM(pick_lists)::int                  AS pick_lists,
           ROUND(AVG(min_prom_x_lista),1)        AS min_prom_x_lista,
           SUM(unidades)::int                    AS unidades,
           ROUND(AVG(unid_x_hora),1)             AS unid_x_hora
         FROM gold_layer.mart_kpi_operarios_cl
-        WHERE fecha >= $1 AND fecha <= $2 ${tipoFilter}
-        GROUP BY nombre, tipo
-        ORDER BY unidades DESC
-        LIMIT 50
+        WHERE fecha >= $1 AND fecha <= $2${extraFilters}
+        GROUP BY nombre, almacen, tipo
+        ORDER BY almacen, unidades DESC
+        LIMIT 100
       `, params),
 
+      // Tendencia 14 días por área y tipo
       pool.query(`
         SELECT
           fecha::date                           AS fecha,
+          almacen,
           tipo,
           SUM(unidades)::int                    AS unidades,
-          COUNT(DISTINCT nombre)::int           AS operarios,
-          SUM(olas)::int                        AS olas
+          SUM(olas)::int                        AS olas,
+          SUM(pick_lists)::int                  AS pick_lists,
+          COUNT(DISTINCT nombre)::int           AS operarios
         FROM gold_layer.mart_kpi_operarios_cl
         WHERE fecha >= CURRENT_DATE - INTERVAL '14 days'
-        GROUP BY fecha::date, tipo
-        ORDER BY fecha::date, tipo
+        GROUP BY fecha::date, almacen, tipo
+        ORDER BY fecha::date, almacen, tipo
       `, []),
     ]);
 
     res.json({
       ok: true,
-      filtro: { desde: d, hasta: h, tipo: tipo || 'todos' },
+      filtro: { desde: d, hasta: h, tipo: tipo || 'todos', almacen: almacen || 'todos' },
       resumen: resumen.rows[0],
       detalle: detalle.rows,
       tendencia: tendencia.rows,
