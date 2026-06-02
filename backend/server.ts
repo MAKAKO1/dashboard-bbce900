@@ -305,8 +305,16 @@ app.get('/api/kpi-operarios', async (req, res) => {
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
-// Servir archivos estáticos del dashboard (carpeta padre)
-app.use(express.static(require('path').join(__dirname, '..')));
+// Servir archivos estáticos solo en desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(require('path').join(__dirname, '..')));
+}
 
-const PORT = Number(process.env.PORT) || 3001;
-app.listen(PORT, () => console.log(`Backend DashCD corriendo en http://localhost:${PORT}`));
+// En Vercel, exporta el app como handler serverless
+// En local, inicia el servidor HTTP directamente
+if (require.main === module) {
+  const PORT = Number(process.env.PORT) || 3001;
+  app.listen(PORT, () => console.log(`Backend DashCD corriendo en http://localhost:${PORT}`));
+}
+
+module.exports = app;

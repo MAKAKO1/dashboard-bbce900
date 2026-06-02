@@ -547,12 +547,10 @@ function rptInitOp(){const y=rptAyer();document.getElementById('rpt-op-desde').v
 async function rptCargarOp(){
   const desde=document.getElementById('rpt-op-desde').value;
   const hasta=document.getElementById('rpt-op-hasta').value;
-  const tipo=document.getElementById('rpt-op-tipo').value;
   const almacen=document.getElementById('rpt-op-almacen').value;
   const p=new URLSearchParams();
   if(desde)p.set('desde',desde);
   if(hasta)p.set('hasta',hasta);
-  if(tipo&&tipo!=='todos')p.set('tipo',tipo);
   if(almacen&&almacen!=='todos')p.set('almacen',almacen);
   try{
     const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
