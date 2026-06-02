@@ -239,24 +239,18 @@
     <div id="rpt-op-demo-banner" class="rpt-demo-banner" style="display:none">
       &#9888;&#65039; Datos de demostración — backend no disponible. Inicia el servidor local para ver datos reales.
     </div>
+
+    <!-- Filtros -->
     <div class="filter-bar">
       <div class="filter-group"><label>Desde</label><input type="date" id="rpt-op-desde"></div>
       <span class="filter-sep">&#8594;</span>
       <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-op-hasta"></div>
       <div class="filter-group">
         <label>&#193;rea</label>
-        <select id="rpt-op-almacen">
+        <select id="rpt-op-almacen" onchange="rptCargarOp()">
           <option value="todos">Todas las &#225;reas</option>
           <option value="BBCE">BBCE — Tiendas</option>
           <option value="BBMV">BBMV — Ecommerce</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Tipo</label>
-        <select id="rpt-op-tipo">
-          <option value="todos">Todos</option>
-          <option value="Picking">Picking</option>
-          <option value="Embalaje">Embalaje</option>
         </select>
       </div>
       <button class="btn-sec" onclick="rptOpSetAyer()">Ayer</button>
@@ -264,16 +258,17 @@
       <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
 
-    <!-- KPIs globales -->
+    <!-- KPIs globales (siempre visibles) -->
     <div class="kpi-strip" style="margin-bottom:12px">
       <div class="kpi-card"        ><div class="kpi-label">Total Operarios</div><div class="kpi-value" id="rpt-ok-op">—</div><div class="kpi-sub">en movimiento</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">Operarios BBCE</div><div class="kpi-value" id="rpt-ok-op-bbce">—</div><div class="kpi-sub">Tiendas</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">Operarios BBMV</div><div class="kpi-value" id="rpt-ok-op-bbmv">—</div><div class="kpi-sub">Ecommerce</div></div>
-      <div class="kpi-card verde"  ><div class="kpi-label">Picking Total</div><div class="kpi-value" id="rpt-ok-pickeado">—</div><div class="kpi-sub">unidades pickeadas</div></div>
-      <div class="kpi-card naranja"><div class="kpi-label">Embalaje Total</div><div class="kpi-value" id="rpt-ok-embalado">—</div><div class="kpi-sub">unidades embaladas</div></div>
+      <div class="kpi-card" id="kpi-bbce-op-card"><div class="kpi-label">Operarios BBCE</div><div class="kpi-value" id="rpt-ok-op-bbce">—</div><div class="kpi-sub">Tiendas</div></div>
+      <div class="kpi-card" id="kpi-bbmv-op-card"><div class="kpi-label">Operarios BBMV</div><div class="kpi-value" id="rpt-ok-op-bbmv">—</div><div class="kpi-sub">Ecommerce</div></div>
+      <div class="kpi-card verde"  ><div class="kpi-label">Picking Total</div><div class="kpi-value" id="rpt-ok-pickeado">—</div><div class="kpi-sub">unidades</div></div>
+      <div class="kpi-card naranja"><div class="kpi-label">Embalaje Total</div><div class="kpi-value" id="rpt-ok-embalado">—</div><div class="kpi-sub">unidades</div></div>
     </div>
-    <!-- KPIs por área -->
-    <div class="rpt-grid2" style="margin-bottom:18px">
+
+    <!-- Card resumen de área (dinámica: una sola o ambas) -->
+    <div id="rpt-area-ambas" class="rpt-grid2" style="margin-bottom:18px">
       <div class="rpt-card" style="border-top:3px solid #0077BB">
         <div class="rpt-card-title" style="color:#0077BB">&#127978; BBCE — Tiendas</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px">
@@ -292,22 +287,42 @@
         </div>
       </div>
     </div>
+    <!-- Card única cuando se filtra por un área -->
+    <div id="rpt-area-single" style="display:none;margin-bottom:18px">
+      <div class="rpt-card" id="rpt-area-single-card" style="border-top:3px solid #0077BB">
+        <div class="rpt-card-title" id="rpt-area-single-title"></div>
+        <div id="rpt-area-single-body" style="display:grid;gap:12px;padding:14px"></div>
+      </div>
+    </div>
 
+    <!-- Dos tablas: Picking | Pack (Embalaje) -->
     <div class="rpt-grid2" style="margin-bottom:18px">
       <div class="rpt-card">
-        <div class="rpt-card-title">&#127942; Ranking Operarios</div>
+        <div class="rpt-card-title" id="rpt-tit-pick">&#128230; Picking</div>
         <div style="overflow-x:auto">
           <table class="rpt-table">
-            <thead><tr><th>#</th><th>Operario</th><th>&#193;rea</th><th>Tipo</th><th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr></thead>
-            <tbody id="rpt-op-tabla"><tr><td colspan="9" class="rpt-empty">Cargando...</td></tr></tbody>
-            <tfoot id="rpt-op-tfoot"></tfoot>
+            <thead id="rpt-thead-pick"><tr><th>#</th><th>Operario</th><th>&#193;rea</th><th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr></thead>
+            <tbody id="rpt-op-tabla-pick"><tr><td colspan="8" class="rpt-empty">Cargando...</td></tr></tbody>
+            <tfoot id="rpt-op-tfoot-pick"></tfoot>
           </table>
         </div>
       </div>
       <div class="rpt-card">
-        <div class="rpt-card-title">&#128200; Tendencia 14 D&#237;as — por &#193;rea</div>
-        <div style="padding:14px;height:340px"><canvas id="rpt-op-chart"></canvas></div>
+        <div class="rpt-card-title" id="rpt-tit-pack">&#128230; Pack / Embalaje</div>
+        <div style="overflow-x:auto">
+          <table class="rpt-table">
+            <thead id="rpt-thead-pack"><tr><th>#</th><th>Operario</th><th>&#193;rea</th><th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr></thead>
+            <tbody id="rpt-op-tabla-pack"><tr><td colspan="8" class="rpt-empty">Cargando...</td></tr></tbody>
+            <tfoot id="rpt-op-tfoot-pack"></tfoot>
+          </table>
+        </div>
       </div>
+    </div>
+
+    <!-- Gráfico tendencia -->
+    <div class="rpt-card" style="margin-bottom:18px">
+      <div class="rpt-card-title">&#128200; Tendencia 14 D&#237;as — por &#193;rea</div>
+      <div style="padding:14px;height:280px"><canvas id="rpt-op-chart"></canvas></div>
     </div>
   </div>
 
@@ -558,6 +573,7 @@ async function rptCargarOp(){
 function rptRenderOp(data){
   const r=data.resumen||{};
   const rows=data.detalle||[];
+  const almacenFiltro=document.getElementById('rpt-op-almacen').value;
 
   // KPIs globales
   document.getElementById('rpt-ok-op').textContent      =rptFmt(r.total_operarios);
@@ -566,49 +582,99 @@ function rptRenderOp(data){
   document.getElementById('rpt-ok-pickeado').textContent=rptFmt(r.total_pickeado);
   document.getElementById('rpt-ok-embalado').textContent=rptFmt(r.total_embalado);
 
-  // Cards por área — calcular min/lista desde detalle
+  // Ocultar kpis de área que no aplican al filtro
+  document.getElementById('kpi-bbce-op-card').style.display=almacenFiltro==='BBMV'?'none':'';
+  document.getElementById('kpi-bbmv-op-card').style.display=almacenFiltro==='BBCE'?'none':'';
+
+  // Calcular min/lista por área desde detalle
+  const avgMin=(arr)=>{const v=arr.filter(x=>x.min_prom_x_lista!=null);return v.length?+(v.reduce((a,x)=>a+Number(x.min_prom_x_lista),0)/v.length).toFixed(1):null;};
+  const opCount=(alm)=>[...new Set(rows.filter(x=>x.almacen===alm).map(x=>x.nombre))].length;
   const dBBCEpick=rows.filter(x=>x.almacen==='BBCE'&&x.tipo==='Picking');
   const dBBMVpick=rows.filter(x=>x.almacen==='BBMV'&&x.tipo==='Picking');
-  const avgMin=(arr)=>arr.length?+(arr.reduce((a,x)=>a+Number(x.min_prom_x_lista||0),0)/arr.length).toFixed(1):null;
-  const opCount=(alm)=>[...new Set(rows.filter(x=>x.almacen===alm).map(x=>x.nombre))].length;
 
-  document.getElementById('rpt-ok-bbce-pick').textContent=rptFmt(r.unidades_bbce);
-  document.getElementById('rpt-ok-bbce-min').textContent =(avgMin(dBBCEpick)!=null?avgMin(dBBCEpick)+' min':'—');
-  document.getElementById('rpt-ok-bbce-op').textContent  =rptFmt(r.operarios_bbce||opCount('BBCE'));
+  // Poblar valores de los cards
+  document.getElementById('rpt-ok-bbce-pick').textContent  =rptFmt(r.unidades_bbce);
+  document.getElementById('rpt-ok-bbce-min').textContent   =avgMin(dBBCEpick)!=null?avgMin(dBBCEpick)+' min':'—';
+  document.getElementById('rpt-ok-bbce-op').textContent    =rptFmt(r.operarios_bbce||opCount('BBCE'));
   document.getElementById('rpt-ok-bbmv-olas').textContent  =rptFmt(r.olas_bbmv);
   document.getElementById('rpt-ok-bbmv-listas').textContent=rptFmt(r.listas_bbmv);
-  document.getElementById('rpt-ok-bbmv-min').textContent   =(avgMin(dBBMVpick)!=null?avgMin(dBBMVpick)+' min':'—');
+  document.getElementById('rpt-ok-bbmv-min').textContent   =avgMin(dBBMVpick)!=null?avgMin(dBBMVpick)+' min':'—';
   document.getElementById('rpt-ok-bbmv-op').textContent    =rptFmt(r.operarios_bbmv||opCount('BBMV'));
 
-  // Tabla ranking
-  if(!rows.length){document.getElementById('rpt-op-tabla').innerHTML='<tr><td colspan="9" class="rpt-empty">Sin datos para el período</td></tr>';return;}
-  const maxU=Math.max(...rows.map(x=>Number(x.unidades||0)),1);
-  const tO=rows.reduce((a,x)=>a+Number(x.olas||0),0);
-  const tL=rows.reduce((a,x)=>a+Number(x.pick_lists||0),0);
-  const tU=rows.reduce((a,x)=>a+Number(x.unidades||0),0);
+  // Mostrar card(s) de área según filtro
+  const ambas=document.getElementById('rpt-area-ambas');
+  const single=document.getElementById('rpt-area-single');
+  if(almacenFiltro==='todos'){
+    ambas.style.display=''; single.style.display='none';
+  } else {
+    ambas.style.display='none'; single.style.display='';
+    const esBBCE=almacenFiltro==='BBCE';
+    const card=document.getElementById('rpt-area-single-card');
+    card.style.borderTopColor=esBBCE?'#0077BB':'#27AE60';
+    document.getElementById('rpt-area-single-title').textContent=(esBBCE?'🏪 BBCE — Tiendas':'📦 BBMV — Ecommerce');
+    document.getElementById('rpt-area-single-title').style.color=esBBCE?'#0077BB':'#27AE60';
+    if(esBBCE){
+      document.getElementById('rpt-area-single-body').style.gridTemplateColumns='repeat(3,1fr)';
+      document.getElementById('rpt-area-single-body').innerHTML=`
+        <div style="text-align:center"><div class="kpi-label">Picking Total</div><div style="font-size:22px;font-weight:900;color:#003366">${rptFmt(r.unidades_bbce)}</div><div class="kpi-sub">unidades</div></div>
+        <div style="text-align:center"><div class="kpi-label">Min/Lista Pick</div><div style="font-size:22px;font-weight:900;color:#003366">${avgMin(dBBCEpick)!=null?avgMin(dBBCEpick)+' min':'—'}</div><div class="kpi-sub">promedio</div></div>
+        <div style="text-align:center"><div class="kpi-label">Operarios</div><div style="font-size:22px;font-weight:900;color:#003366">${rptFmt(r.operarios_bbce||opCount('BBCE'))}</div><div class="kpi-sub">activos</div></div>`;
+    } else {
+      document.getElementById('rpt-area-single-body').style.gridTemplateColumns='repeat(4,1fr)';
+      document.getElementById('rpt-area-single-body').innerHTML=`
+        <div style="text-align:center"><div class="kpi-label">Olas</div><div style="font-size:22px;font-weight:900;color:#003366">${rptFmt(r.olas_bbmv)}</div><div class="kpi-sub">trabajadas</div></div>
+        <div style="text-align:center"><div class="kpi-label">Pick Lists</div><div style="font-size:22px;font-weight:900;color:#003366">${rptFmt(r.listas_bbmv)}</div><div class="kpi-sub">procesadas</div></div>
+        <div style="text-align:center"><div class="kpi-label">Min/Lista Pick</div><div style="font-size:22px;font-weight:900;color:#003366">${avgMin(dBBMVpick)!=null?avgMin(dBBMVpick)+' min':'—'}</div><div class="kpi-sub">promedio</div></div>
+        <div style="text-align:center"><div class="kpi-label">Operarios</div><div style="font-size:22px;font-weight:900;color:#003366">${rptFmt(r.operarios_bbmv||opCount('BBMV'))}</div><div class="kpi-sub">activos</div></div>`;
+    }
+  }
 
-  document.getElementById('rpt-op-tabla').innerHTML=rows.map((x,i)=>{
-    const pct=Math.round(Number(x.unidades)/maxU*100);
-    const esBBCE=x.almacen==='BBCE';
-    const colArea=esBBCE?'#0077BB':'#27AE60';
-    const badgeArea=`<span style="background:${esBBCE?'#D6EAF8':'#D5F5E3'};color:${colArea};border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800">${x.almacen||'—'}</span>`;
-    const badgeTipo=`<span class="rpt-badge ${x.tipo==='Picking'?'rb-pick':'rb-emb'}">${x.tipo}</span>`;
-    const metricaPrinc=esBBCE
-      ? `<td class="n" style="font-weight:900;color:#0077BB">${rptFmt(x.unidades)}</td>`
-      : `<td class="n"><span style="font-weight:900;color:#27AE60">${rptFmt(x.olas)}</span> / <span style="color:#6699BB;font-size:11px">${rptFmt(x.pick_lists)}</span></td>`;
-    return `<tr>
-      <td style="text-align:center">${MEDALS[i]||i+1}</td>
-      <td style="font-weight:800;color:#003366">${fmtNombre(x.nombre)}</td>
-      <td>${badgeArea}</td>
-      <td>${badgeTipo}</td>
-      <td class="n">${rptFmt(x.olas)}</td>
-      <td class="n">${rptFmt(x.pick_lists)}</td>
-      ${metricaPrinc}
-      <td class="n">${x.min_prom_x_lista!=null?x.min_prom_x_lista+' min':'—'}</td>
-      <td style="min-width:80px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${x.tipo==='Picking'?'#0077BB':'#8E44AD'}"></div></div></td>
-    </tr>`;
-  }).join('');
-  document.getElementById('rpt-op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td></td><td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td></td></tr>`;
+  // Dos tablas: Picking | Pack
+  const rowsPick=rows.filter(x=>x.tipo==='Picking');
+  const rowsPack=rows.filter(x=>x.tipo==='Embalaje');
+  const maxU=Math.max(...rows.map(x=>Number(x.unidades||0)),1);
+
+  function renderTablaOp(tbodyId, tfootId, titId, filas, color){
+    const titulo=filas[0]?.tipo==='Picking'?'📦 Picking':'📦 Pack / Embalaje';
+    document.getElementById(titId).textContent=titulo;
+    if(!filas.length){
+      document.getElementById(tbodyId).innerHTML=`<tr><td colspan="8" class="rpt-empty">Sin registros</td></tr>`;
+      document.getElementById(tfootId).innerHTML='';
+      return;
+    }
+    const tO=filas.reduce((a,x)=>a+Number(x.olas||0),0);
+    const tL=filas.reduce((a,x)=>a+Number(x.pick_lists||0),0);
+    const tU=filas.reduce((a,x)=>a+Number(x.unidades||0),0);
+    document.getElementById(tbodyId).innerHTML=filas.map((x,i)=>{
+      const pct=Math.round(Number(x.unidades)/maxU*100);
+      const esBBCE=x.almacen==='BBCE';
+      const colA=esBBCE?'#0077BB':'#27AE60';
+      const bgA=esBBCE?'#D6EAF8':'#D5F5E3';
+      const badgeA=almacenFiltro==='todos'?`<td><span style="background:${bgA};color:${colA};border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800">${x.almacen}</span></td>`:'';
+      const cols=almacenFiltro==='todos'?8:7;
+      return `<tr>
+        <td style="text-align:center">${MEDALS[i]||i+1}</td>
+        <td style="font-weight:800;color:#003366">${fmtNombre(x.nombre)}</td>
+        ${badgeA}
+        <td class="n">${rptFmt(x.olas)}</td>
+        <td class="n">${rptFmt(x.pick_lists)}</td>
+        <td class="n" style="font-weight:900;color:${color}">${rptFmt(x.unidades)}</td>
+        <td class="n">${x.min_prom_x_lista!=null?x.min_prom_x_lista+' min':'—'}</td>
+        <td style="min-width:70px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${color}"></div></div></td>
+      </tr>`;
+    }).join('');
+    document.getElementById(tfootId).innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td>${almacenFiltro==='todos'?'<td></td>':''}<td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td></td></tr>`;
+
+    // Ajustar encabezado según si se muestra la columna Área o no
+    const thead=document.getElementById(tbodyId.replace('tabla','thead'));
+    if(thead){
+      const areaCol=almacenFiltro==='todos'?'<th>&#193;rea</th>':'';
+      thead.innerHTML=`<tr><th>#</th><th>Operario</th>${areaCol}<th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr>`;
+    }
+  }
+
+  renderTablaOp('rpt-op-tabla-pick','rpt-op-tfoot-pick','rpt-tit-pick',rowsPick,'#0077BB');
+  renderTablaOp('rpt-op-tabla-pack','rpt-op-tfoot-pack','rpt-tit-pack',rowsPack,'#8E44AD');
   renderOpChart(data.tendencia);
 }
 
@@ -616,20 +682,19 @@ function renderOpChart(rows){
   if(!rows||!rows.length)return;
   const fechas=[...new Set(rows.map(r=>r.fecha))].sort();
   const labels=fechas.map(f=>new Date(f).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  // BBCE: unidades picking / BBMV: olas (volumen de trabajo eco)
-  const bbce=fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.almacen==='BBCE');return r?Number(r.unidades):0;});
+  const bbce    =fechas.map(f=>{const rs=rows.filter(x=>x.fecha===f&&x.almacen==='BBCE');return rs.reduce((a,x)=>a+Number(x.unidades||0),0);});
   const bbmvOlas=fechas.map(f=>{const rs=rows.filter(x=>x.fecha===f&&x.almacen==='BBMV');return rs.reduce((a,x)=>a+Number(x.olas||0),0);});
   if(chartOp)chartOp.destroy();
   chartOp=new Chart(document.getElementById('rpt-op-chart'),{
     type:'bar',data:{labels,datasets:[
-      {label:'BBCE — Unid. Pickeadas',data:bbce,   backgroundColor:'#0077BB55',borderColor:'#0055AA',borderWidth:1.5,yAxisID:'y'},
-      {label:'BBMV — Olas',          data:bbmvOlas,backgroundColor:'#27AE6055',borderColor:'#1E8449',borderWidth:1.5,yAxisID:'y1'},
+      {label:'BBCE — Unid. Pickeadas',data:bbce,    backgroundColor:'#0077BB55',borderColor:'#0055AA',borderWidth:1.5,yAxisID:'y'},
+      {label:'BBMV — Olas',           data:bbmvOlas,backgroundColor:'#27AE6055',borderColor:'#1E8449',borderWidth:1.5,yAxisID:'y1'},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Nunito'}}}},
       scales:{
-        y: {position:'left', ticks:{color:'#0055AA',font:{size:9}},grid:{color:'#EEF4FF'},title:{display:true,text:'Unidades',color:'#0055AA',font:{size:9}}},
-        y1:{position:'right',ticks:{color:'#1E8449',font:{size:9}},grid:{drawOnChartArea:false},title:{display:true,text:'Olas',color:'#1E8449',font:{size:9}}},
+        y: {position:'left', ticks:{color:'#0055AA',font:{size:9}},grid:{color:'#EEF4FF'},title:{display:true,text:'Unidades (BBCE)',color:'#0055AA',font:{size:9}}},
+        y1:{position:'right',ticks:{color:'#1E8449',font:{size:9}},grid:{drawOnChartArea:false},title:{display:true,text:'Olas (BBMV)',color:'#1E8449',font:{size:9}}},
         x: {ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}
       }
     }
