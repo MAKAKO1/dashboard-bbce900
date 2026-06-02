@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reportes — Dash CD</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: #0D1B2A; color: #E8F0FE; font-size: 12px; min-height: 100vh; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0D1B2A 0%, #1a2e4a 100%);
+  border-bottom: 2px solid #1E3A5F;
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo-box { background: #00AAFF; border-radius: 10px; padding: 6px 12px; text-align: center; }
+.logo-box .l1 { font-family: 'Fredoka One'; font-size: 8px; color: white; display: block; }
+.logo-box .l2 { font-family: 'Fredoka One'; font-size: 14px; color: white; display: block; letter-spacing: 1px; }
+.title-box h1 { font-family: 'Fredoka One'; font-size: 20px; color: white; letter-spacing: .5px; }
+.title-box p  { font-size: 10px; color: #7BA7CC; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-top: 2px; }
+.header-right { text-align: right; }
+.update-label { font-size: 9px; color: #5A7A9C; text-transform: uppercase; font-weight: 800; letter-spacing: .5px; }
+.update-time  { font-size: 12px; color: #7BA7CC; font-weight: 800; }
+.back-link { display: block; margin-top: 4px; font-size: 10px; color: #5A7A9C; text-decoration: none; }
+.back-link:hover { color: #00AAFF; }
+
+/* MAIN TABS */
+.main-tabs { display: flex; gap: 4px; background: #0D1B2A; padding: 0 20px; border-bottom: 2px solid #1E3A5F; }
+.main-tab {
+  padding: 12px 24px 10px; font-size: 13px; font-weight: 800; color: #5A7A9C;
+  background: none; border: none; border-bottom: 3px solid transparent;
+  cursor: pointer; font-family: 'Nunito'; text-transform: uppercase; letter-spacing: .5px;
+  transition: color .15s, border-color .15s;
+}
+.main-tab:hover { color: #7BA7CC; }
+.main-tab.active { color: #00AAFF; border-bottom-color: #00AAFF; }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* FILTER BAR */
+.filter-bar {
+  background: #13263D; border-bottom: 1px solid #1E3A5F;
+  padding: 10px 20px; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+}
+.filter-group { display: flex; flex-direction: column; gap: 2px; }
+.filter-group label { font-size: 9px; font-weight: 800; color: #7BA7CC; text-transform: uppercase; letter-spacing: .5px; }
+.filter-group input, .filter-group select {
+  background: #1E3A5F; border: 1px solid #2E5A8F; border-radius: 8px;
+  color: white; padding: 5px 10px; font-size: 11px; font-family: 'Nunito'; outline: none; min-width: 110px;
+}
+.filter-group input:focus, .filter-group select:focus { border-color: #00AAFF; }
+.btn-aplicar {
+  background: #00AAFF; color: white; border: none; border-radius: 20px;
+  padding: 7px 18px; font-size: 11px; font-weight: 800; cursor: pointer;
+  font-family: 'Nunito'; text-transform: uppercase; transition: opacity .2s;
+}
+.btn-aplicar:hover { opacity: .85; }
+.btn-sec {
+  background: #1E3A5F; color: #7BA7CC; border: 1px solid #2E5A8F; border-radius: 20px;
+  padding: 7px 14px; font-size: 11px; font-weight: 800; cursor: pointer;
+  font-family: 'Nunito'; transition: all .2s;
+}
+.btn-sec:hover { border-color: #00AAFF; color: #00AAFF; }
+
+/* MAIN CONTENT */
+.content { padding: 14px 16px; max-width: 1600px; margin: 0 auto; }
+
+/* CARDS */
+.card { background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F; overflow: hidden; margin-bottom: 12px; }
+.card-title {
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px;
+  color: #7BA7CC; padding: 10px 14px 8px; border-bottom: 1px solid #1E3A5F;
+}
+
+/* KPI ROW */
+.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 12px; }
+.kpi-card {
+  background: #13263D; border-radius: 12px; border: 1px solid #1E3A5F;
+  padding: 12px 14px; border-top: 3px solid #1E6BB8; position: relative;
+}
+.kpi-card.green  { border-top-color: #27AE60; }
+.kpi-card.red    { border-top-color: #C0392B; }
+.kpi-card.orange { border-top-color: #E67E22; }
+.kpi-card.yellow { border-top-color: #F1C40F; }
+.kpi-card.purple { border-top-color: #8E44AD; }
+.kpi-card.teal   { border-top-color: #17A589; }
+.kpi-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: #5A7A9C; margin-bottom: 4px; }
+.kpi-value { font-size: 24px; font-weight: 900; color: white; line-height: 1; }
+.kpi-sub   { font-size: 10px; color: #5A7A9C; margin-top: 3px; font-weight: 700; }
+.kpi-icon  { position: absolute; top: 10px; right: 12px; font-size: 20px; opacity: .4; }
+
+/* TABLES */
+.dash-table { width: 100%; border-collapse: collapse; }
+.dash-table thead th {
+  background: #0D1B2A; color: #5A7A9C; font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .5px; padding: 7px 12px; text-align: left;
+  border-bottom: 1px solid #1E3A5F; white-space: nowrap;
+}
+.dash-table tbody tr { border-bottom: 1px solid #1A2E4A; transition: background .1s; }
+.dash-table tbody tr:hover { background: #1E3A5F; }
+.dash-table tbody td { padding: 7px 12px; color: #C8D8E8; font-size: 11px; }
+.dash-table tbody td.num { text-align: right; font-weight: 800; color: white; }
+.dash-table tfoot td { padding: 7px 12px; font-weight: 900; color: white; font-size: 11px; background: #0D1B2A; border-top: 1px solid #2E5A8F; }
+.dash-table tfoot td.num { text-align: right; }
+
+/* BADGE */
+.badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+.badge-pick { background: #1A3A6A; color: #3498DB; }
+.badge-emb  { background: #3A1A5A; color: #9B59B6; }
+.badge-cerrada { background: #1A4A2A; color: #27AE60; }
+.badge-abierta { background: #4A2A0A; color: #F39C12; }
+.badge-sin-pickear { background: #4A1A1A; color: #E74C3C; }
+.badge-parcial { background: #4A2E0A; color: #E67E22; }
+.badge-pickeado { background: #1A3A6A; color: #3498DB; }
+.badge-embalada { background: #3A1A5A; color: #9B59B6; }
+
+/* PROGRESS */
+.prog-wrap { background: #0D1B2A; border-radius: 4px; height: 6px; overflow: hidden; min-width: 60px; }
+.prog-bar  { height: 100%; border-radius: 4px; }
+.prog-green  { background: #27AE60; }
+.prog-yellow { background: #F39C12; }
+.prog-red    { background: #C0392B; }
+.prog-blue   { background: #3498DB; }
+
+/* EMBUDO */
+.funnel-wrap { padding: 8px 14px; }
+.funnel-item { margin-bottom: 5px; }
+.funnel-label { display: flex; justify-content: space-between; margin-bottom: 2px; }
+.funnel-name { font-size: 10px; font-weight: 800; color: #C8D8E8; text-transform: uppercase; }
+.funnel-vals { font-size: 10px; color: #7BA7CC; font-weight: 700; }
+.funnel-bar-wrap { background: #0D1B2A; border-radius: 4px; height: 16px; overflow: hidden; }
+.funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 800; color: white; transition: width .8s ease; }
+.funnel-arrow { text-align: center; color: #2E5A8F; font-size: 12px; margin: 1px 0; }
+
+/* SLA */
+.sla-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px; }
+.sla-card { background: #0D1B2A; border-radius: 10px; padding: 12px 10px; text-align: center; }
+.sla-value { font-size: 26px; font-weight: 900; line-height: 1; }
+.sla-label { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #5A7A9C; margin-top: 3px; }
+.sla-venc { color: #E74C3C; } .sla-hoy { color: #F39C12; } .sla-fut { color: #27AE60; }
+
+/* LT */
+.lt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+.lt-card { background: #0D1B2A; border-radius: 10px; padding: 10px; text-align: center; }
+.lt-value { font-size: 22px; font-weight: 900; color: #00AAFF; }
+.lt-label { font-size: 9px; color: #5A7A9C; text-transform: uppercase; font-weight: 800; margin-top: 3px; }
+
+/* ALERTAS */
+.alertas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; padding: 10px; }
+.alerta-card { background: #0D1B2A; border-radius: 10px; padding: 12px 14px; border-left: 4px solid; display: flex; gap: 10px; }
+.alerta-card.rojo     { border-color: #C0392B; background: #2D0D0D; }
+.alerta-card.amarillo { border-color: #F39C12; background: #2D1F0D; }
+.alerta-card.verde    { border-color: #27AE60; background: #0D2D1A; }
+.alerta-icon { font-size: 20px; flex-shrink: 0; }
+.alerta-titulo { font-size: 11px; font-weight: 900; color: white; margin-bottom: 3px; }
+.alerta-desc   { font-size: 10px; color: #9AACBE; font-weight: 700; }
+.alerta-prioridad { font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: .5px; }
+.pr-alta { color: #E74C3C; } .pr-media { color: #F39C12; } .pr-baja { color: #27AE60; }
+
+/* GRID LAYOUTS */
+.row2 { display: grid; grid-template-columns: 220px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.row3 { display: grid; grid-template-columns: 200px 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.row4 { display: grid; grid-template-columns: 1fr 220px; gap: 10px; margin-bottom: 12px; }
+.row-op { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+/* MEDALS */
+.medal { font-size: 16px; }
+
+/* SPINNER */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(13,27,42,.92);
+  z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.spinner { width: 40px; height: 40px; border: 4px solid #1E3A5F; border-top-color: #00AAFF; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #7BA7CC; font-weight: 800; font-size: 13px; text-transform: uppercase; }
+.empty-msg { text-align: center; padding: 30px; color: #3A5A7A; font-weight: 800; font-size: 11px; text-transform: uppercase; }
+
+@media (max-width: 1100px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .row2, .row3, .row4, .row-op { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <span class="loading-text">Cargando reportes...</span>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-box">
+      <span class="l1">The Brands</span>
+      <span class="l2">CLUB</span>
+    </div>
+    <div class="title-box">
+      <h1>Reportes CD</h1>
+      <p>Análisis Operacional · Centro de Distribución</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="update-label">Última actualización</div>
+    <div class="update-time" id="updateTime">—</div>
+    <a href="index.html" class="back-link">&#8592; Volver al menú</a>
+  </div>
+</div>
+
+<!-- MAIN TABS -->
+<div class="main-tabs">
+  <button class="main-tab active" onclick="switchTab('sap', this)">📋 Pedidos Bajados SAP</button>
+  <button class="main-tab"        onclick="switchTab('operarios', this)">👤 KPI Operarios</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANEL SAP
+══════════════════════════════════════════════ -->
+<div class="panel active" id="panel-sap">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Desde (Recepción SAP)</label>
+      <input type="date" id="sap-desde">
+    </div>
+    <div class="filter-group">
+      <label>Hasta</label>
+      <input type="date" id="sap-hasta">
+    </div>
+    <button class="btn-sec" onclick="setSapHoy()">Ayer</button>
+    <button class="btn-aplicar" onclick="cargarSAP()">&#9654; Aplicar</button>
+  </div>
+
+  <div class="content">
+    <!-- KPIs SAP -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="border-top-color:#00AAFF"><div class="kpi-icon">📋</div><div class="kpi-label">Pedidos Totales</div><div class="kpi-value" id="sk-pedidos">—</div><div class="kpi-sub">órdenes</div></div>
+      <div class="kpi-card"                                  ><div class="kpi-icon">📦</div><div class="kpi-label">Unidades Totales</div><div class="kpi-value" id="sk-unidades">—</div><div class="kpi-sub">unidades</div></div>
+      <div class="kpi-card green"                            ><div class="kpi-icon">✅</div><div class="kpi-label">Entregadas</div><div class="kpi-value" id="sk-entregadas">—</div><div class="kpi-sub" id="sk-ent-pct">del total</div></div>
+      <div class="kpi-card orange"                           ><div class="kpi-icon">⏳</div><div class="kpi-label">Abiertas</div><div class="kpi-value" id="sk-abiertas">—</div><div class="kpi-sub" id="sk-ab-pct">del total</div></div>
+      <div class="kpi-card" id="sk-cumpl-card"               ><div class="kpi-icon">🎯</div><div class="kpi-label">% Cumplimiento</div><div class="kpi-value" id="sk-cumpl">—</div><div class="kpi-sub">entregadas / total</div></div>
+      <div class="kpi-card red"                              ><div class="kpi-icon">🔴</div><div class="kpi-label">Backlog</div><div class="kpi-value" id="sk-backlog">—</div><div class="kpi-sub">sin pickear + parcial</div></div>
+      <div class="kpi-card teal"                             ><div class="kpi-icon">⚡</div><div class="kpi-label">LT SAP → Picking</div><div class="kpi-value" id="sk-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
+      <div class="kpi-card purple"                           ><div class="kpi-icon">🏁</div><div class="kpi-label">LT Picking → Cierre</div><div class="kpi-value" id="sk-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
+    </div>
+
+    <!-- Estado · Embudo · Marketplace -->
+    <div class="row2">
+      <div class="card">
+        <div class="card-title">📊 Estado Operacional</div>
+        <table class="dash-table">
+          <thead><tr><th>Estatus</th><th class="num">Ped.</th><th class="num">Unid.</th><th class="num">%</th></tr></thead>
+          <tbody id="s-tb-estatus"><tr><td colspan="4" class="empty-msg">Cargando...</td></tr></tbody>
+          <tfoot id="s-tf-estatus"></tfoot>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">🔽 Flujo Operacional</div>
+        <div class="funnel-wrap" id="s-funnel"><div class="empty-msg">Cargando...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🛒 Marketplace</div>
+        <table class="dash-table">
+          <thead><tr><th>Cliente</th><th class="num">Ped.</th><th class="num">Unid.</th><th class="num">Cumpl.</th><th></th></tr></thead>
+          <tbody id="s-tb-clientes"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
+          <tfoot id="s-tf-clientes"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLA · Olas · Productividad -->
+    <div class="row3">
+      <div class="card">
+        <div class="card-title">📅 SLA Compromisos</div>
+        <div class="sla-cards">
+          <div class="sla-card"><div style="font-size:20px">🔴</div><div class="sla-value sla-venc" id="s-sla-venc">—</div><div class="sla-label">Vencidos</div></div>
+          <div class="sla-card"><div style="font-size:20px">🟡</div><div class="sla-value sla-hoy"  id="s-sla-hoy">—</div><div class="sla-label">Para Hoy</div></div>
+          <div class="sla-card"><div style="font-size:20px">🟢</div><div class="sla-value sla-fut"  id="s-sla-fut">—</div><div class="sla-label">Futuros</div></div>
+        </div>
+        <div class="lt-row">
+          <div class="lt-card"><div class="lt-value" id="s-lt1">—</div><div class="lt-label">SAP → Picking (h)</div></div>
+          <div class="lt-card"><div class="lt-value" id="s-lt2">—</div><div class="lt-label">Picking → Cierre (h)</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌊 Olas de Picking</div>
+        <table class="dash-table">
+          <thead><tr><th>N° Ola</th><th class="num">Pedidos</th><th class="num">Unidades</th><th class="num">Abiertas</th><th>Estado</th></tr></thead>
+          <tbody id="s-tb-olas"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">👤 Productividad SAP por Operador</div>
+        <table class="dash-table">
+          <thead><tr><th>#</th><th>Operador</th><th class="num">Pedidos</th><th class="num">Unidades</th><th class="num">Entreg.</th></tr></thead>
+          <tbody id="s-tb-prod"><tr><td colspan="5" class="empty-msg">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tendencia · Tipo Envío -->
+    <div class="row4">
+      <div class="card">
+        <div class="card-title">📈 Tendencia 7 Días (Recepción SAP)</div>
+        <div style="padding:10px;height:200px"><canvas id="s-chartTend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🚚 Tipo de Envío</div>
+        <div style="padding:10px;height:200px;display:flex;align-items:center;justify-content:center">
+          <canvas id="s-chartEnvio" style="max-height:180px"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="card">
+      <div class="card-title">🚨 Alertas Operacionales</div>
+      <div class="alertas-grid" id="s-alertas"><div class="empty-msg">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANEL KPI OPERARIOS
+══════════════════════════════════════════════ -->
+<div class="panel" id="panel-operarios">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Desde</label>
+      <input type="date" id="op-desde">
+    </div>
+    <div class="filter-group">
+      <label>Hasta</label>
+      <input type="date" id="op-hasta">
+    </div>
+    <div class="filter-group">
+      <label>Tipo</label>
+      <select id="op-tipo">
+        <option value="todos">Todos</option>
+        <option value="Picking">Picking</option>
+        <option value="Embalaje">Embalaje</option>
+      </select>
+    </div>
+    <button class="btn-sec" onclick="setOpHoy()">Ayer</button>
+    <button class="btn-aplicar" onclick="cargarOperarios()">&#9654; Aplicar</button>
+  </div>
+
+  <div class="content">
+    <!-- KPIs Operarios -->
+    <div class="kpi-row" style="grid-template-columns:repeat(6,1fr)">
+      <div class="kpi-card" style="border-top-color:#00AAFF"><div class="kpi-icon">👥</div><div class="kpi-label">Operarios Activos</div><div class="kpi-value" id="ok-operarios">—</div><div class="kpi-sub">en el período</div></div>
+      <div class="kpi-card" style="border-top-color:#1E6BB8"><div class="kpi-icon">🌊</div><div class="kpi-label">Total Olas</div><div class="kpi-value" id="ok-olas">—</div><div class="kpi-sub">olas trabajadas</div></div>
+      <div class="kpi-card" style="border-top-color:#1E6BB8"><div class="kpi-icon">📋</div><div class="kpi-label">Pick Lists</div><div class="kpi-value" id="ok-listas">—</div><div class="kpi-sub">listas procesadas</div></div>
+      <div class="kpi-card green"                           ><div class="kpi-icon">📦</div><div class="kpi-label">Unidades Totales</div><div class="kpi-value" id="ok-unidades">—</div><div class="kpi-sub">procesadas</div></div>
+      <div class="kpi-card teal"                            ><div class="kpi-icon">⏱️</div><div class="kpi-label">Prom. Min/Lista</div><div class="kpi-value" id="ok-min">—</div><div class="kpi-sub">minutos</div></div>
+      <div class="kpi-card purple"                          ><div class="kpi-icon">⚡</div><div class="kpi-label">Unid./Hora Prom.</div><div class="kpi-value" id="ok-uph">—</div><div class="kpi-sub">productividad</div></div>
+    </div>
+
+    <!-- Tabla detalle + Tendencia -->
+    <div class="row-op">
+      <div class="card">
+        <div class="card-title">🏆 Ranking Operarios</div>
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Operario</th>
+              <th>Tipo</th>
+              <th class="num">Olas</th>
+              <th class="num">Pick Lists</th>
+              <th class="num">Unidades</th>
+              <th class="num">Min/Lista</th>
+              <th class="num">Unid./Hora</th>
+              <th>Rendimiento</th>
+            </tr>
+          </thead>
+          <tbody id="op-tabla"><tr><td colspan="9" class="empty-msg">Cargando...</td></tr></tbody>
+          <tfoot id="op-tfoot"></tfoot>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 Tendencia 14 Días — Unidades por Tipo</div>
+        <div style="padding:10px;height:300px"><canvas id="op-chartTend"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+// ── Utilidades ────────────────────────────────
+const MEDALS = ['🥇','🥈','🥉'];
+function fmtNum(n) { return Number(n||0).toLocaleString('es-CL'); }
+function fmtPct(a,b) { return b>0 ? (a/b*100).toFixed(1)+'%' : '—'; }
+function isoYesterday() {
+  const d = new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10);
+}
+const ESTATUS_BADGE = { 'Sin Pickear':'badge-sin-pickear','Parcial':'badge-parcial','Pickeado':'badge-pickeado','Embalada':'badge-embalada','Cerrada':'badge-cerrada' };
+const ESTATUS_ORDER = ['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
+const FUNNEL_COLORS = { 'Sin Pickear':'#C0392B','Parcial':'#E67E22','Pickeado':'#3498DB','Embalada':'#8E44AD','Cerrada':'#27AE60' };
+
+let chartSapTend=null, chartSapEnvio=null, chartOpTend=null;
+
+// ── Tabs ─────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// PANEL SAP
+// ══════════════════════════════════════════════
+function setSapHoy() {
+  const y = isoYesterday();
+  document.getElementById('sap-desde').value = y;
+  document.getElementById('sap-hasta').value = y;
+}
+
+async function cargarSAP() {
+  document.getElementById('loadingOverlay').style.display='flex';
+  const desde = document.getElementById('sap-desde').value;
+  const hasta  = document.getElementById('sap-hasta').value;
+  const p = new URLSearchParams();
+  if (desde) p.set('desde', desde);
+  if (hasta)  p.set('hasta',  hasta);
+  try {
+    const res  = await fetch(BACKEND_URL+'/api/pedidos-sap/resumen?'+p);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    renderSAP(data);
+    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('es-CL');
+  } catch(e) { alert('Error SAP: '+e.message); }
+  finally { document.getElementById('loadingOverlay').style.display='none'; }
+}
+
+function renderSAP(data) {
+  const k = data.kpis;
+  // KPIs
+  document.getElementById('sk-pedidos').textContent    = fmtNum(k.total_pedidos);
+  document.getElementById('sk-unidades').textContent   = fmtNum(k.total_unidades);
+  document.getElementById('sk-entregadas').textContent = fmtNum(k.total_entregadas);
+  document.getElementById('sk-abiertas').textContent   = fmtNum(k.total_abiertas);
+  document.getElementById('sk-ent-pct').textContent    = fmtPct(k.total_entregadas, k.total_unidades)+' del total';
+  document.getElementById('sk-ab-pct').textContent     = fmtPct(k.total_abiertas, k.total_unidades)+' del total';
+  document.getElementById('sk-cumpl').textContent      = (k.cumplimiento||0)+'%';
+  document.getElementById('sk-backlog').textContent    = fmtNum(k.backlog);
+  document.getElementById('sk-lt1').textContent        = k.lead_time_sap_picking_hrs!=null ? k.lead_time_sap_picking_hrs+' h':'—';
+  document.getElementById('sk-lt2').textContent        = k.lead_time_picking_cierre_hrs!=null ? k.lead_time_picking_cierre_hrs+' h':'—';
+  document.getElementById('s-lt1').textContent         = k.lead_time_sap_picking_hrs!=null ? k.lead_time_sap_picking_hrs+' h':'—';
+  document.getElementById('s-lt2').textContent         = k.lead_time_picking_cierre_hrs!=null ? k.lead_time_picking_cierre_hrs+' h':'—';
+  const pct = Number(k.cumplimiento||0);
+  document.getElementById('sk-cumpl-card').className = 'kpi-card '+(pct>=80?'green':pct>=60?'yellow':'red');
+  // SLA
+  document.getElementById('s-sla-venc').textContent = fmtNum(k.sla_vencidos);
+  document.getElementById('s-sla-hoy').textContent  = fmtNum(k.sla_hoy);
+  document.getElementById('s-sla-fut').textContent  = fmtNum(k.sla_futuros);
+
+  renderSapEstatus(data.por_estatus, k);
+  renderSapEmbudo(data.por_estatus, k);
+  renderSapClientes(data.por_cliente, k);
+  renderSapOlas(data.por_ola);
+  renderSapProd(data.por_usuario);
+  renderSapTendencia(data.tendencia);
+  renderSapEnvio(data.por_tipo_envio);
+  renderSapAlertas(data);
+}
+
+function renderSapEstatus(rows, k) {
+  const totalPed = Number(k.total_pedidos)||1;
+  const map = {}; (rows||[]).forEach(r => map[r.estatus]=r);
+  const all = [...ESTATUS_ORDER.filter(s=>map[s]).map(s=>map[s]), ...(rows||[]).filter(r=>!ESTATUS_ORDER.includes(r.estatus))];
+  if (!all.length) { document.getElementById('s-tb-estatus').innerHTML='<tr><td colspan="4" class="empty-msg">Sin datos</td></tr>'; return; }
+  const totP = all.reduce((a,r)=>a+Number(r.pedidos||0),0);
+  const totU = all.reduce((a,r)=>a+Number(r.unidades||0),0);
+  document.getElementById('s-tb-estatus').innerHTML = all.map(r => {
+    const bc = ESTATUS_BADGE[r.estatus]||'badge-pickeado';
+    return `<tr><td><span class="badge ${bc}">${r.estatus}</span></td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num">${totalPed>0?(Number(r.pedidos)/totalPed*100).toFixed(1)+'%':'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('s-tf-estatus').innerHTML = `<tr><td style="font-weight:900">TOTAL</td><td class="num">${fmtNum(totP)}</td><td class="num">${fmtNum(totU)}</td><td class="num">100%</td></tr>`;
+}
+
+function renderSapEmbudo(rows, k) {
+  const totalPed = Number(k.total_pedidos)||1;
+  const map = {}; (rows||[]).forEach(r => map[r.estatus]=r);
+  const etapas = [
+    {label:'Comprometido', key:null,         color:'#1565C0'},
+    {label:'Sin Pickear',  key:'Sin Pickear', color:'#C0392B'},
+    {label:'Parcial',      key:'Parcial',     color:'#E67E22'},
+    {label:'Pickeado',     key:'Pickeado',    color:'#3498DB'},
+    {label:'Embalada',     key:'Embalada',    color:'#8E44AD'},
+    {label:'Cerrada',      key:'Cerrada',     color:'#27AE60'},
+  ];
+  let html = '';
+  etapas.forEach((e,i) => {
+    const ped = e.key ? Number((map[e.key]||{}).pedidos||0) : totalPed;
+    const pct = totalPed>0 ? Math.round(ped/totalPed*100) : 0;
+    if (i>0) html += '<div class="funnel-arrow">↓</div>';
+    html += `<div class="funnel-item"><div class="funnel-label"><span class="funnel-name">${e.label}</span><span class="funnel-vals">${fmtNum(ped)} · ${pct}%</span></div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.max(pct,3)}%;background:${e.color}">${pct>=15?pct+'%':''}</div></div></div>`;
+  });
+  document.getElementById('s-funnel').innerHTML = html;
+}
+
+function renderSapClientes(rows, k) {
+  if (!rows||!rows.length) { document.getElementById('s-tb-clientes').innerHTML='<tr><td colspan="5" class="empty-msg">Sin datos</td></tr>'; return; }
+  const totP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
+  const totU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
+  const totE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
+  document.getElementById('s-tb-clientes').innerHTML = rows.map(r => {
+    const pct = Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
+    const col = pct>=80?'prog-green':pct>=60?'prog-yellow':'prog-red';
+    return `<tr><td style="font-weight:800;color:white">${r.cliente}</td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num">${pct}%</td><td style="min-width:70px"><div class="prog-wrap"><div class="prog-bar ${col}" style="width:${pct}%"></div></div></td></tr>`;
+  }).join('');
+  const pctTot=totU>0?Math.round(totE/totU*100):0;
+  document.getElementById('s-tf-clientes').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="num">${fmtNum(totP)}</td><td class="num">${fmtNum(totU)}</td><td class="num">${pctTot}%</td><td></td></tr>`;
+}
+
+function renderSapOlas(rows) {
+  if (!rows||!rows.length) { document.getElementById('s-tb-olas').innerHTML='<tr><td colspan="5" class="empty-msg">Sin olas</td></tr>'; return; }
+  document.getElementById('s-tb-olas').innerHTML = rows.slice(0,15).map(r => {
+    const ab=Number(r.abiertas||0);
+    const badge=ab>0?'<span class="badge badge-abierta">Abierta</span>':'<span class="badge badge-cerrada">Cerrada</span>';
+    return `<tr><td style="font-weight:800;color:#00AAFF">${r.num_ola||'—'}</td><td class="num">${fmtNum(r.pedidos)}</td><td class="num">${fmtNum(r.unidades)}</td><td class="num" style="color:${ab>0?'#E74C3C':'#27AE60'}">${fmtNum(ab)}</td><td>${badge}</td></tr>`;
+  }).join('');
+}
+
+function renderSapProd(rows) {
+  if (!rows||!rows.length) { document.getElementById('s-tb-prod').innerHTML='<tr><td colspan="5" class="empty-msg">Sin datos</td></tr>'; return; }
+  document.getElementById('s-tb-prod').innerHTML = rows.map((r,i)=>`<tr>
+    <td style="text-align:center;font-size:15px">${MEDALS[i]||i+1}</td>
+    <td style="font-weight:800;color:white">${r.usuario}</td>
+    <td class="num">${fmtNum(r.pedidos)}</td>
+    <td class="num">${fmtNum(r.unidades)}</td>
+    <td class="num" style="color:#27AE60">${fmtNum(r.entregadas)}</td>
+  </tr>`).join('');
+}
+
+function renderSapTendencia(rows) {
+  if (!rows||!rows.length) return;
+  const labels=rows.map(r=>new Date(r.fecha).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
+  if (chartSapTend) chartSapTend.destroy();
+  chartSapTend = new Chart(document.getElementById('s-chartTend'),{
+    type:'bar', data:{ labels, datasets:[
+      {label:'Pedidos',   data:rows.map(r=>Number(r.pedidos||0)),    backgroundColor:'#1565C088', borderColor:'#1565C0', borderWidth:1},
+      {label:'Entregadas',data:rows.map(r=>Number(r.entregadas||0)), backgroundColor:'#27AE6088', borderColor:'#27AE60', borderWidth:1},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#7BA7CC', font:{size:10,family:'Nunito'} } } },
+      scales:{ x:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} }, y:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} } }
+    }
+  });
+}
+
+function renderSapEnvio(rows) {
+  if (!rows||!rows.length) return;
+  if (chartSapEnvio) chartSapEnvio.destroy();
+  chartSapEnvio = new Chart(document.getElementById('s-chartEnvio'),{
+    type:'doughnut',
+    data:{ labels:rows.map(r=>r.tipo_envio), datasets:[{ data:rows.map(r=>Number(r.pedidos||0)), backgroundColor:['#1565C0','#27AE60','#E67E22','#8E44AD'], borderColor:'#13263D', borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{color:'#7BA7CC',font:{size:10,family:'Nunito'},boxWidth:12,padding:8} } } }
+  });
+}
+
+function renderSapAlertas(data) {
+  const k=data.kpis; const alertas=[];
+  if (Number(k.sla_vencidos)>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${fmtNum(k.sla_vencidos)} pedidos con SLA VENCIDO`,desc:'Fecha compromiso pasada y sin cerrar',pr:'Alta'});
+  if (Number(k.backlog)>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${fmtNum(k.backlog)} pedidos en Backlog`,desc:'Sin Pickear o Parciales pendientes',pr:'Alta'});
+  const olasAb=(data.por_ola||[]).filter(o=>Number(o.abiertas||0)>0);
+  if (olasAb.length>0) alertas.push({tipo:'amarillo',icon:'🟡',titulo:`${olasAb.length} ola(s) con pedidos abiertos`,desc:olasAb.slice(0,3).map(o=>`Ola ${o.num_ola}: ${o.abiertas}`).join(' · '),pr:'Media'});
+  const clBajos=(data.por_cliente||[]).filter(c=>Number(c.unidades)>0&&(Number(c.entregadas)/Number(c.unidades)*100)<60);
+  if (clBajos.length>0) alertas.push({tipo:'rojo',icon:'🔴',titulo:`${clBajos.length} marketplace(s) bajo 60% cumplimiento`,desc:clBajos.map(c=>`${c.cliente}: ${Math.round(Number(c.entregadas)/Number(c.unidades)*100)}%`).join(' · '),pr:'Alta'});
+  if (Number(k.sla_hoy)>0) alertas.push({tipo:'amarillo',icon:'🟡',titulo:`${fmtNum(k.sla_hoy)} pedidos con compromiso HOY`,desc:'Deben cerrarse antes del fin del día',pr:'Media'});
+  if (Number(k.cumplimiento||0)>=80) alertas.push({tipo:'verde',icon:'✅',titulo:`Cumplimiento ${k.cumplimiento}% — Dentro del objetivo`,desc:'Operación dentro de parámetros normales',pr:'Baja'});
+  if (!alertas.length) alertas.push({tipo:'verde',icon:'✅',titulo:'Sin alertas operacionales',desc:'Todos los indicadores en rango normal',pr:'Baja'});
+  document.getElementById('s-alertas').innerHTML=alertas.map(a=>`<div class="alerta-card ${a.tipo}"><div class="alerta-icon">${a.icon}</div><div><div class="alerta-titulo">${a.titulo}</div><div class="alerta-desc">${a.desc}</div><div class="alerta-prioridad pr-${a.pr==='Alta'?'alta':a.pr==='Media'?'media':'baja'}">Prioridad ${a.pr}</div></div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// PANEL OPERARIOS
+// ══════════════════════════════════════════════
+function setOpHoy() {
+  const y = isoYesterday();
+  document.getElementById('op-desde').value = y;
+  document.getElementById('op-hasta').value = y;
+}
+
+async function cargarOperarios() {
+  document.getElementById('loadingOverlay').style.display='flex';
+  const desde = document.getElementById('op-desde').value;
+  const hasta  = document.getElementById('op-hasta').value;
+  const tipo   = document.getElementById('op-tipo').value;
+  const p = new URLSearchParams();
+  if (desde) p.set('desde', desde);
+  if (hasta)  p.set('hasta',  hasta);
+  if (tipo && tipo!=='todos') p.set('tipo', tipo);
+  try {
+    const res  = await fetch(BACKEND_URL+'/api/kpi-operarios?'+p);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    renderOperarios(data);
+    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('es-CL');
+  } catch(e) { alert('Error operarios: '+e.message); }
+  finally { document.getElementById('loadingOverlay').style.display='none'; }
+}
+
+function renderOperarios(data) {
+  const r = data.resumen || {};
+  document.getElementById('ok-operarios').textContent = fmtNum(r.total_operarios);
+  document.getElementById('ok-olas').textContent      = fmtNum(r.total_olas);
+  document.getElementById('ok-listas').textContent    = fmtNum(r.total_listas);
+  document.getElementById('ok-unidades').textContent  = fmtNum(r.total_unidades);
+  document.getElementById('ok-min').textContent       = r.prom_min_lista!=null ? r.prom_min_lista+' min':'—';
+  document.getElementById('ok-uph').textContent       = r.prom_unid_hora!=null ? r.prom_unid_hora:'—';
+
+  // Tabla ranking
+  const rows = data.detalle || [];
+  const maxUnid = rows.length ? Math.max(...rows.map(r=>Number(r.unidades||0))) : 1;
+  if (!rows.length) { document.getElementById('op-tabla').innerHTML='<tr><td colspan="9" class="empty-msg">Sin datos</td></tr>'; return; }
+  const totOlas  = rows.reduce((a,r)=>a+Number(r.olas||0),0);
+  const totListas= rows.reduce((a,r)=>a+Number(r.pick_lists||0),0);
+  const totUnid  = rows.reduce((a,r)=>a+Number(r.unidades||0),0);
+  document.getElementById('op-tabla').innerHTML = rows.map((r,i) => {
+    const badge = r.tipo==='Picking'?'badge-pick':'badge-emb';
+    const pctBar = maxUnid>0 ? Math.round(Number(r.unidades)/maxUnid*100):0;
+    const col = pctBar>=80?'prog-blue':pctBar>=50?'prog-green':'prog-yellow';
+    return `<tr>
+      <td style="text-align:center">${MEDALS[i]||i+1}</td>
+      <td style="font-weight:800;color:white">${r.nombre}</td>
+      <td><span class="badge ${badge}">${r.tipo}</span></td>
+      <td class="num">${fmtNum(r.olas)}</td>
+      <td class="num">${fmtNum(r.pick_lists)}</td>
+      <td class="num">${fmtNum(r.unidades)}</td>
+      <td class="num">${r.min_prom_x_lista!=null?r.min_prom_x_lista+' min':'—'}</td>
+      <td class="num" style="color:#00AAFF;font-weight:900">${r.unid_x_hora!=null?r.unid_x_hora:'—'}</td>
+      <td style="min-width:80px"><div class="prog-wrap"><div class="prog-bar ${col}" style="width:${pctBar}%"></div></div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('op-tfoot').innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td><td></td><td class="num">${fmtNum(totOlas)}</td><td class="num">${fmtNum(totListas)}</td><td class="num">${fmtNum(totUnid)}</td><td class="num">—</td><td class="num">—</td><td></td></tr>`;
+
+  // Chart tendencia
+  renderOpTendencia(data.tendencia);
+}
+
+function renderOpTendencia(rows) {
+  if (!rows||!rows.length) return;
+  const fechas=[...new Set(rows.map(r=>r.fecha))].sort();
+  const labels=fechas.map(f=>new Date(f).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
+  const pickData = fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Picking'); return r?Number(r.unidades):0;});
+  const embData  = fechas.map(f=>{const r=rows.find(x=>x.fecha===f&&x.tipo==='Embalaje'); return r?Number(r.unidades):0;});
+  if (chartOpTend) chartOpTend.destroy();
+  chartOpTend = new Chart(document.getElementById('op-chartTend'),{
+    type:'bar', data:{ labels, datasets:[
+      {label:'Picking', data:pickData, backgroundColor:'#3498DB88', borderColor:'#3498DB', borderWidth:1},
+      {label:'Embalaje',data:embData,  backgroundColor:'#8E44AD88', borderColor:'#8E44AD', borderWidth:1},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#7BA7CC', font:{size:10,family:'Nunito'} } } },
+      scales:{ x:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} }, y:{ ticks:{color:'#5A7A9C',font:{size:9}}, grid:{color:'#1E3A5F'} } }
+    }
+  });
+}
+
+// ── Init ─────────────────────────────────────
+function init() {
+  const y = isoYesterday();
+  document.getElementById('sap-desde').value = y;
+  document.getElementById('sap-hasta').value = y;
+  document.getElementById('op-desde').value  = y;
+  document.getElementById('op-hasta').value  = y;
+  cargarSAP();
+}
+init();
+</script>
+</body>
+</html>
