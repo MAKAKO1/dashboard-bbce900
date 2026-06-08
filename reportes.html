@@ -349,7 +349,9 @@
         </select>
       </div>
       <button class="btn-sec" onclick="rptTiendaSetHoy()">Hoy</button>
+      <button class="btn-sec" onclick="rptTiendaSetTodo()">Todo</button>
       <button class="btn-apply" onclick="rptCargarTienda()">Aplicar</button>
+      <button class="btn-sec" id="rpt-t-btn-ref" onclick="rptCargarTienda()" style="margin-left:4px">&#8635; Actualizar</button>
       <span id="rpt-t-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
 
@@ -777,14 +779,17 @@ function renderOpChart(rows){
 
 // ══ KPI TIENDA ══
 function rptTiendaInit(){
-  const hoy=new Date().toISOString().slice(0,10);
-  document.getElementById('rpt-t-desde').value=hoy;
-  document.getElementById('rpt-t-hasta').value=hoy;
+  // Sin fechas por defecto → carga toda la data disponible
 }
 function rptTiendaSetHoy(){
   const hoy=new Date().toISOString().slice(0,10);
   document.getElementById('rpt-t-desde').value=hoy;
   document.getElementById('rpt-t-hasta').value=hoy;
+}
+function rptTiendaSetTodo(){
+  document.getElementById('rpt-t-desde').value='';
+  document.getElementById('rpt-t-hasta').value='';
+  rptCargarTienda();
 }
 
 async function rptCargarTienda(){
@@ -799,15 +804,21 @@ async function rptCargarTienda(){
   if(estatus) p.set('estatus',estatus);
   const HUB_TIENDA='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
   p.set('tipo','tienda-kpi');
+  const tsEl=document.getElementById('rpt-t-ts');
+  const btnRef=document.getElementById('rpt-t-btn-ref');
+  tsEl.textContent='Cargando...';
+  if(btnRef){btnRef.disabled=true;btnRef.textContent='⏳';}
   try{
-    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),15000);
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),20000);
     const res=await fetch(HUB_TIENDA+'?'+p,{signal:ctrl.signal});
     const data=await res.json();
     if(!data.ok)throw new Error(data.error);
     rptRenderTienda(data);
-    document.getElementById('rpt-t-ts').textContent='Act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+    tsEl.textContent='Act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
-    document.getElementById('rpt-t-ts').textContent='Error: '+(e.name==='AbortError'?'timeout':e.message);
+    tsEl.textContent='Error: '+(e.name==='AbortError'?'timeout':e.message);
+  }finally{
+    if(btnRef){btnRef.disabled=false;btnRef.textContent='↻ Actualizar';}
   }
 }
 
@@ -822,6 +833,21 @@ function rptRenderTienda(data){
   const cc=document.getElementById('rpt-t-k-cumpl-card');
   cc.className='kpi-card '+(cumpl>=90?'verde':cumpl>=70?'':'rojo');
   document.getElementById('rpt-t-k-lt').textContent=k.lead_time_picking_min>0?k.lead_time_picking_min+' min':'—';
+
+  // Setear rango de fechas desde la data si los pickers están vacíos
+  const desdeEl=document.getElementById('rpt-t-desde');
+  const hastaEl=document.getElementById('rpt-t-hasta');
+  if(!desdeEl.value && !hastaEl.value && data.detalle && data.detalle.length){
+    const parseFD=s=>{
+      if(!s||s==='-')return null;
+      const m=String(s).match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+      if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+      const iso=String(s).slice(0,10);
+      return /^\d{4}-\d{2}-\d{2}$/.test(iso)?iso:null;
+    };
+    const fechas=data.detalle.map(r=>parseFD(r.fecha_solicitud)).filter(Boolean).sort();
+    if(fechas.length){desdeEl.value=fechas[0];hastaEl.value=fechas[fechas.length-1];}
+  }
 
   // Poblar select tiendas
   const sel=document.getElementById('rpt-t-tienda');
