@@ -848,7 +848,7 @@ function rptRenderSap(data){
   if(fechas.length>1){
     const gPct=gtC>0?(gtD/gtC*100).toFixed(1):'0.0';
     html+=`<tr class="sap-grand-row">
-      <td>Período</td><td>TOTAL GENERAL</td>
+      <td colspan="2">Período &middot; TOTAL GENERAL</td>
       <td class="n">${rptFmt(gtC)}</td>
       <td class="n">${gtD>0?rptFmt(gtD):'—'}</td>
       <td class="n">${gtP>0?rptFmt(gtP):'—'}</td>
