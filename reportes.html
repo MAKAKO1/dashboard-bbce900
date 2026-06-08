@@ -797,9 +797,11 @@ async function rptCargarTienda(){
   if(hasta)   p.set('hasta',hasta);
   if(tienda)  p.set('tienda',tienda);
   if(estatus) p.set('estatus',estatus);
+  const HUB_TIENDA='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
+  p.set('tipo','tienda-kpi');
   try{
-    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),12000);
-    const res=await fetch(BACKEND_URL+'/api/tienda-kpi?'+p,{signal:ctrl.signal});
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),15000);
+    const res=await fetch(HUB_TIENDA+'?'+p,{signal:ctrl.signal});
     const data=await res.json();
     if(!data.ok)throw new Error(data.error);
     rptRenderTienda(data);
