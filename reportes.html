@@ -893,7 +893,7 @@ function fmtNombre(n){
 }
 
 function rptOpSetAyer(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
-function rptInitOp(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
+function rptInitOp(){const h=new Date().toISOString().slice(0,10);document.getElementById('rpt-op-desde').value=h;document.getElementById('rpt-op-hasta').value=h;}
 
 async function rptCargarOp(){
   const desde=document.getElementById('rpt-op-desde').value;
@@ -920,6 +920,12 @@ async function rptCargarOp(){
 }
 
 function rptRenderOp(data){
+  // Auto-poblar fechas desde la data si no hay resultados con el filtro actual
+  const opDesde=document.getElementById('rpt-op-desde');
+  const opHasta=document.getElementById('rpt-op-hasta');
+  if(data.fecha_min&&data.fecha_max&&(!data.resumen||!data.resumen.total_operarios)){
+    opDesde.value=data.fecha_min; opHasta.value=data.fecha_max;
+  }
   const r=data.resumen||{};
   const rows=data.detalle||[];
   const almacenFiltro=document.getElementById('rpt-op-almacen').value;
