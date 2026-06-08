@@ -202,11 +202,22 @@
   .t-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:middle; }
 
   .t-top10 { background:white; border-radius:14px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,80,180,.08); margin-bottom:16px; }
-  .t-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
-  .t-bar-name { font-size:10px; font-weight:800; color:#003366; width:220px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .t-bar-wrap { flex:1; background:#EEF4FF; border-radius:4px; height:16px; overflow:hidden; }
-  .t-bar-fill { height:100%; border-radius:4px; background:#E57373; transition:width .8s; }
-  .t-bar-num  { font-size:10px; font-weight:800; color:#003366; width:50px; text-align:right; flex-shrink:0; }
+  .t-top10-tabla { width:100%; border-collapse:collapse; font-size:12px; }
+  .t-top10-tabla th { background:#F0F6FF; color:#003366; font-size:10px; font-weight:800; text-transform:uppercase; padding:7px 10px; border-bottom:2px solid #CCE9FF; white-space:nowrap; }
+  .t-top10-tabla th.n { text-align:right; }
+  .t-top10-tabla td { padding:8px 10px; border-bottom:1px solid #EEF4FF; vertical-align:middle; }
+  .t-top10-tabla td.n { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; }
+  .t-top10-tabla tr:last-child td { border-bottom:none; }
+  .t-top10-tabla tr:hover td { background:#F8FBFF; }
+  .t-top10-rank { display:inline-block; width:20px; height:20px; border-radius:50%; background:#E8F4FF; color:#003366; font-size:10px; font-weight:900; text-align:center; line-height:20px; margin-right:6px; flex-shrink:0; }
+  .t-top10-rank.oro   { background:#FFF3CD; color:#B8860B; }
+  .t-top10-rank.plata { background:#F0F0F0; color:#666; }
+  .t-top10-rank.bronce{ background:#FFE8D6; color:#A0522D; }
+  .t-pend-bar { display:flex; align-items:center; gap:6px; }
+  .t-pend-bar-wrap { width:70px; height:8px; background:#EEF4FF; border-radius:4px; overflow:hidden; flex-shrink:0; }
+  .t-pend-bar-fill { height:100%; border-radius:4px; transition:width .6s; }
+  .t-pick-chips { display:flex; gap:3px; flex-wrap:wrap; }
+  .t-chip { font-size:9px; font-weight:800; padding:2px 5px; border-radius:6px; white-space:nowrap; }
 
   .t-tables2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
   @media(max-width:1100px){ .t-tables2{ grid-template-columns:1fr; } }
@@ -585,8 +596,20 @@
 
     <!-- Top 10 tiendas mayor pendiente -->
     <div class="t-top10">
-      <div class="rpt-card-title" style="margin-bottom:12px">&#128202; Top 10 Tiendas con Mayor Pendiente (Unidades)</div>
-      <div id="rpt-t-top10"><div class="rpt-empty">Sin datos</div></div>
+      <div class="rpt-card-title" style="margin-bottom:14px">&#128202; Top 10 Tiendas con Mayor Pendiente</div>
+      <div style="overflow-x:auto">
+        <table class="t-top10-tabla">
+          <thead><tr>
+            <th style="width:30px">#</th>
+            <th>Tienda</th>
+            <th class="n">Solicitado</th>
+            <th class="n">Pendiente</th>
+            <th class="n">% Pend.</th>
+            <th style="min-width:180px">Estado Pickings</th>
+          </tr></thead>
+          <tbody id="rpt-t-top10"><tr><td colspan="6" class="rpt-empty" style="text-align:center">Sin datos</td></tr></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Tablas abiertas / cerradas -->
@@ -1203,16 +1226,37 @@ function rptRenderTienda(data){
   const maxPend = top10[0]?.pendiente||1;
   const top10El = document.getElementById('rpt-t-top10');
   if(top10El){
-    top10El.innerHTML = top10.length ? top10.map(r=>{
-      const pct = Math.round(r.pendiente/maxPend*100);
-      // buscar nombre completo en detalle
-      const nombre = det.find(d=>d.tienda_destino===r.key)?.nombre_tienda || r.key;
-      return `<div class="t-bar-row">
-        <div class="t-bar-name" title="${nombre}">${nombre}</div>
-        <div class="t-bar-wrap"><div class="t-bar-fill" style="width:${pct}%"></div></div>
-        <div class="t-bar-num">${rptFmt(r.pendiente)}</div>
-      </div>`;
-    }).join('') : '<div class="rpt-empty">Sin datos</div>';
+    if(!top10.length){ top10El.innerHTML='<tr><td colspan="6" class="rpt-empty" style="text-align:center">Sin datos</td></tr>'; }
+    else {
+      top10El.innerHTML = top10.map((r,i)=>{
+        const nombre = r.nombre_tienda || det.find(d=>d.tienda_destino===r.key)?.nombre_tienda || r.key;
+        const pctPend = r.solicitado>0 ? (r.pendiente/r.solicitado*100).toFixed(1) : '0.0';
+        const pctBar  = Math.round(r.pendiente/maxPend*100);
+        const barCol  = Number(pctPend)>=50 ? '#C0392B' : Number(pctPend)>=25 ? '#E67E22' : '#27AE60';
+        const rankCls = i===0?'oro':i===1?'plata':i===2?'bronce':'';
+        // chips de picking por estado
+        const chips = [
+          {lbl:'x Gen', val:r.por_generar||0, bg:'#FDECEA', col:'#C0392B'},
+          {lbl:'Proc',  val:r.en_proceso||0,  bg:'#FEF3E0', col:'#E67E22'},
+          {lbl:'Pick',  val:r.pickeado||0,    bg:'#EBF5FB', col:'#2980B9'},
+          {lbl:'Emb',   val:r.embalado||0,    bg:'#F5EEF8', col:'#8E44AD'},
+          {lbl:'Cerr',  val:r.cerrado||0,     bg:'#EAFAF1', col:'#1E8449'},
+        ].filter(c=>c.val>0).map(c=>`<span class="t-chip" style="background:${c.bg};color:${c.col}">${c.lbl} ${rptFmt(c.val)}</span>`).join('');
+        return `<tr>
+          <td style="text-align:center"><span class="t-top10-rank ${rankCls}">${i+1}</span></td>
+          <td style="font-weight:800;color:#003366;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${nombre}">${nombre}</td>
+          <td class="n">${rptFmt(r.solicitado)}</td>
+          <td class="n" style="color:#C0392B;font-weight:900">${rptFmt(r.pendiente)}</td>
+          <td class="n">
+            <div class="t-pend-bar">
+              <div class="t-pend-bar-wrap"><div class="t-pend-bar-fill" style="width:${pctBar}%;background:${barCol}"></div></div>
+              <span style="color:${barCol};font-weight:800;font-size:11px">${pctPend}%</span>
+            </div>
+          </td>
+          <td><div class="t-pick-chips">${chips||'<span style="color:#99AABB;font-size:10px">—</span>'}</div></td>
+        </tr>`;
+      }).join('');
+    }
   }
 
   // ── Tablas Abiertas / Cerradas ──
