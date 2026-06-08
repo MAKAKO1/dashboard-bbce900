@@ -134,6 +134,79 @@
   .rpt-pr-alta  { color:#C0392B; } .rpt-pr-media { color:#E67E22; } .rpt-pr-baja { color:#27AE60; }
   .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
   .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+
+  /* ══ KPI TIENDA — nuevo diseño ══ */
+  .t-header { background:linear-gradient(135deg,#0D2137 0%,#1A3A5C 100%); border-radius:14px; padding:16px 22px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .t-header-left h2 { color:white; font-size:18px; font-weight:900; text-transform:uppercase; margin-bottom:2px; }
+  .t-header-left p  { color:rgba(255,255,255,.55); font-size:11px; font-weight:700; }
+  .t-header-filters { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .t-filter-group   { display:flex; flex-direction:column; gap:3px; }
+  .t-filter-group label { color:rgba(255,255,255,.6); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; }
+  .t-filter-group select, .t-filter-group input[type=date] { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:8px; padding:5px 10px; color:white; font-size:11px; font-weight:700; font-family:'Nunito',Arial; outline:none; min-width:120px; }
+  .t-filter-group select option { background:#1A3A5C; color:white; }
+  .t-btn-ref { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:20px; color:white; font-size:11px; font-weight:800; padding:7px 14px; cursor:pointer; font-family:'Nunito',Arial; transition:background .15s; }
+  .t-btn-ref:hover { background:rgba(255,255,255,.25); }
+  .t-btn-ref:disabled { opacity:.5; cursor:default; }
+  .t-ts { color:rgba(255,255,255,.5); font-size:10px; font-weight:700; white-space:nowrap; }
+
+  .t-kpi4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+  @media(max-width:900px){ .t-kpi4{ grid-template-columns:repeat(2,1fr); } }
+  .t-kpi-card { background:white; border-radius:14px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,80,180,.08); display:flex; align-items:center; gap:14px; }
+  .t-kpi-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .t-kpi-icon.azul    { background:#E8F4FF; }
+  .t-kpi-icon.verde   { background:#D5F5E3; }
+  .t-kpi-icon.naranja { background:#FEF0E6; }
+  .t-kpi-icon.morado  { background:#F0E8FF; }
+  .t-kpi-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#7799AA; margin-bottom:4px; }
+  .t-kpi-value { font-size:24px; font-weight:900; color:#003366; line-height:1; }
+  .t-kpi-sub   { font-size:10px; color:#99AABB; font-weight:700; margin-top:3px; }
+  .t-kpi-pct   { font-size:28px; font-weight:900; color:#7C3AED; line-height:1; }
+
+  .t-ops-card { background:white; border-radius:14px; padding:18px 22px; box-shadow:0 2px 10px rgba(0,80,180,.08); margin-bottom:16px; }
+  .t-ops-title { font-size:12px; font-weight:900; color:#003366; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+  .t-ops-bar { display:flex; border-radius:8px; overflow:hidden; height:52px; margin-bottom:12px; }
+  .t-ops-seg { display:flex; flex-direction:column; align-items:center; justify-content:center; transition:width .8s; min-width:0; overflow:hidden; }
+  .t-ops-seg .seg-val { font-size:13px; font-weight:900; color:white; white-space:nowrap; }
+  .t-ops-seg .seg-pct { font-size:10px; font-weight:700; color:rgba(255,255,255,.8); white-space:nowrap; }
+  .t-ops-labels { display:flex; gap:6px; flex-wrap:wrap; }
+  .t-ops-dot { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:800; color:#003366; }
+  .t-ops-dot::before { content:''; width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+  .t-mid { display:grid; grid-template-columns:1fr 1.4fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:900px){ .t-mid{ grid-template-columns:1fr; } }
+  .t-pick-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .t-pick-cell { background:#F8FBFF; border-radius:12px; padding:14px 12px; text-align:center; border:1.5px solid #EEF4FF; }
+  .t-pick-cell.destacado { background:#E8F4FF; border-color:#CCE9FF; }
+  .t-pick-val   { font-size:22px; font-weight:900; color:#003366; line-height:1; }
+  .t-pick-val.verde  { color:#1E8449; }
+  .t-pick-val.naranja{ color:#E67E22; }
+  .t-pick-lbl   { font-size:9px; font-weight:800; text-transform:uppercase; color:#7799AA; margin-top:4px; letter-spacing:.4px; }
+
+  .t-tipo-tabla { width:100%; border-collapse:collapse; }
+  .t-tipo-tabla th { font-size:9px; font-weight:800; text-transform:uppercase; color:#0055AA; background:#F0F6FF; padding:7px 10px; text-align:left; white-space:nowrap; }
+  .t-tipo-tabla th.n { text-align:right; }
+  .t-tipo-tabla td { padding:7px 10px; font-size:11px; border-top:1px solid #F0F4FA; }
+  .t-tipo-tabla td.n { text-align:right; font-weight:800; color:#003366; }
+  .t-tipo-tabla tfoot td { background:#F0F6FF; font-weight:900; padding:7px 10px; font-size:11px; border-top:2px solid #CCE9FF; }
+  .t-tipo-tabla tfoot td.n { text-align:right; }
+  .t-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+
+  .t-top10 { background:white; border-radius:14px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,80,180,.08); margin-bottom:16px; }
+  .t-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .t-bar-name { font-size:10px; font-weight:800; color:#003366; width:220px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .t-bar-wrap { flex:1; background:#EEF4FF; border-radius:4px; height:16px; overflow:hidden; }
+  .t-bar-fill { height:100%; border-radius:4px; background:#E57373; transition:width .8s; }
+  .t-bar-num  { font-size:10px; font-weight:800; color:#003366; width:50px; text-align:right; flex-shrink:0; }
+
+  .t-tables2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:1100px){ .t-tables2{ grid-template-columns:1fr; } }
+
+  .t-insights { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  @media(max-width:1100px){ .t-insights{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:600px) { .t-insights{ grid-template-columns:1fr; } }
+  .t-insight { background:white; border-radius:12px; padding:14px 16px; box-shadow:0 2px 8px rgba(0,80,180,.07); display:flex; gap:10px; align-items:flex-start; }
+  .t-insight-ico { font-size:20px; flex-shrink:0; margin-top:2px; }
+  .t-insight-txt { font-size:11px; color:#334455; font-weight:700; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -329,78 +402,191 @@
 
   <!-- ══ KPI TIENDA ══ -->
   <div class="tab-panel" id="panel-tienda">
-    <div class="filter-bar">
-      <div class="filter-group"><label>Desde</label><input type="date" id="rpt-t-desde"></div>
-      <span class="filter-sep">&#8594;</span>
-      <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-t-hasta"></div>
-      <div class="filter-group">
-        <label>Tienda</label>
-        <select id="rpt-t-tienda">
-          <option value="">Todas</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Estatus</label>
-        <select id="rpt-t-estatus">
-          <option value="">Todos</option>
-          <option value="Cerrado">Cerrado</option>
-          <option value="En proceso">En proceso</option>
-          <option value="Pendiente">Pendiente</option>
-        </select>
-      </div>
-      <button class="btn-sec" onclick="rptTiendaSetHoy()">Hoy</button>
-      <button class="btn-sec" onclick="rptTiendaSetTodo()">Todo</button>
-      <button class="btn-apply" onclick="rptCargarTienda()">Aplicar</button>
-      <button class="btn-sec" id="rpt-t-btn-ref" onclick="rptCargarTienda()" style="margin-left:4px">&#8635; Actualizar</button>
-      <span id="rpt-t-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
-    </div>
 
-    <div class="kpi-strip">
-      <div class="kpi-card"        ><div class="kpi-label">Solicitudes</div><div class="kpi-value" id="rpt-t-k-sol">—</div><div class="kpi-sub">total</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">Unid. Solicitadas</div><div class="kpi-value" id="rpt-t-k-usol">—</div><div class="kpi-sub">total</div></div>
-      <div class="kpi-card naranja"><div class="kpi-label">Pendiente</div><div class="kpi-value" id="rpt-t-k-pend">—</div><div class="kpi-sub">unidades</div></div>
-      <div class="kpi-card verde"  ><div class="kpi-label">Cerradas</div><div class="kpi-value" id="rpt-t-k-cerr">—</div><div class="kpi-sub">solicitudes</div></div>
-      <div class="kpi-card" id="rpt-t-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-t-k-cumpl">—</div><div class="kpi-sub">sol/total</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">LT Picking</div><div class="kpi-value" id="rpt-t-k-lt">—</div><div class="kpi-sub">min prom.</div></div>
-    </div>
-
-    <div class="rpt-grid4" style="margin-bottom:18px">
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128202; Por Estatus</div>
-        <table class="rpt-table"><thead><tr><th>Estatus</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
-        <tbody id="rpt-t-tb-est"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+    <!-- Header con filtros -->
+    <div class="t-header">
+      <div class="t-header-left">
+        <h2>&#127978; Resumen Operacional — Traslado a Tiendas</h2>
+        <p>Datos desde Google Sheets / SAP</p>
       </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#127978; Por Tienda Destino</div>
-        <table class="rpt-table"><thead><tr><th>Tienda</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
-        <tbody id="rpt-t-tb-tienda"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128230; Por Tipo Carga</div>
-        <table class="rpt-table"><thead><tr><th>Tipo</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
-        <tbody id="rpt-t-tb-tipo"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128100; Por Operario (Tomado por)</div>
-        <table class="rpt-table"><thead><tr><th>Operario</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
-        <tbody id="rpt-t-tb-op"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+      <div class="t-header-filters">
+        <div class="t-filter-group">
+          <label>Desde</label>
+          <input type="date" id="rpt-t-desde" onchange="rptCargarTienda()">
+        </div>
+        <div class="t-filter-group">
+          <label>Hasta</label>
+          <input type="date" id="rpt-t-hasta" onchange="rptCargarTienda()">
+        </div>
+        <div class="t-filter-group">
+          <label>Tipo de Carga</label>
+          <select id="rpt-t-tipo-carga" onchange="rptCargarTienda()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="t-filter-group">
+          <label>Tienda Destino</label>
+          <select id="rpt-t-tienda" onchange="rptCargarTienda()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="t-filter-group">
+          <label>Almacén Origen</label>
+          <select id="rpt-t-almacen" onchange="rptCargarTienda()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <button class="t-btn-ref" onclick="rptTiendaSetTodo()">Todo</button>
+        <button class="t-btn-ref" id="rpt-t-btn-ref" onclick="rptCargarTienda()">&#8635; Actualizar</button>
+        <span class="t-ts" id="rpt-t-ts"></span>
       </div>
     </div>
 
-    <div class="rpt-card" style="margin-bottom:18px">
-      <div class="rpt-card-title">&#128203; Detalle Solicitudes <span id="rpt-t-det-cnt" style="font-weight:700;font-size:11px;color:#99AABB"></span></div>
-      <div style="overflow-x:auto">
-        <table class="rpt-table">
-          <thead><tr>
-            <th>Tipo</th><th>Origen</th><th>Tienda</th><th>Solicitud</th><th>S°C</th>
-            <th>F. Solicitud</th><th>Carga</th><th>Estatus</th>
-            <th class="n">Solicit.</th><th class="n">Pend.</th>
-            <th>Ola</th><th>Tomado por</th><th>F.Creac.Pick</th><th>F.Término</th>
-          </tr></thead>
-          <tbody id="rpt-t-tb-det"><tr><td colspan="14" class="rpt-empty">Sin datos</td></tr></tbody>
-        </table>
+    <!-- 4 KPI Cards -->
+    <div class="t-kpi4">
+      <div class="t-kpi-card">
+        <div class="t-kpi-icon azul">&#128203;</div>
+        <div>
+          <div class="t-kpi-label">Unidades Solicitadas</div>
+          <div class="t-kpi-value" id="rpt-t-k-usol">—</div>
+          <div class="t-kpi-sub" id="rpt-t-k-sol-sub">— solicitudes</div>
+        </div>
+      </div>
+      <div class="t-kpi-card">
+        <div class="t-kpi-icon verde">&#128666;</div>
+        <div>
+          <div class="t-kpi-label">Unidades Despachadas</div>
+          <div class="t-kpi-value" style="color:#1E8449" id="rpt-t-k-desp">—</div>
+          <div class="t-kpi-sub" id="rpt-t-k-desp-sub">del total</div>
+        </div>
+      </div>
+      <div class="t-kpi-card">
+        <div class="t-kpi-icon naranja">&#128230;</div>
+        <div>
+          <div class="t-kpi-label">Unidades Pendientes</div>
+          <div class="t-kpi-value" style="color:#E67E22" id="rpt-t-k-pend">—</div>
+          <div class="t-kpi-sub" id="rpt-t-k-pend-sub">del total</div>
+        </div>
+      </div>
+      <div class="t-kpi-card">
+        <div class="t-kpi-icon morado" style="font-size:14px;font-weight:900;color:#7C3AED">%</div>
+        <div>
+          <div class="t-kpi-label">% Avance</div>
+          <div class="t-kpi-pct" id="rpt-t-k-avance">—</div>
+          <div class="t-kpi-sub">Meta: 100%</div>
+        </div>
       </div>
     </div>
+
+    <!-- Estado operación: barra horizontal -->
+    <div class="t-ops-card">
+      <div class="t-ops-title">Estado Actual de la Operación (Unidades)</div>
+      <div class="t-ops-bar" id="rpt-t-ops-bar">
+        <div class="t-ops-seg" id="rpt-t-seg-gen"  style="background:#E57373;width:0%"><span class="seg-val" id="rpt-t-sv-gen">—</span><span class="seg-pct" id="rpt-t-sp-gen"></span></div>
+        <div class="t-ops-seg" id="rpt-t-seg-proc" style="background:#FFA726;width:0%"><span class="seg-val" id="rpt-t-sv-proc">—</span><span class="seg-pct" id="rpt-t-sp-proc"></span></div>
+        <div class="t-ops-seg" id="rpt-t-seg-pick" style="background:#FFCA28;width:0%"><span class="seg-val" id="rpt-t-sv-pick">—</span><span class="seg-pct" id="rpt-t-sp-pick"></span></div>
+        <div class="t-ops-seg" id="rpt-t-seg-emb"  style="background:#42A5F5;width:0%"><span class="seg-val" id="rpt-t-sv-emb">—</span><span class="seg-pct" id="rpt-t-sp-emb"></span></div>
+        <div class="t-ops-seg" id="rpt-t-seg-cerr" style="background:#66BB6A;width:0%"><span class="seg-val" id="rpt-t-sv-cerr">—</span><span class="seg-pct" id="rpt-t-sp-cerr"></span></div>
+      </div>
+      <div class="t-ops-labels">
+        <span class="t-ops-dot" style="--c:#E57373">Por Generar</span>
+        <span class="t-ops-dot" style="--c:#FFA726">En Proceso</span>
+        <span class="t-ops-dot" style="--c:#FFCA28">Pickeado</span>
+        <span class="t-ops-dot" style="--c:#42A5F5">Embalado</span>
+        <span class="t-ops-dot" style="--c:#66BB6A">Cerrado / Despachado</span>
+      </div>
+    </div>
+    <style>
+      .t-ops-dot::before { background:var(--c); }
+    </style>
+
+    <!-- Fila central: Resumen Pickings + Distribución Tipo Carga -->
+    <div class="t-mid">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128203; Resumen de Pickings</div>
+        <div style="padding:14px">
+          <div class="t-pick-grid">
+            <div class="t-pick-cell destacado">
+              <div class="t-pick-val" id="rpt-t-pk-total">—</div>
+              <div class="t-pick-lbl">Pickings Totales</div>
+            </div>
+            <div class="t-pick-cell">
+              <div class="t-pick-val verde" id="rpt-t-pk-cerr">—</div>
+              <div class="t-pick-lbl">Pickings Cerrados</div>
+            </div>
+            <div class="t-pick-cell">
+              <div class="t-pick-val naranja" id="rpt-t-pk-pend">—</div>
+              <div class="t-pick-lbl">Pickings Pendientes</div>
+            </div>
+            <div class="t-pick-cell destacado">
+              <div class="t-pick-val" id="rpt-t-sol-total">—</div>
+              <div class="t-pick-lbl">Solicitudes Totales</div>
+            </div>
+            <div class="t-pick-cell">
+              <div class="t-pick-val naranja" id="rpt-t-sol-abier">—</div>
+              <div class="t-pick-lbl">Solicitudes Abiertas</div>
+            </div>
+            <div class="t-pick-cell">
+              <div class="t-pick-val verde" id="rpt-t-sol-cerr">—</div>
+              <div class="t-pick-lbl">Solicitudes Cerradas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128200; Distribución por Tipo de Carga</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 14px;align-items:start">
+          <table class="t-tipo-tabla">
+            <thead><tr><th>Tipo de Carga</th><th class="n">Solicitadas</th><th class="n">Despachadas</th><th class="n">Pendientes</th><th class="n">% Pend.</th></tr></thead>
+            <tbody id="rpt-t-tb-tipo"></tbody>
+            <tfoot><tr><td><strong>TOTAL</strong></td><td class="n" id="rpt-t-tipo-tot-sol">—</td><td class="n" id="rpt-t-tipo-tot-desp">—</td><td class="n" id="rpt-t-tipo-tot-pend">—</td><td class="n" id="rpt-t-tipo-tot-pct">—</td></tr></tfoot>
+          </table>
+          <div style="width:110px;height:110px"><canvas id="rpt-t-donut"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 10 tiendas mayor pendiente -->
+    <div class="t-top10">
+      <div class="rpt-card-title" style="margin-bottom:12px">&#128202; Top 10 Tiendas con Mayor Pendiente (Unidades)</div>
+      <div id="rpt-t-top10"><div class="rpt-empty">Sin datos</div></div>
+    </div>
+
+    <!-- Tablas abiertas / cerradas -->
+    <div class="t-tables2">
+      <div class="rpt-card">
+        <div class="rpt-card-title" style="color:#E67E22">&#128308; Solicitudes Abiertas <span id="rpt-t-ab-cnt" style="font-size:11px;font-weight:700;color:#99AABB"></span></div>
+        <div style="overflow-x:auto">
+          <table class="rpt-table">
+            <thead><tr>
+              <th>Solicitud</th><th>S°C</th><th>Fecha</th><th>Tienda Destino</th>
+              <th>T.Carga</th><th class="n">Solicit.</th><th class="n">Pendiente</th>
+              <th class="n">x Generar</th><th class="n">En Proc.</th><th class="n">Pickeado</th><th class="n">Embalado</th>
+            </tr></thead>
+            <tbody id="rpt-t-tb-abier"><tr><td colspan="11" class="rpt-empty">Sin datos</td></tr></tbody>
+          </table>
+        </div>
+        <div style="padding:8px 14px"><a href="#" onclick="rptTiendaVerTodas('abiertas');return false;" style="font-size:11px;font-weight:800;color:#0077BB">Ver todas las solicitudes abiertas &#8594;</a></div>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title" style="color:#1E8449">&#9989; Solicitudes Cerradas <span id="rpt-t-cerr-cnt" style="font-size:11px;font-weight:700;color:#99AABB"></span></div>
+        <div style="overflow-x:auto">
+          <table class="rpt-table">
+            <thead><tr>
+              <th>Solicitud</th><th>S°C</th><th>Fecha</th><th>Tienda Destino</th>
+              <th>T.Carga</th><th class="n">Solicit.</th><th class="n">Cerrado</th>
+            </tr></thead>
+            <tbody id="rpt-t-tb-cerr"><tr><td colspan="7" class="rpt-empty">Sin datos</td></tr></tbody>
+          </table>
+        </div>
+        <div style="padding:8px 14px"><a href="#" onclick="rptTiendaVerTodas('cerradas');return false;" style="font-size:11px;font-weight:800;color:#0077BB">Ver todas las solicitudes cerradas &#8594;</a></div>
+      </div>
+    </div>
+
+    <!-- Insights clave -->
+    <div class="t-insights" id="rpt-t-insights"></div>
+
   </div>
 
 </div>
@@ -778,14 +964,9 @@ function renderOpChart(rows){
 }
 
 // ══ KPI TIENDA ══
-function rptTiendaInit(){
-  // Sin fechas por defecto → carga toda la data disponible
-}
-function rptTiendaSetHoy(){
-  const hoy=new Date().toISOString().slice(0,10);
-  document.getElementById('rpt-t-desde').value=hoy;
-  document.getElementById('rpt-t-hasta').value=hoy;
-}
+let _chartTiendaDonut = null;
+
+function rptTiendaInit(){ /* sin fechas por defecto → carga todo */ }
 function rptTiendaSetTodo(){
   document.getElementById('rpt-t-desde').value='';
   document.getElementById('rpt-t-hasta').value='';
@@ -793,91 +974,208 @@ function rptTiendaSetTodo(){
 }
 
 async function rptCargarTienda(){
-  const desde  =document.getElementById('rpt-t-desde').value;
-  const hasta  =document.getElementById('rpt-t-hasta').value;
-  const tienda =document.getElementById('rpt-t-tienda').value;
-  const estatus=document.getElementById('rpt-t-estatus').value;
-  const p=new URLSearchParams();
-  if(desde)   p.set('desde',desde);
-  if(hasta)   p.set('hasta',hasta);
-  if(tienda)  p.set('tienda',tienda);
-  if(estatus) p.set('estatus',estatus);
-  const HUB_TIENDA='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
-  p.set('tipo','tienda-kpi');
-  const tsEl=document.getElementById('rpt-t-ts');
-  const btnRef=document.getElementById('rpt-t-btn-ref');
-  tsEl.textContent='Cargando...';
-  if(btnRef){btnRef.disabled=true;btnRef.textContent='⏳';}
+  const desde     = document.getElementById('rpt-t-desde').value;
+  const hasta     = document.getElementById('rpt-t-hasta').value;
+  const tienda    = document.getElementById('rpt-t-tienda').value;
+  const tipoCarga = document.getElementById('rpt-t-tipo-carga').value;
+  const almacen   = document.getElementById('rpt-t-almacen').value;
+  const p = new URLSearchParams({ tipo:'tienda-kpi' });
+  if(desde)     p.set('desde',    desde);
+  if(hasta)     p.set('hasta',    hasta);
+  if(tienda)    p.set('tienda',   tienda);
+  if(tipoCarga) p.set('tipo_carga', tipoCarga);
+  if(almacen)   p.set('almacen',  almacen);
+  const HUB='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
+  const tsEl  = document.getElementById('rpt-t-ts');
+  const btnRef = document.getElementById('rpt-t-btn-ref');
+  tsEl.textContent = 'Cargando...';
+  if(btnRef){ btnRef.disabled=true; btnRef.textContent='⏳'; }
   try{
-    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),20000);
-    const res=await fetch(HUB_TIENDA+'?'+p,{signal:ctrl.signal});
-    const data=await res.json();
-    if(!data.ok)throw new Error(data.error);
+    const ctrl = new AbortController(); setTimeout(()=>ctrl.abort(), 20000);
+    const res  = await fetch(HUB+'?'+p, { signal:ctrl.signal });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error||'Error hub');
     rptRenderTienda(data);
-    tsEl.textContent='Act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
-  }catch(e){
-    tsEl.textContent='Error: '+(e.name==='AbortError'?'timeout':e.message);
-  }finally{
-    if(btnRef){btnRef.disabled=false;btnRef.textContent='↻ Actualizar';}
+    tsEl.textContent = 'Última act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  } catch(e){
+    tsEl.textContent = 'Error: '+(e.name==='AbortError'?'timeout':e.message);
+  } finally{
+    if(btnRef){ btnRef.disabled=false; btnRef.textContent='↻ Actualizar'; }
   }
 }
 
-function rptRenderTienda(data){
-  const k=data.kpis||{};
-  document.getElementById('rpt-t-k-sol').textContent  =rptFmt(k.total_solicitudes||0);
-  document.getElementById('rpt-t-k-usol').textContent =rptFmt(k.total_solicitado||0);
-  document.getElementById('rpt-t-k-pend').textContent =rptFmt(k.total_pendiente||0);
-  document.getElementById('rpt-t-k-cerr').textContent =rptFmt(k.total_cerradas||0);
-  const cumpl=k.cumplimiento||0;
-  document.getElementById('rpt-t-k-cumpl').textContent=cumpl+'%';
-  const cc=document.getElementById('rpt-t-k-cumpl-card');
-  cc.className='kpi-card '+(cumpl>=90?'verde':cumpl>=70?'':'rojo');
-  document.getElementById('rpt-t-k-lt').textContent=k.lead_time_picking_min>0?k.lead_time_picking_min+' min':'—';
+function rptTiendaVerTodas(tipo){
+  // muestra todas las filas en la tabla correspondiente (sin límite de 5)
+  const el = document.getElementById(tipo==='abiertas'?'rpt-t-tb-abier':'rpt-t-tb-cerr');
+  if(el && el._allRows){ el.innerHTML = el._allRows; el._allRows=null; }
+}
 
-  // Setear rango de fechas desde la data si los pickers están vacíos
-  const desdeEl=document.getElementById('rpt-t-desde');
-  const hastaEl=document.getElementById('rpt-t-hasta');
-  if(!desdeEl.value && !hastaEl.value && data.detalle && data.detalle.length){
-    const parseFD=s=>{
-      if(!s||s==='-')return null;
-      const m=String(s).match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
-      if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
-      const iso=String(s).slice(0,10);
-      return /^\d{4}-\d{2}-\d{2}$/.test(iso)?iso:null;
-    };
-    const fechas=data.detalle.map(r=>parseFD(r.fecha_solicitud)).filter(Boolean).sort();
-    if(fechas.length){desdeEl.value=fechas[0];hastaEl.value=fechas[fechas.length-1];}
+function rptRenderTienda(data){
+  const k  = data.kpis || {};
+  const pe = k.picking_estado || {};
+  const det = data.detalle || [];
+
+  // ── Setear pickers de fecha desde la data si están vacíos ──
+  const desdeEl = document.getElementById('rpt-t-desde');
+  const hastaEl = document.getElementById('rpt-t-hasta');
+  if(!desdeEl.value && !hastaEl.value && det.length){
+    const fechas = det.map(r=>r.fecha_solicitud).filter(s=>s&&/^\d{4}-\d{2}-\d{2}$/.test(s)).sort();
+    if(fechas.length){ desdeEl.value=fechas[0]; hastaEl.value=fechas[fechas.length-1]; }
   }
 
-  // Poblar select tiendas
-  const sel=document.getElementById('rpt-t-tienda');
-  const curr=sel.value;
-  const tiendas=[...new Set((data.por_tienda||[]).map(r=>r.key).filter(k=>k&&k!=='SIN DATOS'))].sort();
-  sel.innerHTML='<option value="">Todas</option>'+tiendas.map(t=>`<option value="${t}"${t===curr?' selected':''}>${t}</option>`).join('');
-
-  const tbAg=(id,rows)=>{
-    const el=document.getElementById(id);
-    if(!rows||!rows.length){el.innerHTML='<tr><td colspan="4" class="rpt-empty">Sin datos</td></tr>';return;}
-    el.innerHTML=rows.slice(0,15).map(r=>`<tr><td>${r.key}</td><td class="n">${rptFmt(r.count)}</td><td class="n">${rptFmt(r.solicitado)}</td><td class="n">${rptFmt(r.pendiente)}</td></tr>`).join('');
+  // ── Poblar selects ──
+  const _sel = (id, arr, curr) => {
+    const el = document.getElementById(id); if(!el) return;
+    const prev = curr||el.value;
+    el.innerHTML = '<option value="">Todas</option>' +
+      arr.map(v=>`<option value="${v}"${v===prev?' selected':''}>${v}</option>`).join('');
   };
-  tbAg('rpt-t-tb-est',   data.por_estatus);
-  tbAg('rpt-t-tb-tienda',data.por_tienda);
-  tbAg('rpt-t-tb-tipo',  data.por_tipo_carga);
-  tbAg('rpt-t-tb-op',    data.por_operario);
+  _sel('rpt-t-tienda',     [...new Set(det.map(r=>r.tienda_destino).filter(v=>v&&v!=='SIN DATOS'))].sort());
+  _sel('rpt-t-tipo-carga', [...new Set(det.map(r=>r.tipo_carga).filter(v=>v&&v!=='SIN DATOS'))].sort());
+  _sel('rpt-t-almacen',    [...new Set(det.map(r=>r.almacen_origen).filter(v=>v&&v!=='SIN DATOS'))].sort());
 
-  const det=data.detalle||[];
-  document.getElementById('rpt-t-det-cnt').textContent=det.length?`(${det.length} filas)`:'';
-  const tbody=document.getElementById('rpt-t-tb-det');
-  if(!det.length){tbody.innerHTML='<tr><td colspan="14" class="rpt-empty">Sin datos</td></tr>';return;}
-  tbody.innerHTML=det.map(r=>`<tr>
-    <td>${r.tipo_solicitud}</td><td>${r.almacen_origen}</td><td>${r.tienda_destino}</td>
-    <td>${r.solicitud}</td><td>${r.sc}</td><td>${r.fecha_solicitud}</td>
-    <td>${r.tipo_carga}</td>
-    <td><span style="font-weight:800;color:${r.estatus==='Cerrado'?'#1E8449':r.estatus==='Pendiente'?'#C0392B':'#E67E22'}">${r.estatus}</span></td>
-    <td class="n">${rptFmt(r.solicitado)}</td><td class="n">${rptFmt(r.pendiente)}</td>
-    <td>${r.num_ola}</td><td>${r.tomado_por}</td>
-    <td>${r.fecha_creacion_picking}</td><td>${r.fecha_termino_picking}</td>
-  </tr>`).join('');
+  // ── KPI Cards ──
+  const sol  = k.total_solicitado  || 0;
+  const pend = k.total_pendiente   || 0;
+  const desp = sol - pend;
+  const avance = k.cumplimiento || 0;
+  document.getElementById('rpt-t-k-usol').textContent    = rptFmt(sol);
+  document.getElementById('rpt-t-k-sol-sub').textContent = rptFmt(k.total_solicitudes||0)+' solicitudes';
+  document.getElementById('rpt-t-k-desp').textContent    = rptFmt(desp);
+  document.getElementById('rpt-t-k-desp-sub').textContent= avance+'% del total';
+  document.getElementById('rpt-t-k-pend').textContent    = rptFmt(pend);
+  document.getElementById('rpt-t-k-pend-sub').textContent= (100-avance).toFixed(1)+'% del total';
+  document.getElementById('rpt-t-k-avance').textContent  = avance+'%';
+
+  // ── Barra estado operación ──
+  const segData = [
+    { id:'gen',  val: pe.por_generar||0, lbl:'Por Generar' },
+    { id:'proc', val: pe.en_proceso||0,  lbl:'En Proceso'  },
+    { id:'pick', val: pe.pickeado||0,    lbl:'Pickeado'    },
+    { id:'emb',  val: pe.embalado||0,    lbl:'Embalado'    },
+    { id:'cerr', val: pe.cerrado||0,     lbl:'Cerrado'     },
+  ];
+  const totalSeg = segData.reduce((s,x)=>s+x.val,0)||1;
+  segData.forEach(s=>{
+    const pct = Math.round(s.val/totalSeg*1000)/10;
+    const seg = document.getElementById('rpt-t-seg-'+s.id);
+    if(seg){ seg.style.width = pct+'%'; }
+    const sv = document.getElementById('rpt-t-sv-'+s.id);
+    const sp = document.getElementById('rpt-t-sp-'+s.id);
+    if(sv) sv.textContent = pct>=3 ? rptFmt(s.val) : '';
+    if(sp) sp.textContent = pct>=3 ? pct+'%' : '';
+  });
+
+  // ── Resumen Pickings ──
+  const pkTotal = pe.por_generar+pe.en_proceso+pe.pickeado+pe.embalado+pe.cerrado||0;
+  const pkCerr  = pe.cerrado||0;
+  const pkPend  = pkTotal - pkCerr;
+  const solTotal = k.total_solicitudes||0;
+  const solCerr  = k.total_cerradas||0;
+  const solAb    = solTotal - solCerr;
+  document.getElementById('rpt-t-pk-total').textContent = rptFmt(pkTotal);
+  document.getElementById('rpt-t-pk-cerr').textContent  = rptFmt(pkCerr);
+  document.getElementById('rpt-t-pk-pend').textContent  = rptFmt(pkPend);
+  document.getElementById('rpt-t-sol-total').textContent= rptFmt(solTotal);
+  document.getElementById('rpt-t-sol-abier').textContent= rptFmt(solAb);
+  document.getElementById('rpt-t-sol-cerr').textContent = rptFmt(solCerr);
+
+  // ── Tabla tipo carga + Donut ──
+  const tipos = data.por_tipo_carga || [];
+  const COLORES = ['#1565C0','#2E7D32','#6A1B9A','#E65100','#00838F','#558B2F','#4527A0'];
+  const tbody = document.getElementById('rpt-t-tb-tipo');
+  if(tbody){
+    tbody.innerHTML = tipos.slice(0,8).map((r,i)=>{
+      const desp2 = r.solicitado - r.pendiente;
+      const pct   = r.solicitado>0 ? (r.pendiente/r.solicitado*100).toFixed(1) : '0.0';
+      const col   = COLORES[i%COLORES.length];
+      return `<tr>
+        <td><span class="t-dot" style="background:${col}"></span>${r.key}</td>
+        <td class="n">${rptFmt(r.solicitado)}</td>
+        <td class="n">${rptFmt(desp2)}</td>
+        <td class="n">${rptFmt(r.pendiente)}</td>
+        <td class="n" style="color:${Number(pct)>20?'#C0392B':'#1E8449'}">${pct}%</td>
+      </tr>`;
+    }).join('');
+    const tSol = tipos.reduce((s,r)=>s+r.solicitado,0);
+    const tPend= tipos.reduce((s,r)=>s+r.pendiente, 0);
+    const tDesp= tSol - tPend;
+    const tPct = tSol>0?(tPend/tSol*100).toFixed(1):'0.0';
+    document.getElementById('rpt-t-tipo-tot-sol').textContent  = rptFmt(tSol);
+    document.getElementById('rpt-t-tipo-tot-desp').textContent = rptFmt(tDesp);
+    document.getElementById('rpt-t-tipo-tot-pend').textContent = rptFmt(tPend);
+    document.getElementById('rpt-t-tipo-tot-pct').textContent  = tPct+'%';
+  }
+  // Donut
+  const cvs = document.getElementById('rpt-t-donut');
+  if(cvs && tipos.length){
+    if(_chartTiendaDonut) _chartTiendaDonut.destroy();
+    _chartTiendaDonut = new Chart(cvs,{
+      type:'doughnut',
+      data:{ labels:tipos.map(r=>r.key), datasets:[{ data:tipos.map(r=>r.solicitado), backgroundColor:COLORES.slice(0,tipos.length), borderWidth:2 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+rptFmt(c.parsed)}} } }
+    });
+  }
+
+  // ── Top 10 tiendas mayor pendiente ──
+  const top10 = [...(data.por_tienda||[])].sort((a,b)=>b.pendiente-a.pendiente).slice(0,10);
+  const maxPend = top10[0]?.pendiente||1;
+  const top10El = document.getElementById('rpt-t-top10');
+  if(top10El){
+    top10El.innerHTML = top10.length ? top10.map(r=>{
+      const pct = Math.round(r.pendiente/maxPend*100);
+      // buscar nombre completo en detalle
+      const nombre = det.find(d=>d.tienda_destino===r.key)?.nombre_tienda || r.key;
+      return `<div class="t-bar-row">
+        <div class="t-bar-name" title="${nombre}">${nombre}</div>
+        <div class="t-bar-wrap"><div class="t-bar-fill" style="width:${pct}%"></div></div>
+        <div class="t-bar-num">${rptFmt(r.pendiente)}</div>
+      </div>`;
+    }).join('') : '<div class="rpt-empty">Sin datos</div>';
+  }
+
+  // ── Tablas Abiertas / Cerradas ──
+  const abiertas = det.filter(r=>String(r.estatus||'').toLowerCase()!=='cerrada');
+  const cerradas = det.filter(r=>String(r.estatus||'').toLowerCase()==='cerrada');
+  document.getElementById('rpt-t-ab-cnt').textContent   = abiertas.length ? '('+abiertas.length+')' : '';
+  document.getElementById('rpt-t-cerr-cnt').textContent = cerradas.length ? '('+cerradas.length+')' : '';
+
+  const rowAb = r => `<tr>
+    <td style="font-weight:800;color:#0055AA">${r.solicitud}</td><td>${r.sc}</td>
+    <td>${r.fecha_solicitud}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.nombre_tienda||r.tienda_destino}">${r.nombre_tienda||r.tienda_destino}</td>
+    <td><span style="background:#EEF4FF;color:#0055AA;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:800">${r.tipo_carga}</span></td>
+    <td class="n">${rptFmt(r.solicitado)}</td><td class="n" style="color:#E67E22">${rptFmt(r.pendiente)}</td>
+    <td class="n">${rptFmt(r.por_generar)}</td><td class="n">${rptFmt(r.en_proceso)}</td><td class="n">${rptFmt(r.pickeado)}</td><td class="n">${rptFmt(r.embalado)}</td>
+  </tr>`;
+  const rowCerr = r => `<tr>
+    <td style="font-weight:800;color:#0055AA">${r.solicitud}</td><td>${r.sc}</td>
+    <td>${r.fecha_solicitud}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.nombre_tienda||r.tienda_destino}">${r.nombre_tienda||r.tienda_destino}</td>
+    <td><span style="background:#EEF4FF;color:#0055AA;border-radius:8px;padding:1px 6px;font-size:10px;font-weight:800">${r.tipo_carga}</span></td>
+    <td class="n">${rptFmt(r.solicitado)}</td><td class="n" style="color:#1E8449;font-weight:900">${rptFmt(r.cerrado)}</td>
+  </tr>`;
+
+  const tbAbier = document.getElementById('rpt-t-tb-abier');
+  const tbCerr  = document.getElementById('rpt-t-tb-cerr');
+  if(tbAbier){
+    const allHtml = abiertas.map(rowAb).join('');
+    tbAbier.innerHTML = abiertas.length ? abiertas.slice(0,5).map(rowAb).join('') : '<tr><td colspan="11" class="rpt-empty">Sin solicitudes abiertas</td></tr>';
+    if(abiertas.length>5) tbAbier._allRows = allHtml;
+  }
+  if(tbCerr){
+    const allHtml = cerradas.map(rowCerr).join('');
+    tbCerr.innerHTML = cerradas.length ? cerradas.slice(0,5).map(rowCerr).join('') : '<tr><td colspan="7" class="rpt-empty">Sin solicitudes cerradas</td></tr>';
+    if(cerradas.length>5) tbCerr._allRows = allHtml;
+  }
+
+  // ── Insights ──
+  const insights = [];
+  if(avance>=0) insights.push({ ico:'✅', txt:`Se ha despachado el <strong>${avance}%</strong> de las unidades solicitadas en el período actual.` });
+  if(pend>0)    insights.push({ ico:'⚠️', txt:`<strong>${rptFmt(pend)}</strong> unidades pendientes por trabajar en <strong>${rptFmt(solAb)}</strong> solicitudes abiertas.` });
+  const topTipo = tipos[0];
+  if(topTipo)   insights.push({ ico:'📦', txt:`El <strong>${topTipo.solicitado>0?Math.round(topTipo.solicitado/sol*100):0}%</strong> de las solicitudes corresponden a Tipo de Carga <strong>${topTipo.key}</strong>.` });
+  const top3 = top10.slice(0,3).map(r=>det.find(d=>d.tienda_destino===r.key)?.nombre_tienda||r.key);
+  if(top3.length) insights.push({ ico:'🏪', txt:`Las tiendas con mayor pendiente son: <strong>${top3.join(', ')}</strong>.` });
+  document.getElementById('rpt-t-insights').innerHTML = insights.map(i=>`<div class="t-insight"><div class="t-insight-ico">${i.ico}</div><div class="t-insight-txt">${i.txt}</div></div>`).join('');
 }
 
 (function init(){
