@@ -103,6 +103,12 @@
   .rb-abierta  { background:#FEF9E7; color:#E67E22; }
   .rb-pick     { background:#D6EAF8; color:#1A5276; }
   .rb-emb      { background:#EDE0FF; color:#6C3483; }
+  .sap-est-chip { display:inline-block; border-radius:20px; padding:2px 8px; font-size:10px; font-weight:800; white-space:nowrap; margin:1px; }
+  .sap-ec-cerrado  { background:#D5F5E3; color:#1E8449; }
+  .sap-ec-embalado { background:#EDE0FF; color:#6C3483; }
+  .sap-ec-parcial  { background:#FEF9E7; color:#E67E22; }
+  .sap-ec-picking  { background:#D6EAF8; color:#1A5276; }
+  .sap-ec-otro     { background:#F2F3F4; color:#555; }
 
   .rpt-prog-wrap { background:#EEF4FF; border-radius:4px; height:7px; overflow:hidden; min-width:60px; }
   .rpt-prog-bar  { height:100%; border-radius:4px; }
@@ -322,6 +328,16 @@
         </table>
       </div>
       <p class="sap-footer-note">Comprometido = total uds &middot; Despachado = uds cerradas &middot; Pendiente = uds sin despachar</p>
+    </div>
+    <!-- Estado por Fecha -->
+    <div class="rpt-card" style="margin-bottom:18px">
+      <div class="rpt-card-title">&#128197; Estado por Fecha</div>
+      <div style="overflow-x:auto">
+        <table class="rpt-table" id="rpt-sap-tbl-estado">
+          <thead id="rpt-sap-estado-head"><tr><th>Fecha</th></tr></thead>
+          <tbody id="rpt-sap-estado-body"><tr><td class="rpt-empty">Cargando...</td></tr></tbody>
+        </table>
+      </div>
     </div>
     <!-- Secundario: Marketplace resumen + Olas -->
     <div class="rpt-grid2" style="margin-bottom:18px">
@@ -806,21 +822,12 @@ function rptRenderSap(data){
   document.getElementById('rpt-k-cumpl').textContent   =pct+'%';
   document.getElementById('rpt-k-cumpl-card').className='kpi-card '+(pct>=80?'verde':pct>=60?'naranja':'rojo');
 
-  // Tabla Seller × Fecha
-  const rows=data.rows||[];
-  const map={};
-  rows.forEach(r=>{
-    const key=(r.fecha_recepcion||'')+'||'+(r.nombre_cliente||'Sin datos');
-    if(!map[key]) map[key]={fecha:r.fecha_recepcion||'',cliente:r.nombre_cliente||'Sin datos',unidades:0,entregadas:0,abiertas:0};
-    map[key].unidades   +=Number(r.unidades)   ||0;
-    map[key].entregadas +=Number(r.entregadas) ||0;
-    map[key].abiertas   +=Number(r.abiertas)   ||0;
-  });
-  const grouped=Object.values(map).sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.cliente.localeCompare(b.cliente));
-  const fechas=[...new Set(grouped.map(r=>r.fecha))].sort();
+  // Tabla Seller × Fecha — desde por_fecha_cliente (sin límite 500 filas)
+  const pfc=data.por_fecha_cliente||[];
+  const fechas=[...new Set(pfc.map(r=>r.fecha))].sort();
   let html=''; let gtC=0,gtD=0,gtP=0;
   fechas.forEach(fd=>{
-    const dr=grouped.filter(r=>r.fecha===fd);
+    const dr=pfc.filter(r=>r.fecha===fd);
     const dC=dr.reduce((s,r)=>s+r.unidades,0);
     const dD=dr.reduce((s,r)=>s+r.entregadas,0);
     const dP=dr.reduce((s,r)=>s+r.abiertas,0);
@@ -828,6 +835,8 @@ function rptRenderSap(data){
     html+=`<tr class="sap-date-hdr"><td colspan="7">${sapFechaLabel(fd)}</td></tr>`;
     dr.forEach(r=>{
       const p2=r.unidades>0?(r.entregadas/r.unidades*100).toFixed(1):'0.0';
+      const chips=Object.entries(r.por_estatus||{}).filter(([,v])=>v>0)
+        .map(([k,v])=>`<span class="sap-est-chip sap-ec-${sapEstClass(k)}">${k}: ${v}</span>`).join('');
       html+=`<tr>
         <td style="color:#99AABB;font-size:11px">${fd.slice(8)}-${fd.slice(5,7)}</td>
         <td style="font-weight:700;color:#003366">${r.cliente}</td>
@@ -835,7 +844,7 @@ function rptRenderSap(data){
         <td class="n" style="color:#1E8449">${r.entregadas>0?rptFmt(r.entregadas):'—'}</td>
         <td class="n" style="color:#C0392B">${r.abiertas>0?rptFmt(r.abiertas):'—'}</td>
         <td class="n">${r.unidades>0?p2+'%':'—'}</td>
-        <td>${sapPill(r.entregadas,r.unidades)}</td>
+        <td style="white-space:nowrap">${chips||sapPill(r.entregadas,r.unidades)}</td>
       </tr>`;
     });
     const dPct=dC>0?(dD/dC*100).toFixed(1):'0.0';
@@ -862,11 +871,50 @@ function rptRenderSap(data){
   if(!fechas.length) html='<tr><td colspan="7" class="rpt-empty">Sin datos para el período seleccionado</td></tr>';
   document.getElementById('rpt-sap-tb-main').innerHTML=html;
 
+  // Estado por Fecha
+  renderEstadoFecha(pfc);
+
   // Secundario
   renderClientes(data.por_cliente);
   renderOlas(data.por_ola);
 }
 
+function sapEstClass(est){
+  const e=(est||'').toLowerCase();
+  if(e.includes('cerr')) return 'cerrado';
+  if(e.includes('embal')) return 'embalado';
+  if(e.includes('parcial')) return 'parcial';
+  if(e.includes('pick')) return 'picking';
+  return 'otro';
+}
+function renderEstadoFecha(pfc){
+  if(!pfc||!pfc.length){
+    document.getElementById('rpt-sap-estado-head').innerHTML='<tr><th>Fecha</th></tr>';
+    document.getElementById('rpt-sap-estado-body').innerHTML='<tr><td class="rpt-empty">Sin datos</td></tr>';
+    return;
+  }
+  // recopilar todos los estatus únicos
+  const estSet=new Set();
+  pfc.forEach(r=>Object.keys(r.por_estatus||{}).forEach(e=>estSet.add(e)));
+  const estList=[...estSet].sort();
+  // agrupar por fecha
+  const mapF={};
+  pfc.forEach(r=>{
+    if(!mapF[r.fecha]) mapF[r.fecha]={fecha:r.fecha,pedidos:0,por_estatus:{}};
+    mapF[r.fecha].pedidos+=r.pedidos;
+    Object.entries(r.por_estatus||{}).forEach(([k,v])=>{ mapF[r.fecha].por_estatus[k]=(mapF[r.fecha].por_estatus[k]||0)+v; });
+  });
+  const fechas=Object.values(mapF).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  document.getElementById('rpt-sap-estado-head').innerHTML=
+    `<tr><th>Fecha</th><th class="n">Total Ped.</th>${estList.map(e=>`<th class="n"><span class="sap-est-chip sap-ec-${sapEstClass(e)}" style="font-size:10px">${e}</span></th>`).join('')}</tr>`;
+  document.getElementById('rpt-sap-estado-body').innerHTML=fechas.map(r=>{
+    const cols=estList.map(e=>{
+      const v=r.por_estatus[e]||0;
+      return `<td class="n" style="color:${v>0?'#003366':'#CCC'}">${v>0?v:'—'}</td>`;
+    }).join('');
+    return `<tr><td style="font-weight:800;color:#003366">${sapFechaLabel(r.fecha)}</td><td class="n">${rptFmt(r.pedidos)}</td>${cols}</tr>`;
+  }).join('');
+}
 function renderClientes(rows){
   if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
   const tP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
@@ -875,7 +923,10 @@ function renderClientes(rows){
   document.getElementById('rpt-tb-cli').innerHTML=rows.map(r=>{
     const pct=Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
     const col=pct>=80?'#27AE60':pct>=60?'#E67E22':'#C0392B';
-    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#1E8449">${rptFmt(r.entregadas)}</td><td class="n" style="color:${col};font-weight:900">${pct}%</td></tr>`;
+    const chips=Object.entries(r.por_estatus||{}).filter(([,v])=>v>0)
+      .map(([k,v])=>`<span class="sap-est-chip sap-ec-${sapEstClass(k)}" style="font-size:9px;padding:1px 5px">${k}: ${v}</span>`).join('');
+    const clienteCell=`<div style="font-weight:800;color:#003366">${r.cliente}</div>${chips?`<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:3px">${chips}</div>`:''}`;
+    return `<tr><td>${clienteCell}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#1E8449">${rptFmt(r.entregadas)}</td><td class="n" style="color:${col};font-weight:900">${pct}%</td></tr>`;
   }).join('');
   const pT=tU>0?Math.round(tE/tU*100):0;
   const colT=pT>=80?'#27AE60':pT>=60?'#E67E22':'#C0392B';
