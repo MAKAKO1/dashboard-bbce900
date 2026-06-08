@@ -328,13 +328,16 @@
       <div class="rpt-card">
         <div class="rpt-card-title">&#128722; Marketplace — Resumen</div>
         <table class="rpt-table">
-          <thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Comprometido</th><th class="n">Despachado</th><th class="n">% Cumpl.</th><th></th></tr></thead>
-          <tbody id="rpt-tb-cli"><tr><td colspan="6" class="rpt-empty">Cargando...</td></tr></tbody>
+          <thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Comprometido</th><th class="n">Despachado</th><th class="n">% Cumpl.</th></tr></thead>
+          <tbody id="rpt-tb-cli"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
           <tfoot id="rpt-tf-cli"></tfoot>
         </table>
       </div>
       <div class="rpt-card">
-        <div class="rpt-card-title">&#127754; Olas de Picking</div>
+        <div class="rpt-card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <span>&#127754; Olas de Picking</span>
+          <input type="text" id="rpt-olas-buscar" placeholder="Buscar N° ola..." oninput="renderOlasFiltradas()" style="font-size:11px;padding:4px 10px;border:1.5px solid #CCE9FF;border-radius:8px;outline:none;font-family:'Nunito',Arial;color:#003366;width:150px">
+        </div>
         <table class="rpt-table">
           <thead><tr><th>N&#176; Ola</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Abiertas</th><th>Estado</th></tr></thead>
           <tbody id="rpt-tb-olas"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
@@ -865,22 +868,33 @@ function rptRenderSap(data){
 }
 
 function renderClientes(rows){
-  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="6" class="rpt-empty">Sin datos</td></tr>';return;}
+  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
   const tP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
   const tU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
   const tE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
   document.getElementById('rpt-tb-cli').innerHTML=rows.map(r=>{
     const pct=Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
     const col=pct>=80?'#27AE60':pct>=60?'#E67E22':'#C0392B';
-    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#1E8449">${rptFmt(r.entregadas)}</td><td class="n">${pct}%</td><td style="min-width:60px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
+    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#1E8449">${rptFmt(r.entregadas)}</td><td class="n" style="color:${col};font-weight:900">${pct}%</td></tr>`;
   }).join('');
   const pT=tU>0?Math.round(tE/tU*100):0;
-  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n" style="color:#1E8449">${rptFmt(tE)}</td><td class="n">${pT}%</td><td></td></tr>`;
+  const colT=pT>=80?'#27AE60':pT>=60?'#E67E22':'#C0392B';
+  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n" style="color:#1E8449">${rptFmt(tE)}</td><td class="n" style="color:${colT};font-weight:900">${pT}%</td></tr>`;
 }
 
+let _olasData=[];
 function renderOlas(rows){
-  if(!rows||!rows.length){document.getElementById('rpt-tb-olas').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin olas</td></tr>';return;}
-  document.getElementById('rpt-tb-olas').innerHTML=rows.slice(0,15).map(r=>{
+  _olasData=rows||[];
+  const buscar=document.getElementById('rpt-olas-buscar');
+  if(buscar) buscar.value='';
+  renderOlasFiltradas();
+}
+function renderOlasFiltradas(){
+  const q=(document.getElementById('rpt-olas-buscar')?.value||'').trim().toLowerCase();
+  const rows=q?_olasData.filter(r=>String(r.num_ola||'').toLowerCase().includes(q)):_olasData.slice(0,15);
+  const tb=document.getElementById('rpt-tb-olas'); if(!tb)return;
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="5" class="rpt-empty">${q?'Sin resultados para "'+q+'"':'Sin olas'}</td></tr>`;return;}
+  tb.innerHTML=rows.map(r=>{
     const ab=Number(r.abiertas||0);
     return `<tr><td style="font-weight:800;color:#0077BB">${r.num_ola||'—'}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:${ab>0?'#C0392B':'#27AE60'};font-weight:800">${rptFmt(ab)}</td><td><span class="rpt-badge ${ab>0?'rb-abierta':'rb-cerrada'}">${ab>0?'Abierta':'Cerrada'}</span></td></tr>`;
   }).join('');
@@ -1133,8 +1147,8 @@ function rptRenderTienda(data){
   _sel('rpt-t-tienda',     [...new Set(det.map(r=>r.tienda_destino).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todas');
   _sel('rpt-t-tipo-carga', [...new Set(det.map(r=>r.tipo_carga).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todos');
   _sel('rpt-t-almacen',    [...new Set(det.map(r=>r.almacen_origen).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todos');
-  // Semana comercial dinámica desde fecha_min/fecha_max del dataset
-  if(data.fecha_min||data.fecha_max) _buildWeekOptions(data.fecha_min||'',data.fecha_max||'');
+  // Semana comercial dinámica desde semanas reales presentes en el detalle
+  _buildWeekOptionsFromDet(det);
 
   // ── KPI Cards ──
   const sol  = k.total_solicitado  || 0;
@@ -1364,6 +1378,21 @@ function _buildWeekOptions(fechaMin,fechaMax){
   weeks.sort((a,b)=>b.key.localeCompare(a.key));
   sel.innerHTML='<option value="">— Semana —</option>'+
     weeks.map(w=>`<option value="${w.key}">Sem ${w.week} · ${w.year}</option>`).join('');
+}
+function _buildWeekOptionsFromDet(det){
+  const sel=document.getElementById('rpt-t-semana'); if(!sel)return;
+  const seen=new Set(); const weeks=[];
+  (det||[]).forEach(r=>{
+    const fs=r.fecha_solicitud; if(!fs)return;
+    const d=new Date(fs+'T00:00:00Z');
+    const {year,week}=_isoWeek(d);
+    const key=year+'-W'+String(week).padStart(2,'0');
+    if(!seen.has(key)){seen.add(key);weeks.push({key,year,week});}
+  });
+  weeks.sort((a,b)=>b.key.localeCompare(a.key));
+  const prev=sel.value;
+  sel.innerHTML='<option value="">— Semana —</option>'+
+    weeks.map(w=>`<option value="${w.key}"${w.key===prev?' selected':''}>${'Sem '+w.week+' · '+w.year}</option>`).join('');
 }
 function rptTiendaApplySemana(){
   const sel=document.getElementById('rpt-t-semana'); if(!sel||!sel.value)return;
