@@ -216,7 +216,16 @@
     <a href="index.html" class="back-btn">&#8592; Inicio</a>
     <span class="topbar-title">&#128202; Reportes CD</span>
   </div>
-  <span class="topbar-ts" id="rpt-reloj"></span>
+  <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
+    <button id="btn-refresh-global" onclick="refreshAll()" title="Actualizar todos los datos" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:white;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.18)'">
+      <span id="refresh-icon" style="font-size:14px">&#8635;</span>
+      <span>Actualizar</span>
+    </button>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+      <span class="topbar-ts" id="rpt-reloj"></span>
+      <span id="rpt-refresh-status" style="color:rgba(255,255,255,.55);font-size:10px;font-weight:600"></span>
+    </div>
+  </div>
 </div>
 
 <div class="tabs-wrap">
@@ -410,6 +419,12 @@
         <p>Datos desde Google Sheets / SAP</p>
       </div>
       <div class="t-header-filters">
+        <div class="t-filter-group">
+          <label>Semana Comercial</label>
+          <select id="rpt-t-semana" onchange="rptTiendaApplySemana()" style="min-width:130px">
+            <option value="">— Semana —</option>
+          </select>
+        </div>
         <div class="t-filter-group">
           <label>Desde</label>
           <input type="date" id="rpt-t-desde" onchange="rptCargarTienda()">
@@ -657,22 +672,24 @@ let chartTend=null,chartEnvio=null,chartOp=null;
 
 function rptSapSetAyer(){const y=rptAyer();document.getElementById('rpt-sap-desde').value=y;document.getElementById('rpt-sap-hasta').value=y;}
 
+const HUB_URL='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
+
 async function rptCargarSap(){
   const desde=document.getElementById('rpt-sap-desde').value;
   const hasta=document.getElementById('rpt-sap-hasta').value;
-  const p=new URLSearchParams();
+  const p=new URLSearchParams({tipo:'eco-kpi'});
   if(desde)p.set('desde',desde);
   if(hasta)p.set('hasta',hasta);
+  const t0=Date.now();
   try{
-    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
-    const res=await fetch(BACKEND_URL+'/api/pedidos-sap/resumen?'+p,{signal:ctrl.signal});
+    const res=await fetch(HUB_URL+'?'+p);
     const data=await res.json();
-    if(!data.ok)throw new Error(data.error);
+    if(!data.ok)throw new Error(data.error||'Error hub eco-kpi');
     document.getElementById('rpt-sap-demo-banner').style.display='none';
     rptRenderSap(data);
-    document.getElementById('rpt-sap-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
+    document.getElementById('rpt-sap-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL')+' ('+(((Date.now()-t0)/1000).toFixed(1))+'s)';
   }catch(e){
-    console.warn('Backend no disponible:',e.message);
+    console.warn('Hub eco-kpi no disponible:',e.message);
     document.getElementById('rpt-sap-demo-banner').style.display='flex';
     rptRenderSap(RPT_MOCK_SAP);
     document.getElementById('rpt-sap-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
@@ -812,20 +829,20 @@ async function rptCargarOp(){
   const desde=document.getElementById('rpt-op-desde').value;
   const hasta=document.getElementById('rpt-op-hasta').value;
   const almacen=document.getElementById('rpt-op-almacen').value;
-  const p=new URLSearchParams();
+  const p=new URLSearchParams({tipo:'kpi-op-gs'});
   if(desde)p.set('desde',desde);
   if(hasta)p.set('hasta',hasta);
   if(almacen&&almacen!=='todos')p.set('almacen',almacen);
+  const t0=Date.now();
   try{
-    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),6000);
-    const res=await fetch(BACKEND_URL+'/api/kpi-operarios?'+p,{signal:ctrl.signal});
+    const res=await fetch(HUB_URL+'?'+p);
     const data=await res.json();
-    if(!data.ok)throw new Error(data.error);
+    if(!data.ok)throw new Error(data.error||'Error hub kpi-op-gs');
     document.getElementById('rpt-op-demo-banner').style.display='none';
     rptRenderOp(data);
-    document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL');
+    document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL')+' ('+(((Date.now()-t0)/1000).toFixed(1))+'s)';
   }catch(e){
-    console.warn('Backend no disponible:',e.message);
+    console.warn('Hub kpi-op-gs no disponible:',e.message);
     document.getElementById('rpt-op-demo-banner').style.display='flex';
     rptRenderOp(RPT_MOCK_OP);
     document.getElementById('rpt-op-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
@@ -1024,15 +1041,17 @@ function rptRenderTienda(data){
   }
 
   // ── Poblar selects ──
-  const _sel = (id, arr, curr) => {
+  const _sel = (id, arr, placeholder) => {
     const el = document.getElementById(id); if(!el) return;
-    const prev = curr||el.value;
-    el.innerHTML = '<option value="">Todas</option>' +
+    const prev = el.value;
+    el.innerHTML = `<option value="">${placeholder||'Todos'}</option>` +
       arr.map(v=>`<option value="${v}"${v===prev?' selected':''}>${v}</option>`).join('');
   };
-  _sel('rpt-t-tienda',     [...new Set(det.map(r=>r.tienda_destino).filter(v=>v&&v!=='SIN DATOS'))].sort());
-  _sel('rpt-t-tipo-carga', [...new Set(det.map(r=>r.tipo_carga).filter(v=>v&&v!=='SIN DATOS'))].sort());
-  _sel('rpt-t-almacen',    [...new Set(det.map(r=>r.almacen_origen).filter(v=>v&&v!=='SIN DATOS'))].sort());
+  _sel('rpt-t-tienda',     [...new Set(det.map(r=>r.tienda_destino).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todas');
+  _sel('rpt-t-tipo-carga', [...new Set(det.map(r=>r.tipo_carga).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todos');
+  _sel('rpt-t-almacen',    [...new Set(det.map(r=>r.almacen_origen).filter(v=>v&&v!=='SIN DATOS'))].sort(), 'Todos');
+  // Semana comercial dinámica desde fecha_min/fecha_max del dataset
+  if(data.fecha_min||data.fecha_max) _buildWeekOptions(data.fecha_min||'',data.fecha_max||'');
 
   // ── KPI Cards ──
   const sol  = k.total_solicitado  || 0;
@@ -1176,6 +1195,88 @@ function rptRenderTienda(data){
   const top3 = top10.slice(0,3).map(r=>det.find(d=>d.tienda_destino===r.key)?.nombre_tienda||r.key);
   if(top3.length) insights.push({ ico:'🏪', txt:`Las tiendas con mayor pendiente son: <strong>${top3.join(', ')}</strong>.` });
   document.getElementById('rpt-t-insights').innerHTML = insights.map(i=>`<div class="t-insight"><div class="t-insight-ico">${i.ico}</div><div class="t-insight-txt">${i.txt}</div></div>`).join('');
+}
+
+// ── Semana Comercial (ISO week) ──
+function _isoWeek(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));
+  const y=t.getUTCFullYear();
+  const w=Math.ceil(((t-new Date(Date.UTC(y,0,1)))/86400000+1)/7);
+  return {year:y,week:w};
+}
+function _weekBounds(year,week){
+  const jan4=new Date(Date.UTC(year,0,4));
+  const dayOfWeek=(jan4.getUTCDay()||7);
+  const monday=new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate()-(dayOfWeek-1)+(week-1)*7);
+  const sunday=new Date(monday); sunday.setUTCDate(monday.getUTCDate()+6);
+  const fmt=d=>d.toISOString().slice(0,10);
+  return {desde:fmt(monday),hasta:fmt(sunday)};
+}
+function _buildWeekOptions(fechaMin,fechaMax){
+  const sel=document.getElementById('rpt-t-semana'); if(!sel)return;
+  if(!fechaMin||!fechaMax){sel.innerHTML='<option value="">— Semana —</option>';return;}
+  const d0=new Date(fechaMin+'T00:00:00Z');
+  const d1=new Date(fechaMax+'T00:00:00Z');
+  const weeks=[]; const seen=new Set();
+  let cur=new Date(d0);
+  while(cur<=d1){
+    const {year,week}=_isoWeek(cur);
+    const key=year+'-W'+String(week).padStart(2,'0');
+    if(!seen.has(key)){seen.add(key);weeks.push({key,year,week});}
+    cur.setUTCDate(cur.getUTCDate()+7);
+  }
+  // asegurar que la semana de fechaMax esté incluida
+  const last=_isoWeek(d1); const lk=last.year+'-W'+String(last.week).padStart(2,'0');
+  if(!seen.has(lk)) weeks.push({key:lk,...last});
+  weeks.sort((a,b)=>b.key.localeCompare(a.key));
+  sel.innerHTML='<option value="">— Semana —</option>'+
+    weeks.map(w=>`<option value="${w.key}">Sem ${w.week} · ${w.year}</option>`).join('');
+}
+function rptTiendaApplySemana(){
+  const sel=document.getElementById('rpt-t-semana'); if(!sel||!sel.value)return;
+  const [year,wStr]=sel.value.split('-W');
+  const {desde,hasta}=_weekBounds(Number(year),Number(wStr));
+  document.getElementById('rpt-t-desde').value=desde;
+  document.getElementById('rpt-t-hasta').value=hasta;
+  rptCargarTienda();
+}
+
+// ── Refresh global ──
+let _refreshing=false;
+async function refreshAll(){
+  if(_refreshing)return;
+  _refreshing=true;
+  const icon=document.getElementById('refresh-icon');
+  const status=document.getElementById('rpt-refresh-status');
+  const btn=document.getElementById('btn-refresh-global');
+  if(icon) icon.style.transition='transform 1s linear';
+  let rot=0; const spin=setInterval(()=>{ rot+=45; if(icon) icon.style.transform='rotate('+rot+'deg)'; },125);
+  if(btn) btn.disabled=true;
+  if(status) status.textContent='Actualizando...';
+  const t0=Date.now();
+  const tab=document.querySelector('.tab-btn.active')?.dataset?.tab||'sap';
+  try{
+    if(tab==='sap')     await rptCargarSap();
+    else if(tab==='op') await rptCargarOp();
+    else if(tab==='tienda') await rptCargarTienda();
+    // carga silenciosa de las otras pestañas
+    if(tab!=='sap')     rptCargarSap().catch(()=>{});
+    if(tab!=='op')      rptCargarOp().catch(()=>{});
+    if(tab!=='tienda')  rptCargarTienda().catch(()=>{});
+    const s=((Date.now()-t0)/1000).toFixed(1);
+    if(status) status.textContent='Actualizado en '+s+'s';
+  }catch(e){
+    if(status) status.textContent='Error al actualizar';
+  }finally{
+    clearInterval(spin);
+    if(icon){ icon.style.transition='transform .3s'; icon.style.transform='rotate(360deg)'; }
+    setTimeout(()=>{ if(icon){icon.style.transition='';icon.style.transform='';} },400);
+    if(btn) btn.disabled=false;
+    _refreshing=false;
+    setTimeout(()=>{ if(status) status.textContent=''; },8000);
+  }
 }
 
 (function init(){
