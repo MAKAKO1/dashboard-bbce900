@@ -174,13 +174,23 @@
 
   .t-mid { display:grid; grid-template-columns:1fr 1.4fr; gap:16px; margin-bottom:16px; }
   @media(max-width:900px){ .t-mid{ grid-template-columns:1fr; } }
-  .t-pick-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-  .t-pick-cell { background:#F8FBFF; border-radius:12px; padding:14px 12px; text-align:center; border:1.5px solid #EEF4FF; }
+  .t-pick-cell { background:#F8FBFF; border-radius:12px; padding:12px 10px; text-align:center; border:1.5px solid #EEF4FF; }
   .t-pick-cell.destacado { background:#E8F4FF; border-color:#CCE9FF; }
-  .t-pick-val   { font-size:22px; font-weight:900; color:#003366; line-height:1; }
+  .t-pick-val   { font-size:20px; font-weight:900; color:#003366; line-height:1; }
   .t-pick-val.verde  { color:#1E8449; }
   .t-pick-val.naranja{ color:#E67E22; }
   .t-pick-lbl   { font-size:9px; font-weight:800; text-transform:uppercase; color:#7799AA; margin-top:4px; letter-spacing:.4px; }
+  .t-semana-tabla { width:100%; border-collapse:collapse; font-size:11px; }
+  .t-semana-tabla th { background:#F0F6FF; color:#003366; font-size:10px; font-weight:800; text-transform:uppercase; padding:5px 6px; text-align:right; white-space:nowrap; border-bottom:2px solid #CCE9FF; }
+  .t-semana-tabla th:first-child { text-align:left; }
+  .t-semana-tabla td { padding:5px 6px; border-bottom:1px solid #EEF4FF; text-align:right; font-variant-numeric:tabular-nums; }
+  .t-semana-tabla td:first-child { text-align:left; font-weight:800; color:#003366; white-space:nowrap; }
+  .t-semana-tabla tr:last-child td { border-bottom:none; }
+  .t-semana-tabla .c-gen  { color:#C0392B; }
+  .t-semana-tabla .c-proc { color:#E67E22; }
+  .t-semana-tabla .c-pick { color:#2980B9; }
+  .t-semana-tabla .c-emb  { color:#8E44AD; }
+  .t-semana-tabla .c-cerr { color:#1E8449; font-weight:800; }
 
   .t-tipo-tabla { width:100%; border-collapse:collapse; }
   .t-tipo-tabla th { font-size:9px; font-weight:800; text-transform:uppercase; color:#0055AA; background:#F0F6FF; padding:7px 10px; text-align:left; white-space:nowrap; }
@@ -515,36 +525,39 @@
       .t-ops-dot::before { background:var(--c); }
     </style>
 
-    <!-- Fila central: Resumen Pickings + Distribución Tipo Carga -->
+    <!-- Fila central: Estado por Semana + Distribución Tipo Carga -->
     <div class="t-mid">
       <div class="rpt-card">
-        <div class="rpt-card-title">&#128203; Resumen de Pickings</div>
-        <div style="padding:14px">
-          <div class="t-pick-grid">
+        <div class="rpt-card-title">&#128200; Estado de Pickings por Semana</div>
+        <div style="padding:10px 14px 4px">
+          <!-- 3 mini stats resumen -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
             <div class="t-pick-cell destacado">
               <div class="t-pick-val" id="rpt-t-pk-total">—</div>
               <div class="t-pick-lbl">Pickings Totales</div>
             </div>
             <div class="t-pick-cell">
-              <div class="t-pick-val verde" id="rpt-t-pk-cerr">—</div>
-              <div class="t-pick-lbl">Pickings Cerrados</div>
+              <div class="t-pick-val verde" id="rpt-t-pk-pct-cerr">—</div>
+              <div class="t-pick-lbl">% Cerrado</div>
             </div>
             <div class="t-pick-cell">
-              <div class="t-pick-val naranja" id="rpt-t-pk-pend">—</div>
-              <div class="t-pick-lbl">Pickings Pendientes</div>
+              <div class="t-pick-val naranja" id="rpt-t-pk-pct-pend">—</div>
+              <div class="t-pick-lbl">% Pendiente</div>
             </div>
-            <div class="t-pick-cell destacado">
-              <div class="t-pick-val" id="rpt-t-sol-total">—</div>
-              <div class="t-pick-lbl">Solicitudes Totales</div>
-            </div>
-            <div class="t-pick-cell">
-              <div class="t-pick-val naranja" id="rpt-t-sol-abier">—</div>
-              <div class="t-pick-lbl">Solicitudes Abiertas</div>
-            </div>
-            <div class="t-pick-cell">
-              <div class="t-pick-val verde" id="rpt-t-sol-cerr">—</div>
-              <div class="t-pick-lbl">Solicitudes Cerradas</div>
-            </div>
+          </div>
+          <!-- Tabla por semana -->
+          <div style="overflow-x:auto;max-height:210px;overflow-y:auto">
+            <table class="t-semana-tabla">
+              <thead><tr>
+                <th>Semana</th>
+                <th class="c-gen">x Gen.</th>
+                <th class="c-proc">En Proc.</th>
+                <th class="c-pick">Pickeado</th>
+                <th class="c-emb">Embalado</th>
+                <th class="c-cerr">Cerrado</th>
+              </tr></thead>
+              <tbody id="rpt-t-tb-semana"><tr><td colspan="6" class="rpt-empty" style="text-align:center">Sin datos</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1085,19 +1098,46 @@ function rptRenderTienda(data){
     if(sp) sp.textContent = pct>=3 ? pct+'%' : '';
   });
 
-  // ── Resumen Pickings ──
-  const pkTotal = pe.por_generar+pe.en_proceso+pe.pickeado+pe.embalado+pe.cerrado||0;
+  // ── Resumen Pickings + tabla por semana ──
+  const pkTotal = (pe.por_generar||0)+(pe.en_proceso||0)+(pe.pickeado||0)+(pe.embalado||0)+(pe.cerrado||0);
   const pkCerr  = pe.cerrado||0;
   const pkPend  = pkTotal - pkCerr;
   const solTotal = k.total_solicitudes||0;
   const solCerr  = k.total_cerradas||0;
   const solAb    = solTotal - solCerr;
-  document.getElementById('rpt-t-pk-total').textContent = rptFmt(pkTotal);
-  document.getElementById('rpt-t-pk-cerr').textContent  = rptFmt(pkCerr);
-  document.getElementById('rpt-t-pk-pend').textContent  = rptFmt(pkPend);
-  document.getElementById('rpt-t-sol-total').textContent= rptFmt(solTotal);
-  document.getElementById('rpt-t-sol-abier').textContent= rptFmt(solAb);
-  document.getElementById('rpt-t-sol-cerr').textContent = rptFmt(solCerr);
+  const pctCerr  = pkTotal>0 ? (pkCerr/pkTotal*100).toFixed(1)+'%' : '—';
+  const pctPend  = pkTotal>0 ? (pkPend/pkTotal*100).toFixed(1)+'%' : '—';
+  document.getElementById('rpt-t-pk-total').textContent    = rptFmt(pkTotal);
+  document.getElementById('rpt-t-pk-pct-cerr').textContent = pctCerr;
+  document.getElementById('rpt-t-pk-pct-pend').textContent = pctPend;
+
+  // Agrupar detalle por semana ISO
+  const wmap = {};
+  det.forEach(r => {
+    const fs = r.fecha_solicitud; if(!fs) return;
+    const d = new Date(fs+'T00:00:00Z');
+    const {year,week} = _isoWeek(d);
+    const key = year+'-W'+String(week).padStart(2,'0');
+    if(!wmap[key]) wmap[key] = {key, label:'Sem '+week+' · '+year, por_generar:0, en_proceso:0, pickeado:0, embalado:0, cerrado:0, sort:year*100+week};
+    wmap[key].por_generar += Number(r.por_generar)||0;
+    wmap[key].en_proceso  += Number(r.en_proceso) ||0;
+    wmap[key].pickeado    += Number(r.pickeado)   ||0;
+    wmap[key].embalado    += Number(r.embalado)   ||0;
+    wmap[key].cerrado     += Number(r.cerrado)    ||0;
+  });
+  const semanas = Object.values(wmap).sort((a,b)=>b.sort-a.sort);
+  const tbSem = document.getElementById('rpt-t-tb-semana');
+  if(tbSem){
+    tbSem.innerHTML = semanas.length ? semanas.map(s=>`<tr>
+      <td>${s.label}</td>
+      <td class="c-gen">${s.por_generar>0?rptFmt(s.por_generar):'—'}</td>
+      <td class="c-proc">${s.en_proceso>0?rptFmt(s.en_proceso):'—'}</td>
+      <td class="c-pick">${s.pickeado>0?rptFmt(s.pickeado):'—'}</td>
+      <td class="c-emb">${s.embalado>0?rptFmt(s.embalado):'—'}</td>
+      <td class="c-cerr">${s.cerrado>0?rptFmt(s.cerrado):'—'}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="6" class="rpt-empty" style="text-align:center">Sin datos</td></tr>';
+  }
 
   // ── Tabla tipo carga + Donut ──
   const tipos = data.por_tipo_carga || [];
