@@ -311,6 +311,27 @@ app.get('/api/kpi-operarios', async (req, res) => {
   }
 });
 
+// GET /api/tienda-kpi — proxy al Hub Apps Script (lee Google Sheets de data manual)
+app.get('/api/tienda-kpi', async (req, res) => {
+  try {
+    const hubUrl = process.env.HUB_URL;
+    if (!hubUrl) return res.status(503).json({ ok: false, error: 'HUB_URL no configurada en .env' });
+
+    const { desde, hasta, tienda, estatus } = req.query as Record<string, string>;
+    const p = new URLSearchParams({ tipo: 'tienda-kpi' });
+    if (desde)   p.set('desde',   desde);
+    if (hasta)   p.set('hasta',   hasta);
+    if (tienda)  p.set('tienda',  tienda);
+    if (estatus) p.set('estatus', estatus);
+
+    const resp = await fetch(`${hubUrl}?${p}`, { signal: AbortSignal.timeout(12000) });
+    const data = await resp.json();
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 // Servir archivos estáticos solo en desarrollo local

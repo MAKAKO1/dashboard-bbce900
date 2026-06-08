@@ -147,8 +147,9 @@
 </div>
 
 <div class="tabs-wrap">
-  <button class="tab-btn active" onclick="switchTab('sap')" id="tab-sap">&#128203; Pedidos SAP</button>
-  <button class="tab-btn"        onclick="switchTab('op')"  id="tab-op">&#128100; KPI Operarios</button>
+  <button class="tab-btn active" onclick="switchTab('sap')"    id="tab-sap">&#128203; Pedidos SAP</button>
+  <button class="tab-btn"        onclick="switchTab('op')"     id="tab-op">&#128100; KPI Operarios</button>
+  <button class="tab-btn"        onclick="switchTab('tienda')" id="tab-tienda">&#127978; KPI Tienda</button>
 </div>
 
 <div class="main">
@@ -326,6 +327,80 @@
     </div>
   </div>
 
+  <!-- ══ KPI TIENDA ══ -->
+  <div class="tab-panel" id="panel-tienda">
+    <div class="filter-bar">
+      <div class="filter-group"><label>Desde</label><input type="date" id="rpt-t-desde"></div>
+      <span class="filter-sep">&#8594;</span>
+      <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-t-hasta"></div>
+      <div class="filter-group">
+        <label>Tienda</label>
+        <select id="rpt-t-tienda">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Estatus</label>
+        <select id="rpt-t-estatus">
+          <option value="">Todos</option>
+          <option value="Cerrado">Cerrado</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </div>
+      <button class="btn-sec" onclick="rptTiendaSetHoy()">Hoy</button>
+      <button class="btn-apply" onclick="rptCargarTienda()">Aplicar</button>
+      <span id="rpt-t-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi-card"        ><div class="kpi-label">Solicitudes</div><div class="kpi-value" id="rpt-t-k-sol">—</div><div class="kpi-sub">total</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">Unid. Solicitadas</div><div class="kpi-value" id="rpt-t-k-usol">—</div><div class="kpi-sub">total</div></div>
+      <div class="kpi-card naranja"><div class="kpi-label">Pendiente</div><div class="kpi-value" id="rpt-t-k-pend">—</div><div class="kpi-sub">unidades</div></div>
+      <div class="kpi-card verde"  ><div class="kpi-label">Cerradas</div><div class="kpi-value" id="rpt-t-k-cerr">—</div><div class="kpi-sub">solicitudes</div></div>
+      <div class="kpi-card" id="rpt-t-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-t-k-cumpl">—</div><div class="kpi-sub">sol/total</div></div>
+      <div class="kpi-card"        ><div class="kpi-label">LT Picking</div><div class="kpi-value" id="rpt-t-k-lt">—</div><div class="kpi-sub">min prom.</div></div>
+    </div>
+
+    <div class="rpt-grid4" style="margin-bottom:18px">
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128202; Por Estatus</div>
+        <table class="rpt-table"><thead><tr><th>Estatus</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
+        <tbody id="rpt-t-tb-est"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#127978; Por Tienda Destino</div>
+        <table class="rpt-table"><thead><tr><th>Tienda</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
+        <tbody id="rpt-t-tb-tienda"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128230; Por Tipo Carga</div>
+        <table class="rpt-table"><thead><tr><th>Tipo</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
+        <tbody id="rpt-t-tb-tipo"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+      </div>
+      <div class="rpt-card">
+        <div class="rpt-card-title">&#128100; Por Operario (Tomado por)</div>
+        <table class="rpt-table"><thead><tr><th>Operario</th><th class="n">Solic.</th><th class="n">Solicit.</th><th class="n">Pendiente</th></tr></thead>
+        <tbody id="rpt-t-tb-op"><tr><td colspan="4" class="rpt-empty">Sin datos</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div class="rpt-card" style="margin-bottom:18px">
+      <div class="rpt-card-title">&#128203; Detalle Solicitudes <span id="rpt-t-det-cnt" style="font-weight:700;font-size:11px;color:#99AABB"></span></div>
+      <div style="overflow-x:auto">
+        <table class="rpt-table">
+          <thead><tr>
+            <th>Tipo</th><th>Origen</th><th>Tienda</th><th>Solicitud</th><th>S°C</th>
+            <th>F. Solicitud</th><th>Carga</th><th>Estatus</th>
+            <th class="n">Solicit.</th><th class="n">Pend.</th>
+            <th>Ola</th><th>Tomado por</th><th>F.Creac.Pick</th><th>F.Término</th>
+          </tr></thead>
+          <tbody id="rpt-t-tb-det"><tr><td colspan="14" class="rpt-empty">Sin datos</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="config.js"></script>
@@ -342,6 +417,7 @@ function switchTab(name) {
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='op'&&!document.getElementById('rpt-op-ts').textContent){rptInitOp();rptCargarOp();}
+  if(name==='tienda'&&!document.getElementById('rpt-t-ts').textContent){rptTiendaInit();rptCargarTienda();}
 }
 
 const RPT_MOCK_SAP={
@@ -697,6 +773,83 @@ function renderOpChart(rows){
       }
     }
   });
+}
+
+// ══ KPI TIENDA ══
+function rptTiendaInit(){
+  const hoy=new Date().toISOString().slice(0,10);
+  document.getElementById('rpt-t-desde').value=hoy;
+  document.getElementById('rpt-t-hasta').value=hoy;
+}
+function rptTiendaSetHoy(){
+  const hoy=new Date().toISOString().slice(0,10);
+  document.getElementById('rpt-t-desde').value=hoy;
+  document.getElementById('rpt-t-hasta').value=hoy;
+}
+
+async function rptCargarTienda(){
+  const desde  =document.getElementById('rpt-t-desde').value;
+  const hasta  =document.getElementById('rpt-t-hasta').value;
+  const tienda =document.getElementById('rpt-t-tienda').value;
+  const estatus=document.getElementById('rpt-t-estatus').value;
+  const p=new URLSearchParams();
+  if(desde)   p.set('desde',desde);
+  if(hasta)   p.set('hasta',hasta);
+  if(tienda)  p.set('tienda',tienda);
+  if(estatus) p.set('estatus',estatus);
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),12000);
+    const res=await fetch(BACKEND_URL+'/api/tienda-kpi?'+p,{signal:ctrl.signal});
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error);
+    rptRenderTienda(data);
+    document.getElementById('rpt-t-ts').textContent='Act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('rpt-t-ts').textContent='Error: '+(e.name==='AbortError'?'timeout':e.message);
+  }
+}
+
+function rptRenderTienda(data){
+  const k=data.kpis||{};
+  document.getElementById('rpt-t-k-sol').textContent  =rptFmt(k.total_solicitudes||0);
+  document.getElementById('rpt-t-k-usol').textContent =rptFmt(k.total_solicitado||0);
+  document.getElementById('rpt-t-k-pend').textContent =rptFmt(k.total_pendiente||0);
+  document.getElementById('rpt-t-k-cerr').textContent =rptFmt(k.total_cerradas||0);
+  const cumpl=k.cumplimiento||0;
+  document.getElementById('rpt-t-k-cumpl').textContent=cumpl+'%';
+  const cc=document.getElementById('rpt-t-k-cumpl-card');
+  cc.className='kpi-card '+(cumpl>=90?'verde':cumpl>=70?'':'rojo');
+  document.getElementById('rpt-t-k-lt').textContent=k.lead_time_picking_min>0?k.lead_time_picking_min+' min':'—';
+
+  // Poblar select tiendas
+  const sel=document.getElementById('rpt-t-tienda');
+  const curr=sel.value;
+  const tiendas=[...new Set((data.por_tienda||[]).map(r=>r.key).filter(k=>k&&k!=='SIN DATOS'))].sort();
+  sel.innerHTML='<option value="">Todas</option>'+tiendas.map(t=>`<option value="${t}"${t===curr?' selected':''}>${t}</option>`).join('');
+
+  const tbAg=(id,rows)=>{
+    const el=document.getElementById(id);
+    if(!rows||!rows.length){el.innerHTML='<tr><td colspan="4" class="rpt-empty">Sin datos</td></tr>';return;}
+    el.innerHTML=rows.slice(0,15).map(r=>`<tr><td>${r.key}</td><td class="n">${rptFmt(r.count)}</td><td class="n">${rptFmt(r.solicitado)}</td><td class="n">${rptFmt(r.pendiente)}</td></tr>`).join('');
+  };
+  tbAg('rpt-t-tb-est',   data.por_estatus);
+  tbAg('rpt-t-tb-tienda',data.por_tienda);
+  tbAg('rpt-t-tb-tipo',  data.por_tipo_carga);
+  tbAg('rpt-t-tb-op',    data.por_operario);
+
+  const det=data.detalle||[];
+  document.getElementById('rpt-t-det-cnt').textContent=det.length?`(${det.length} filas)`:'';
+  const tbody=document.getElementById('rpt-t-tb-det');
+  if(!det.length){tbody.innerHTML='<tr><td colspan="14" class="rpt-empty">Sin datos</td></tr>';return;}
+  tbody.innerHTML=det.map(r=>`<tr>
+    <td>${r.tipo_solicitud}</td><td>${r.almacen_origen}</td><td>${r.tienda_destino}</td>
+    <td>${r.solicitud}</td><td>${r.sc}</td><td>${r.fecha_solicitud}</td>
+    <td>${r.tipo_carga}</td>
+    <td><span style="font-weight:800;color:${r.estatus==='Cerrado'?'#1E8449':r.estatus==='Pendiente'?'#C0392B':'#E67E22'}">${r.estatus}</span></td>
+    <td class="n">${rptFmt(r.solicitado)}</td><td class="n">${rptFmt(r.pendiente)}</td>
+    <td>${r.num_ola}</td><td>${r.tomado_por}</td>
+    <td>${r.fecha_creacion_picking}</td><td>${r.fecha_termino_picking}</td>
+  </tr>`).join('');
 }
 
 (function init(){
