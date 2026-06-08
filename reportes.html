@@ -461,6 +461,14 @@
             <option value="">Todos</option>
           </select>
         </div>
+        <div class="t-filter-group">
+          <label>N° Solicitud Desde</label>
+          <input type="text" id="rpt-t-sol-desde" placeholder="ej. 4500000001" onchange="rptCargarTienda()" style="min-width:110px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 10px;color:white;font-size:11px;font-weight:700;font-family:'Nunito',Arial;outline:none">
+        </div>
+        <div class="t-filter-group">
+          <label>N° Solicitud Hasta</label>
+          <input type="text" id="rpt-t-sol-hasta" placeholder="ej. 4500009999" onchange="rptCargarTienda()" style="min-width:110px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 10px;color:white;font-size:11px;font-weight:700;font-family:'Nunito',Arial;outline:none">
+        </div>
         <button class="t-btn-ref" onclick="rptTiendaSetTodo()">Todo</button>
         <button class="t-btn-ref" id="rpt-t-btn-ref" onclick="rptCargarTienda()">&#8635; Actualizar</button>
         <span class="t-ts" id="rpt-t-ts"></span>
@@ -710,6 +718,13 @@ async function rptCargarSap(){
 }
 
 function rptRenderSap(data){
+  // Poblar fechas desde la data si los inputs están vacíos
+  const sapDesde=document.getElementById('rpt-sap-desde');
+  const sapHasta=document.getElementById('rpt-sap-hasta');
+  if((!sapDesde.value||!sapHasta.value)&&data.fecha_min&&data.fecha_max){
+    if(!sapDesde.value) sapDesde.value=data.fecha_min;
+    if(!sapHasta.value) sapHasta.value=data.fecha_max;
+  }
   const k=data.kpis;
   document.getElementById('rpt-k-ped').textContent   =rptFmt(k.total_pedidos);
   document.getElementById('rpt-k-uni').textContent   =rptFmt(k.total_unidades);
@@ -1000,6 +1015,9 @@ function rptTiendaInit(){ /* sin fechas por defecto → carga todo */ }
 function rptTiendaSetTodo(){
   document.getElementById('rpt-t-desde').value='';
   document.getElementById('rpt-t-hasta').value='';
+  document.getElementById('rpt-t-sol-desde').value='';
+  document.getElementById('rpt-t-sol-hasta').value='';
+  document.getElementById('rpt-t-semana').value='';
   rptCargarTienda();
 }
 
@@ -1009,12 +1027,16 @@ async function rptCargarTienda(){
   const tienda    = document.getElementById('rpt-t-tienda').value;
   const tipoCarga = document.getElementById('rpt-t-tipo-carga').value;
   const almacen   = document.getElementById('rpt-t-almacen').value;
+  const solDesde  = document.getElementById('rpt-t-sol-desde').value.trim();
+  const solHasta  = document.getElementById('rpt-t-sol-hasta').value.trim();
   const p = new URLSearchParams({ tipo:'tienda-kpi' });
-  if(desde)     p.set('desde',    desde);
-  if(hasta)     p.set('hasta',    hasta);
-  if(tienda)    p.set('tienda',   tienda);
-  if(tipoCarga) p.set('tipo_carga', tipoCarga);
-  if(almacen)   p.set('almacen',  almacen);
+  if(desde)     p.set('desde',     desde);
+  if(hasta)     p.set('hasta',     hasta);
+  if(tienda)    p.set('tienda',    tienda);
+  if(tipoCarga) p.set('tipo_carga',tipoCarga);
+  if(almacen)   p.set('almacen',   almacen);
+  if(solDesde)  p.set('sol_desde', solDesde);
+  if(solHasta)  p.set('sol_hasta', solHasta);
   const HUB='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
   const tsEl  = document.getElementById('rpt-t-ts');
   const btnRef = document.getElementById('rpt-t-btn-ref');
@@ -1320,10 +1342,7 @@ async function refreshAll(){
 }
 
 (function init(){
-  const y=rptAyer();
-  document.getElementById('rpt-sap-desde').value=y;
-  document.getElementById('rpt-sap-hasta').value=y;
-  rptCargarSap();
+  rptCargarSap(); // fechas se poblan desde fecha_min/fecha_max del hub
 })();
 </script>
 </body>
