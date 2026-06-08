@@ -135,6 +135,23 @@
   .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
   .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
 
+  /* ══ Pedidos SAP — presets + tabla seller×fecha ══ */
+  .sap-presets { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+  .sap-presets-lbl { font-size:11px; color:#7799AA; font-weight:700; margin-right:2px; }
+  .sap-pb { font-size:11px; padding:5px 13px; height:30px; border:1.5px solid #CCE9FF; border-radius:20px; background:white; color:#7799AA; cursor:pointer; font-family:'Nunito',Arial; font-weight:800; white-space:nowrap; transition:all .15s; }
+  .sap-pb:hover { background:#E8F6FF; color:#0077BB; border-color:#99D4F5; }
+  .sap-pb.active { background:#E8F6FF; color:#0055AA; border-color:#0055AA; }
+  .sap-pb.vl { border-color:#E67E22; color:#E67E22; }
+  .sap-pb.vl:hover,.sap-pb.vl.active { background:#FEF3E0; color:#A04000; border-color:#E67E22; }
+  .sap-date-hdr td { background:#0E2D6B; color:white; font-size:11px; font-weight:800; padding:8px 14px; text-transform:uppercase; letter-spacing:.5px; }
+  .sap-total-row td { background:#E8EEF9; color:#0E2D6B; font-weight:800; font-size:12px; border-top:1.5px solid #B5C8EE; }
+  .sap-grand-row td { background:#0E2D6B; color:white; font-weight:800; font-size:12px; border-top:2px solid #1A4FAD; }
+  .sap-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 9px; border-radius:10px; font-size:11px; font-weight:800; white-space:nowrap; }
+  .sap-ok   { background:#D5F5E3; color:#0A5C3A; }
+  .sap-proc { background:#D6EAF8; color:#1A5276; }
+  .sap-pend { background:#FAEAF3; color:#8C0E52; }
+  .sap-footer-note { font-size:10px; color:#99AABB; padding:8px 16px 12px; }
+
   /* ══ KPI TIENDA — nuevo diseño ══ */
   .t-header { background:linear-gradient(135deg,#0D2137 0%,#1A3A5C 100%); border-radius:14px; padding:16px 22px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
   .t-header-left h2 { color:white; font-size:18px; font-weight:900; text-transform:uppercase; margin-bottom:2px; }
@@ -260,80 +277,68 @@
   <!-- ══ PEDIDOS SAP ══ -->
   <div class="tab-panel active" id="panel-sap">
     <div id="rpt-sap-demo-banner" class="rpt-demo-banner" style="display:none">
-      &#9888;&#65039; Datos de demostración — backend no disponible. Inicia el servidor local para ver datos reales.
+      &#9888;&#65039; Mostrando datos de demostración — hub no disponible.
     </div>
+    <!-- Filtros -->
     <div class="filter-bar">
       <div class="filter-group"><label>Desde</label><input type="date" id="rpt-sap-desde"></div>
       <span class="filter-sep">&#8594;</span>
       <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
-      <button class="btn-sec" onclick="rptSapSetAyer()">Ayer</button>
       <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
+      <button class="btn-sec" onclick="rptSapClear()">Limpiar</button>
       <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
-    <div class="kpi-strip">
-      <div class="kpi-card"        ><div class="kpi-label">Pedidos</div><div class="kpi-value" id="rpt-k-ped">—</div><div class="kpi-sub">&#243;rdenes</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">Unidades</div><div class="kpi-value" id="rpt-k-uni">—</div><div class="kpi-sub">total</div></div>
-      <div class="kpi-card verde"  ><div class="kpi-label">Entregadas</div><div class="kpi-value" id="rpt-k-ent">—</div><div class="kpi-sub" id="rpt-k-ent-p">del total</div></div>
-      <div class="kpi-card naranja"><div class="kpi-label">Abiertas</div><div class="kpi-value" id="rpt-k-ab">—</div><div class="kpi-sub" id="rpt-k-ab-p">del total</div></div>
-      <div class="kpi-card" id="rpt-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-k-cumpl">—</div><div class="kpi-sub">ent/total</div></div>
-      <div class="kpi-card rojo"   ><div class="kpi-label">Backlog</div><div class="kpi-value" id="rpt-k-bl">—</div><div class="kpi-sub">sin pick + parcial</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">LT SAP&#8594;Pick</div><div class="kpi-value" id="rpt-k-lt1">—</div><div class="kpi-sub">horas prom.</div></div>
-      <div class="kpi-card"        ><div class="kpi-label">LT Pick&#8594;Cierre</div><div class="kpi-value" id="rpt-k-lt2">—</div><div class="kpi-sub">horas prom.</div></div>
+    <!-- Presets -->
+    <div class="sap-presets">
+      <span class="sap-presets-lbl">Acceso r&#225;pido:</span>
+      <button class="sap-pb" onclick="rptSapPreset('hoy',this)">Hoy</button>
+      <button class="sap-pb" onclick="rptSapPreset('ayer',this)">Ayer</button>
+      <button class="sap-pb" onclick="rptSapPreset('ultimos3',this)">&#218;ltimos 3 d&#237;as</button>
+      <button class="sap-pb active" onclick="rptSapPreset('todo',this)">Todos los d&#237;as</button>
+      <button class="sap-pb vl" onclick="rptSapPreset('viernesLunes',this)">&#9733; Vie &#8594; Lun</button>
     </div>
-    <div class="rpt-grid4" style="margin-bottom:18px">
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128202; Estado Operacional</div>
-        <table class="rpt-table"><thead><tr><th>Estatus</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">%</th></tr></thead>
-        <tbody id="rpt-tb-est"><tr><td colspan="4" class="rpt-empty">Cargando...</td></tr></tbody>
-        <tfoot id="rpt-tf-est"></tfoot></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128281; Flujo Operacional</div>
-        <div class="rpt-funnel-wrap" id="rpt-funnel"><div class="rpt-empty">Cargando...</div></div>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128722; Marketplace</div>
-        <table class="rpt-table"><thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Unid.</th><th class="n">Cumpl.</th><th></th></tr></thead>
-        <tbody id="rpt-tb-cli"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
-        <tfoot id="rpt-tf-cli"></tfoot></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128205; SLA Compromisos</div>
-        <div class="rpt-sla-cards">
-          <div class="rpt-sla-card"><div style="font-size:20px">&#128308;</div><div class="rpt-sla-value" style="color:#C0392B" id="rpt-sla-v">—</div><div class="rpt-sla-label">Vencidos</div></div>
-          <div class="rpt-sla-card"><div style="font-size:20px">&#128993;</div><div class="rpt-sla-value" style="color:#E67E22" id="rpt-sla-h">—</div><div class="rpt-sla-label">Para Hoy</div></div>
-          <div class="rpt-sla-card"><div style="font-size:20px">&#128994;</div><div class="rpt-sla-value" style="color:#27AE60" id="rpt-sla-f">—</div><div class="rpt-sla-label">Futuros</div></div>
-        </div>
-        <div class="rpt-lt-row">
-          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt1">—</div><div class="rpt-lt-label">SAP&#8594;Pick (h)</div></div>
-          <div class="rpt-lt-card"><div class="rpt-lt-value" id="rpt-lt2">—</div><div class="rpt-lt-label">Pick&#8594;Cierre (h)</div></div>
-        </div>
-      </div>
+    <!-- 4 KPI Cards -->
+    <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+      <div class="kpi-card"><div class="kpi-label">Comprometido</div><div class="kpi-value" id="rpt-k-comp">—</div><div class="kpi-sub">unidades totales</div></div>
+      <div class="kpi-card verde"><div class="kpi-label">Despachado</div><div class="kpi-value" id="rpt-k-desp2">—</div><div class="kpi-sub" id="rpt-k-desp2-p">del total</div></div>
+      <div class="kpi-card naranja"><div class="kpi-label">Pendiente</div><div class="kpi-value" id="rpt-k-pend2">—</div><div class="kpi-sub" id="rpt-k-pend2-p">sin despachar</div></div>
+      <div class="kpi-card" id="rpt-k-cumpl-card"><div class="kpi-label">Cumplimiento</div><div class="kpi-value" id="rpt-k-cumpl">—</div><div class="kpi-sub">uds entregadas / total</div></div>
     </div>
-    <div class="rpt-grid3" style="margin-bottom:18px">
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#127754; Olas de Picking</div>
-        <table class="rpt-table"><thead><tr><th>N&#176; Ola</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Abiertas</th><th>Estado</th></tr></thead>
-        <tbody id="rpt-tb-olas"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
+    <!-- Tabla principal: Seller × Fecha -->
+    <div class="rpt-card" style="margin-bottom:18px">
+      <div class="rpt-card-title">&#128722; Marketplace &#215; Fecha de Recepci&#243;n</div>
+      <div style="overflow-x:auto">
+        <table class="rpt-table">
+          <thead><tr>
+            <th style="width:90px">Fecha</th>
+            <th>Marketplace</th>
+            <th class="n">Comprometido</th>
+            <th class="n">Despachado</th>
+            <th class="n">Pendiente</th>
+            <th class="n">% Cumpl.</th>
+            <th>Estado</th>
+          </tr></thead>
+          <tbody id="rpt-sap-tb-main"><tr><td colspan="7" class="rpt-empty">Cargando...</td></tr></tbody>
+        </table>
       </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128100; Productividad Operador</div>
-        <table class="rpt-table"><thead><tr><th>#</th><th>Operador</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Entreg.</th></tr></thead>
-        <tbody id="rpt-tb-prod"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody></table>
-      </div>
-      <div class="rpt-card">
-        <div class="rpt-card-title">&#128666; Tipo de Env&#237;o</div>
-        <div style="padding:14px;height:230px;display:flex;align-items:center;justify-content:center"><canvas id="rpt-chart-envio"></canvas></div>
-      </div>
+      <p class="sap-footer-note">Comprometido = total uds &middot; Despachado = uds cerradas &middot; Pendiente = uds sin despachar</p>
     </div>
+    <!-- Secundario: Marketplace resumen + Olas -->
     <div class="rpt-grid2" style="margin-bottom:18px">
       <div class="rpt-card">
-        <div class="rpt-card-title">&#128200; Tendencia 7 D&#237;as</div>
-        <div style="padding:14px;height:220px"><canvas id="rpt-chart-tend"></canvas></div>
+        <div class="rpt-card-title">&#128722; Marketplace — Resumen</div>
+        <table class="rpt-table">
+          <thead><tr><th>Cliente</th><th class="n">Ped.</th><th class="n">Comprometido</th><th class="n">Despachado</th><th class="n">% Cumpl.</th><th></th></tr></thead>
+          <tbody id="rpt-tb-cli"><tr><td colspan="6" class="rpt-empty">Cargando...</td></tr></tbody>
+          <tfoot id="rpt-tf-cli"></tfoot>
+        </table>
       </div>
       <div class="rpt-card">
-        <div class="rpt-card-title">&#128680; Alertas Operacionales</div>
-        <div class="rpt-alertas" id="rpt-alertas"><div class="rpt-empty">Cargando...</div></div>
+        <div class="rpt-card-title">&#127754; Olas de Picking</div>
+        <table class="rpt-table">
+          <thead><tr><th>N&#176; Ola</th><th class="n">Pedidos</th><th class="n">Unidades</th><th class="n">Abiertas</th><th>Estado</th></tr></thead>
+          <tbody id="rpt-tb-olas"><tr><td colspan="5" class="rpt-empty">Cargando...</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -714,7 +719,46 @@ const EST_ORDER=['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
 const EST_BADGE={'Sin Pickear':'rb-sinpick','Parcial':'rb-parcial','Pickeado':'rb-pickeado','Embalada':'rb-embalada','Cerrada':'rb-cerrada'};
 let chartTend=null,chartEnvio=null,chartOp=null;
 
-function rptSapSetAyer(){const y=rptAyer();document.getElementById('rpt-sap-desde').value=y;document.getElementById('rpt-sap-hasta').value=y;}
+function rptSapClear(){
+  document.getElementById('rpt-sap-desde').value='';
+  document.getElementById('rpt-sap-hasta').value='';
+  document.querySelectorAll('.sap-pb').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.sap-pb[onclick*="todo"]')?.classList.add('active');
+  rptCargarSap();
+}
+function rptSapPreset(p,el){
+  document.querySelectorAll('.sap-pb').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const fmt=d=>d.toISOString().slice(0,10);
+  const hoy=new Date(); let desde='',hasta='';
+  if(p==='hoy'){ desde=hasta=fmt(hoy); }
+  else if(p==='ayer'){ const y=new Date(hoy);y.setDate(y.getDate()-1);desde=hasta=fmt(y); }
+  else if(p==='ultimos3'){ const d=new Date(hoy);d.setDate(d.getDate()-2);desde=fmt(d);hasta=fmt(hoy); }
+  else if(p==='todo'){ desde='';hasta=''; }
+  else if(p==='viernesLunes'){
+    const day=hoy.getDay();
+    const fri=new Date(hoy); fri.setDate(hoy.getDate()-(day>=5?day-5:day+2));
+    desde=fmt(fri); hasta=fmt(hoy);
+  }
+  document.getElementById('rpt-sap-desde').value=desde;
+  document.getElementById('rpt-sap-hasta').value=hasta;
+  rptCargarSap();
+}
+
+function sapFechaLabel(iso){
+  if(!iso)return iso;
+  const d=new Date(iso+'T12:00:00Z');
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${dias[d.getUTCDay()]} ${String(d.getUTCDate()).padStart(2,'0')}-${meses[d.getUTCMonth()]}-${d.getUTCFullYear()}`;
+}
+function sapPill(ent,comp){
+  const p=comp>0?ent/comp*100:0;
+  if(comp===0)return `<span class="sap-pill sap-pend">&#9679; Pendiente</span>`;
+  if(p>=99.5) return `<span class="sap-pill sap-ok">&#9679; Cumplido</span>`;
+  if(p>0)     return `<span class="sap-pill sap-proc">&#9679; En proceso</span>`;
+  return `<span class="sap-pill sap-pend">&#9679; Pendiente</span>`;
+}
 
 const HUB_URL='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
 
@@ -741,78 +785,97 @@ async function rptCargarSap(){
 }
 
 function rptRenderSap(data){
-  // Poblar fechas desde la data si los inputs están vacíos
+  // Auto-set fechas desde la data si inputs vacíos
   const sapDesde=document.getElementById('rpt-sap-desde');
   const sapHasta=document.getElementById('rpt-sap-hasta');
   if((!sapDesde.value||!sapHasta.value)&&data.fecha_min&&data.fecha_max){
     if(!sapDesde.value) sapDesde.value=data.fecha_min;
     if(!sapHasta.value) sapHasta.value=data.fecha_max;
   }
+  // KPI cards
   const k=data.kpis;
-  document.getElementById('rpt-k-ped').textContent   =rptFmt(k.total_pedidos);
-  document.getElementById('rpt-k-uni').textContent   =rptFmt(k.total_unidades);
-  document.getElementById('rpt-k-ent').textContent   =rptFmt(k.total_entregadas);
-  document.getElementById('rpt-k-ent-p').textContent =rptPct(k.total_entregadas,k.total_unidades)+' del total';
-  document.getElementById('rpt-k-ab').textContent    =rptFmt(k.total_abiertas);
-  document.getElementById('rpt-k-ab-p').textContent  =rptPct(k.total_abiertas,k.total_unidades)+' del total';
-  document.getElementById('rpt-k-cumpl').textContent =(k.cumplimiento||0)+'%';
-  document.getElementById('rpt-k-bl').textContent    =rptFmt(k.backlog);
-  document.getElementById('rpt-k-lt1').textContent   =k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('rpt-k-lt2').textContent   =k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
-  document.getElementById('rpt-lt1').textContent     =k.lead_time_sap_picking_hrs!=null?k.lead_time_sap_picking_hrs+' h':'—';
-  document.getElementById('rpt-lt2').textContent     =k.lead_time_picking_cierre_hrs!=null?k.lead_time_picking_cierre_hrs+' h':'—';
-  document.getElementById('rpt-sla-v').textContent   =rptFmt(k.sla_vencidos);
-  document.getElementById('rpt-sla-h').textContent   =rptFmt(k.sla_hoy);
-  document.getElementById('rpt-sla-f').textContent   =rptFmt(k.sla_futuros);
   const pct=Number(k.cumplimiento||0);
+  document.getElementById('rpt-k-comp').textContent    =rptFmt(k.total_unidades);
+  document.getElementById('rpt-k-desp2').textContent   =rptFmt(k.total_entregadas);
+  document.getElementById('rpt-k-desp2-p').textContent =rptPct(k.total_entregadas,k.total_unidades)+' del total';
+  document.getElementById('rpt-k-pend2').textContent   =rptFmt(k.total_abiertas);
+  document.getElementById('rpt-k-pend2-p').textContent =rptPct(k.total_abiertas,k.total_unidades)+' del total';
+  document.getElementById('rpt-k-cumpl').textContent   =pct+'%';
   document.getElementById('rpt-k-cumpl-card').className='kpi-card '+(pct>=80?'verde':pct>=60?'naranja':'rojo');
-  renderEstatus(data.por_estatus,k);
-  renderEmbudo(data.por_estatus,k);
+
+  // Tabla Seller × Fecha
+  const rows=data.rows||[];
+  const map={};
+  rows.forEach(r=>{
+    const key=(r.fecha_recepcion||'')+'||'+(r.nombre_cliente||'Sin datos');
+    if(!map[key]) map[key]={fecha:r.fecha_recepcion||'',cliente:r.nombre_cliente||'Sin datos',unidades:0,entregadas:0,abiertas:0};
+    map[key].unidades   +=Number(r.unidades)   ||0;
+    map[key].entregadas +=Number(r.entregadas) ||0;
+    map[key].abiertas   +=Number(r.abiertas)   ||0;
+  });
+  const grouped=Object.values(map).sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.cliente.localeCompare(b.cliente));
+  const fechas=[...new Set(grouped.map(r=>r.fecha))].sort();
+  let html=''; let gtC=0,gtD=0,gtP=0;
+  fechas.forEach(fd=>{
+    const dr=grouped.filter(r=>r.fecha===fd);
+    const dC=dr.reduce((s,r)=>s+r.unidades,0);
+    const dD=dr.reduce((s,r)=>s+r.entregadas,0);
+    const dP=dr.reduce((s,r)=>s+r.abiertas,0);
+    gtC+=dC;gtD+=dD;gtP+=dP;
+    html+=`<tr class="sap-date-hdr"><td colspan="7">${sapFechaLabel(fd)}</td></tr>`;
+    dr.forEach(r=>{
+      const p2=r.unidades>0?(r.entregadas/r.unidades*100).toFixed(1):'0.0';
+      html+=`<tr>
+        <td style="color:#99AABB;font-size:11px">${fd.slice(8)}-${fd.slice(5,7)}</td>
+        <td style="font-weight:700;color:#003366">${r.cliente}</td>
+        <td class="n">${rptFmt(r.unidades)}</td>
+        <td class="n" style="color:#1E8449">${r.entregadas>0?rptFmt(r.entregadas):'—'}</td>
+        <td class="n" style="color:#C0392B">${r.abiertas>0?rptFmt(r.abiertas):'—'}</td>
+        <td class="n">${r.unidades>0?p2+'%':'—'}</td>
+        <td>${sapPill(r.entregadas,r.unidades)}</td>
+      </tr>`;
+    });
+    const dPct=dC>0?(dD/dC*100).toFixed(1):'0.0';
+    html+=`<tr class="sap-total-row">
+      <td style="font-size:11px">${fd.slice(8)}-${fd.slice(5,7)}</td><td>TOTAL</td>
+      <td class="n">${rptFmt(dC)}</td>
+      <td class="n">${dD>0?rptFmt(dD):'—'}</td>
+      <td class="n">${dP>0?rptFmt(dP):'—'}</td>
+      <td class="n">${dPct}%</td>
+      <td>${sapPill(dD,dC)}</td>
+    </tr>`;
+  });
+  if(fechas.length>1){
+    const gPct=gtC>0?(gtD/gtC*100).toFixed(1):'0.0';
+    html+=`<tr class="sap-grand-row">
+      <td>Período</td><td>TOTAL GENERAL</td>
+      <td class="n">${rptFmt(gtC)}</td>
+      <td class="n">${gtD>0?rptFmt(gtD):'—'}</td>
+      <td class="n">${gtP>0?rptFmt(gtP):'—'}</td>
+      <td class="n">${gPct}%</td>
+      <td>${sapPill(gtD,gtC)}</td>
+    </tr>`;
+  }
+  if(!fechas.length) html='<tr><td colspan="7" class="rpt-empty">Sin datos para el período seleccionado</td></tr>';
+  document.getElementById('rpt-sap-tb-main').innerHTML=html;
+
+  // Secundario
   renderClientes(data.por_cliente);
   renderOlas(data.por_ola);
-  renderProd(data.por_usuario);
-  renderTend(data.tendencia);
-  renderEnvio(data.por_tipo_envio);
-  renderAlertas(data);
-}
-
-function renderEstatus(rows,k){
-  const tot=Number(k.total_pedidos)||1;
-  const map={};(rows||[]).forEach(r=>map[r.estatus]=r);
-  const all=[...EST_ORDER.filter(s=>map[s]).map(s=>map[s]),...(rows||[]).filter(r=>!EST_ORDER.includes(r.estatus))];
-  if(!all.length){document.getElementById('rpt-tb-est').innerHTML='<tr><td colspan="4" class="rpt-empty">Sin datos</td></tr>';return;}
-  const tP=all.reduce((a,r)=>a+Number(r.pedidos||0),0);
-  const tU=all.reduce((a,r)=>a+Number(r.unidades||0),0);
-  document.getElementById('rpt-tb-est').innerHTML=all.map(r=>`<tr><td><span class="rpt-badge ${EST_BADGE[r.estatus]||'rb-pickeado'}">${r.estatus}</span></td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${(Number(r.pedidos)/tot*100).toFixed(1)}%</td></tr>`).join('');
-  document.getElementById('rpt-tf-est').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n">100%</td></tr>`;
-}
-
-function renderEmbudo(rows,k){
-  const tot=Number(k.total_pedidos)||1;
-  const map={};(rows||[]).forEach(r=>map[r.estatus]=r);
-  const etapas=[{l:'Comprometido',k:null,c:'#0077BB'},{l:'Sin Pickear',k:'Sin Pickear',c:'#C0392B'},{l:'Parcial',k:'Parcial',c:'#E67E22'},{l:'Pickeado',k:'Pickeado',c:'#3498DB'},{l:'Embalada',k:'Embalada',c:'#8E44AD'},{l:'Cerrada',k:'Cerrada',c:'#27AE60'}];
-  let html='';
-  etapas.forEach((e,i)=>{
-    const n=e.k?Number((map[e.k]||{}).pedidos||0):tot;
-    const pct=Math.round(n/tot*100);
-    if(i>0)html+='<div class="rpt-funnel-arrow">&#8595;</div>';
-    html+=`<div class="rpt-funnel-item"><div class="rpt-funnel-label"><span class="rpt-funnel-name">${e.l}</span><span class="rpt-funnel-vals">${rptFmt(n)} · ${pct}%</span></div><div class="rpt-funnel-bar-wrap"><div class="rpt-funnel-bar" style="width:${Math.max(pct,3)}%;background:${e.c}">${pct>=15?pct+'%':''}</div></div></div>`;
-  });
-  document.getElementById('rpt-funnel').innerHTML=html;
 }
 
 function renderClientes(rows){
-  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
+  if(!rows||!rows.length){document.getElementById('rpt-tb-cli').innerHTML='<tr><td colspan="6" class="rpt-empty">Sin datos</td></tr>';return;}
   const tP=rows.reduce((a,r)=>a+Number(r.pedidos||0),0);
   const tU=rows.reduce((a,r)=>a+Number(r.unidades||0),0);
   const tE=rows.reduce((a,r)=>a+Number(r.entregadas||0),0);
   document.getElementById('rpt-tb-cli').innerHTML=rows.map(r=>{
     const pct=Number(r.unidades)>0?Math.round(Number(r.entregadas)/Number(r.unidades)*100):0;
     const col=pct>=80?'#27AE60':pct>=60?'#E67E22':'#C0392B';
-    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n">${pct}%</td><td style="min-width:60px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
+    return `<tr><td style="font-weight:800;color:#003366">${r.cliente}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#1E8449">${rptFmt(r.entregadas)}</td><td class="n">${pct}%</td><td style="min-width:60px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${col}"></div></div></td></tr>`;
   }).join('');
   const pT=tU>0?Math.round(tE/tU*100):0;
-  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n">${pT}%</td><td></td></tr>`;
+  document.getElementById('rpt-tf-cli').innerHTML=`<tr><td style="font-weight:900">TOTAL</td><td class="n">${rptFmt(tP)}</td><td class="n">${rptFmt(tU)}</td><td class="n" style="color:#1E8449">${rptFmt(tE)}</td><td class="n">${pT}%</td><td></td></tr>`;
 }
 
 function renderOlas(rows){
@@ -821,50 +884,6 @@ function renderOlas(rows){
     const ab=Number(r.abiertas||0);
     return `<tr><td style="font-weight:800;color:#0077BB">${r.num_ola||'—'}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:${ab>0?'#C0392B':'#27AE60'};font-weight:800">${rptFmt(ab)}</td><td><span class="rpt-badge ${ab>0?'rb-abierta':'rb-cerrada'}">${ab>0?'Abierta':'Cerrada'}</span></td></tr>`;
   }).join('');
-}
-
-function renderProd(rows){
-  if(!rows||!rows.length){document.getElementById('rpt-tb-prod').innerHTML='<tr><td colspan="5" class="rpt-empty">Sin datos</td></tr>';return;}
-  document.getElementById('rpt-tb-prod').innerHTML=rows.map((r,i)=>`<tr><td style="text-align:center;font-size:15px">${MEDALS[i]||i+1}</td><td style="font-weight:800;color:#003366">${r.usuario}</td><td class="n">${rptFmt(r.pedidos)}</td><td class="n">${rptFmt(r.unidades)}</td><td class="n" style="color:#27AE60;font-weight:900">${rptFmt(r.entregadas)}</td></tr>`).join('');
-}
-
-function renderTend(rows){
-  if(!rows||!rows.length)return;
-  const labels=rows.map(r=>new Date(r.fecha).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit'}));
-  if(chartTend)chartTend.destroy();
-  chartTend=new Chart(document.getElementById('rpt-chart-tend'),{
-    type:'bar',data:{labels,datasets:[
-      {label:'Pedidos',data:rows.map(r=>Number(r.pedidos||0)),backgroundColor:'#00AAFF55',borderColor:'#0077BB',borderWidth:1.5},
-      {label:'Entregadas',data:rows.map(r=>Number(r.entregadas||0)),backgroundColor:'#27AE6055',borderColor:'#1E8449',borderWidth:1.5},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Nunito'}}}},
-      scales:{x:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}},y:{ticks:{color:'#99AABB',font:{size:9}},grid:{color:'#EEF4FF'}}}}
-  });
-}
-
-function renderEnvio(rows){
-  if(!rows||!rows.length)return;
-  if(chartEnvio)chartEnvio.destroy();
-  chartEnvio=new Chart(document.getElementById('rpt-chart-envio'),{
-    type:'doughnut',
-    data:{labels:rows.map(r=>r.tipo_envio),datasets:[{data:rows.map(r=>Number(r.pedidos||0)),backgroundColor:['#0077BB','#27AE60','#E67E22','#8E44AD','#C0392B'],borderColor:'white',borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#555',font:{size:10,family:'Nunito'},boxWidth:12,padding:6}}}}
-  });
-}
-
-function renderAlertas(data){
-  const k=data.kpis;const al=[];
-  if(Number(k.sla_vencidos)>0)al.push({t:'rojo',i:'&#128308;',ti:`${rptFmt(k.sla_vencidos)} pedidos con SLA vencido`,d:'Fecha compromiso pasada sin cerrar',p:'Alta'});
-  if(Number(k.backlog)>0)al.push({t:'rojo',i:'&#128308;',ti:`${rptFmt(k.backlog)} en Backlog`,d:'Sin pickear o parciales pendientes',p:'Alta'});
-  const olasAb=(data.por_ola||[]).filter(o=>Number(o.abiertas||0)>0);
-  if(olasAb.length)al.push({t:'amarillo',i:'&#128993;',ti:`${olasAb.length} ola(s) con pedidos abiertos`,d:olasAb.slice(0,3).map(o=>`Ola ${o.num_ola}: ${o.abiertas}`).join(' · '),p:'Media'});
-  const clBaj=(data.por_cliente||[]).filter(c=>Number(c.unidades)>0&&(Number(c.entregadas)/Number(c.unidades)*100)<60);
-  if(clBaj.length)al.push({t:'rojo',i:'&#128308;',ti:`${clBaj.length} marketplace(s) bajo 60%`,d:clBaj.map(c=>`${c.cliente}: ${Math.round(Number(c.entregadas)/Number(c.unidades)*100)}%`).join(' · '),p:'Alta'});
-  if(Number(k.sla_hoy)>0)al.push({t:'amarillo',i:'&#128993;',ti:`${rptFmt(k.sla_hoy)} pedidos compromiso HOY`,d:'Deben cerrarse antes del fin del día',p:'Media'});
-  if(Number(k.cumplimiento||0)>=80)al.push({t:'verde',i:'&#9989;',ti:`Cumplimiento ${k.cumplimiento}% — Objetivo alcanzado`,d:'Operación dentro de parámetros normales',p:'Baja'});
-  if(!al.length)al.push({t:'verde',i:'&#9989;',ti:'Sin alertas activas',d:'Todos los indicadores en rango normal',p:'Baja'});
-  document.getElementById('rpt-alertas').innerHTML=al.map(a=>`<div class="rpt-alerta ${a.t}"><div class="rpt-alerta-icon">${a.i}</div><div><div class="rpt-alerta-titulo">${a.ti}</div><div class="rpt-alerta-desc">${a.d}</div><div class="rpt-alerta-pr rpt-pr-${a.p==='Alta'?'alta':a.p==='Media'?'media':'baja'}">Prioridad ${a.p}</div></div></div>`).join('');
 }
 
 // Acorta "LogisticaP02" → "P02", nombres normales quedan igual
