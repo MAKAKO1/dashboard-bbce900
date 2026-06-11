@@ -367,8 +367,6 @@
     <div id="rpt-op-demo-banner" class="rpt-demo-banner" style="display:none">
       &#9888;&#65039; Datos de demostración — backend no disponible. Inicia el servidor local para ver datos reales.
     </div>
-    <div id="rpt-op-debug" style="background:#1a1a2e;color:#7DF9FF;font-size:10px;font-family:monospace;padding:6px 12px;border-radius:6px;margin-bottom:8px;word-break:break-all">Esperando respuesta del hub...</div>
-
     <!-- Filtros -->
     <div class="filter-bar">
       <div class="filter-group"><label>Fecha</label><input type="date" id="rpt-op-fecha"></div>
@@ -977,16 +975,12 @@ async function rptCargarOp(){
   try{
     const res=await fetch(HUB_URL+'?'+p);
     const data=await res.json();
-    const dbg=document.getElementById('rpt-op-debug');
-    if(dbg) dbg.textContent='Hub OK · ok='+data.ok+' · total_op='+((data.resumen||{}).total_operarios??'?')+' · filas_det='+((data.detalle||[]).length)+' · fecha_min='+data.fecha_min+' · fecha_max='+data.fecha_max+' · filtro_desde='+(data.filtro||{}).desde+' · error='+(data.error||'—');
     if(!data.ok)throw new Error(data.error||'Error hub kpi-op-gs');
     document.getElementById('rpt-op-demo-banner').style.display='none';
     rptRenderOp(data);
     document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL')+' ('+(((Date.now()-t0)/1000).toFixed(1))+'s)';
   }catch(e){
     console.warn('Hub kpi-op-gs no disponible:',e.message);
-    const dbg=document.getElementById('rpt-op-debug');
-    if(dbg) dbg.textContent='ERROR: '+e.message;
     document.getElementById('rpt-op-demo-banner').style.display='flex';
     rptRenderOp(RPT_MOCK_OP);
     document.getElementById('rpt-op-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
