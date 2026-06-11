@@ -370,9 +370,7 @@
 
     <!-- Filtros -->
     <div class="filter-bar">
-      <div class="filter-group"><label>Desde</label><input type="date" id="rpt-op-desde"></div>
-      <span class="filter-sep">&#8594;</span>
-      <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-op-hasta"></div>
+      <div class="filter-group"><label>Fecha</label><input type="date" id="rpt-op-fecha"></div>
       <div class="filter-group">
         <label>&#193;rea</label>
         <select id="rpt-op-almacen" onchange="rptCargarOp()">
@@ -381,6 +379,7 @@
           <option value="BBMV">BBMV — Ecommerce</option>
         </select>
       </div>
+      <button class="btn-sec" onclick="rptOpSetHoy()">Hoy</button>
       <button class="btn-sec" onclick="rptOpSetAyer()">Ayer</button>
       <button class="btn-apply" onclick="rptCargarOp()">Aplicar</button>
       <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
@@ -738,6 +737,7 @@ const EST_ORDER=['Sin Pickear','Parcial','Pickeado','Embalada','Cerrada'];
 const EST_BADGE={'Sin Pickear':'rb-sinpick','Parcial':'rb-parcial','Pickeado':'rb-pickeado','Embalada':'rb-embalada','Cerrada':'rb-cerrada'};
 let chartTend=null,chartEnvio=null,chartOp=null;
 
+let _sapAutoPop=false;
 function rptSapClear(){
   document.getElementById('rpt-sap-desde').value='';
   document.getElementById('rpt-sap-hasta').value='';
@@ -804,13 +804,17 @@ async function rptCargarSap(){
 }
 
 function rptRenderSap(data){
-  // Auto-set fechas desde la data si inputs vacíos
   const sapDesde=document.getElementById('rpt-sap-desde');
   const sapHasta=document.getElementById('rpt-sap-hasta');
-  if((!sapDesde.value||!sapHasta.value)&&data.fecha_min&&data.fecha_max){
-    if(!sapDesde.value) sapDesde.value=data.fecha_min;
-    if(!sapHasta.value) sapHasta.value=data.fecha_max;
+  // Si no hay datos y hay fecha_max, saltar a esa fecha y re-fetchear (una vez)
+  const pfcLen=(data.por_fecha_cliente||[]).length;
+  if(data.fecha_max&&!pfcLen&&!_sapAutoPop){
+    _sapAutoPop=true; sapDesde.value=data.fecha_max; sapHasta.value=data.fecha_max; rptCargarSap(); return;
   }
+  _sapAutoPop=false;
+  // Si inputs vacíos, poblar desde la data
+  if(!sapDesde.value&&data.fecha_min) sapDesde.value=data.fecha_min;
+  if(!sapHasta.value&&data.fecha_max) sapHasta.value=data.fecha_max;
   // KPI cards
   const k=data.kpis;
   const pct=Number(k.cumplimiento||0);
@@ -957,16 +961,16 @@ function fmtNombre(n){
   return m?m[1]:n;
 }
 
-function rptOpSetAyer(){const y=rptAyer();document.getElementById('rpt-op-desde').value=y;document.getElementById('rpt-op-hasta').value=y;}
-function rptInitOp(){const h=new Date().toISOString().slice(0,10);document.getElementById('rpt-op-desde').value=h;document.getElementById('rpt-op-hasta').value=h;}
+function rptOpSetHoy(){const h=new Date().toISOString().slice(0,10);document.getElementById('rpt-op-fecha').value=h;rptCargarOp();}
+function rptOpSetAyer(){const y=rptAyer();document.getElementById('rpt-op-fecha').value=y;rptCargarOp();}
+function rptInitOp(){document.getElementById('rpt-op-fecha').value=new Date().toISOString().slice(0,10);}
+let _opAutoPop=false;
 
 async function rptCargarOp(){
-  const desde=document.getElementById('rpt-op-desde').value;
-  const hasta=document.getElementById('rpt-op-hasta').value;
+  const fecha=document.getElementById('rpt-op-fecha').value;
   const almacen=document.getElementById('rpt-op-almacen').value;
   const p=new URLSearchParams({tipo:'kpi-op-gs'});
-  if(desde)p.set('desde',desde);
-  if(hasta)p.set('hasta',hasta);
+  if(fecha){p.set('desde',fecha);p.set('hasta',fecha);}
   if(almacen&&almacen!=='todos')p.set('almacen',almacen);
   const t0=Date.now();
   try{
@@ -985,12 +989,12 @@ async function rptCargarOp(){
 }
 
 function rptRenderOp(data){
-  // Auto-poblar fechas desde la data si no hay resultados con el filtro actual
-  const opDesde=document.getElementById('rpt-op-desde');
-  const opHasta=document.getElementById('rpt-op-hasta');
-  if(data.fecha_min&&data.fecha_max&&(!data.resumen||!data.resumen.total_operarios)){
-    opDesde.value=data.fecha_min; opHasta.value=data.fecha_max;
+  // Auto-poblar fecha desde la data si no hay resultados con el filtro actual
+  const opFecha=document.getElementById('rpt-op-fecha');
+  if(data.fecha_max&&(!data.resumen||!data.resumen.total_operarios)&&!_opAutoPop){
+    _opAutoPop=true; opFecha.value=data.fecha_max; rptCargarOp(); return;
   }
+  _opAutoPop=false;
   const r=data.resumen||{};
   const rows=data.detalle||[];
   const almacenFiltro=document.getElementById('rpt-op-almacen').value;
@@ -1123,8 +1127,13 @@ function renderOpChart(rows){
 
 // ══ KPI TIENDA ══
 let _chartTiendaDonut = null;
+let _tiendaAutoPop = false;
 
-function rptTiendaInit(){ /* sin fechas por defecto → carga todo */ }
+function rptTiendaInit(){
+  const hoy=new Date().toISOString().slice(0,10);
+  document.getElementById('rpt-t-desde').value=hoy;
+  document.getElementById('rpt-t-hasta').value=hoy;
+}
 function rptTiendaSetTodo(){
   document.getElementById('rpt-t-desde').value='';
   document.getElementById('rpt-t-hasta').value='';
@@ -1180,13 +1189,13 @@ function rptRenderTienda(data){
   const pe = k.picking_estado || {};
   const det = data.detalle || [];
 
-  // ── Setear pickers de fecha desde la data si están vacíos ──
+  // Si no hay data y hay fecha_max, saltar a esa fecha y re-fetchear (una vez)
   const desdeEl = document.getElementById('rpt-t-desde');
   const hastaEl = document.getElementById('rpt-t-hasta');
-  if(!desdeEl.value && !hastaEl.value && det.length){
-    const fechas = det.map(r=>r.fecha_solicitud).filter(s=>s&&/^\d{4}-\d{2}-\d{2}$/.test(s)).sort();
-    if(fechas.length){ desdeEl.value=fechas[0]; hastaEl.value=fechas[fechas.length-1]; }
+  if(data.fecha_max && !det.length && !_tiendaAutoPop){
+    _tiendaAutoPop=true; desdeEl.value=data.fecha_max; hastaEl.value=data.fecha_max; rptCargarTienda(); return;
   }
+  _tiendaAutoPop=false;
 
   // ── Poblar selects ──
   const _sel = (id, arr, placeholder) => {
@@ -1491,7 +1500,11 @@ async function refreshAll(){
 }
 
 (function init(){
-  rptCargarSap(); // fechas se poblan desde fecha_min/fecha_max del hub
+  // Inicializar SAP con hoy; si no hay datos, rptRenderSap salta a fecha_max
+  const hoy=new Date().toISOString().slice(0,10);
+  document.getElementById('rpt-sap-desde').value=hoy;
+  document.getElementById('rpt-sap-hasta').value=hoy;
+  rptCargarSap();
 })();
 </script>
 </body>
