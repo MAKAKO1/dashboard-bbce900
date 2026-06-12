@@ -771,7 +771,10 @@ function redrawTable(tableId, rows, lim, olaLabel) {
   const tbody = document.getElementById('tbody-' + tableId);
   if (!rows.length) {
     thead.innerHTML = `<tr><th>Operario</th><th>Seller</th><th>${olaLabel||'Picking'}</th><th>Mes&oacute;n/RDF</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros.</div></td></tr>`;
+    const tsInfo = lastHubFetchAt
+      ? `<br><span style="font-size:10px;color:#BBCCE0;font-weight:700;text-transform:none">Hub actualizado: ${_fmtTime(new Date(lastHubFetchAt))}</span>`
+      : '';
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros para el período.${tsInfo}</div></td></tr>`;
     return;
   }
   if (mode === 'resumen') {

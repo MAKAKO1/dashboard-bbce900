@@ -139,6 +139,7 @@
   .rpt-alerta-pr     { font-size:10px; font-weight:800; text-transform:uppercase; margin-top:4px; }
   .rpt-pr-alta  { color:#C0392B; } .rpt-pr-media { color:#E67E22; } .rpt-pr-baja { color:#27AE60; }
   .rpt-empty { text-align:center; padding:28px; color:#99AABB; font-weight:800; font-size:12px; text-transform:uppercase; }
+  .rpt-ts-chip { margin-left:auto; background:#F0F6FF; border:1px solid #EEF4FF; border-radius:20px; padding:4px 12px; font-size:10px; color:#7799AA; font-weight:700; white-space:nowrap; }
   .rpt-demo-banner { background:#FFF3CD; border:1.5px solid #FFECB5; border-radius:12px; padding:10px 16px; font-size:12px; font-weight:800; color:#856404; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
 
   /* ══ Pedidos SAP — presets + tabla seller×fecha ══ */
@@ -293,7 +294,7 @@
       <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
       <button class="btn-sec" onclick="rptSapClear()">Limpiar</button>
       <button class="btn-sec" onclick="rptCsvSap()" title="Descargar tabla Marketplace &#215; Fecha en CSV">&#11015; CSV</button>
-      <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
+      <span id="rpt-sap-ts" class="rpt-ts-chip"></span>
     </div>
     <!-- Presets -->
     <div class="sap-presets">
@@ -383,7 +384,7 @@
       <button class="btn-sec" onclick="rptOpSetAyer()">Ayer</button>
       <button class="btn-apply" onclick="rptCargarOp()">Aplicar</button>
       <button class="btn-sec" onclick="rptCsvOp()" title="Descargar detalle por operario en CSV">&#11015; CSV</button>
-      <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
+      <span id="rpt-op-ts" class="rpt-ts-chip"></span>
     </div>
 
     <!-- KPIs globales (siempre visibles) -->
@@ -1139,6 +1140,8 @@ function rptRenderOp(data){
   function renderTablaOp(tbodyId, tfootId, titId, filas, color){
     const titulo=filas[0]?.tipo==='Picking'?'📦 Picking':'📦 Pack / Embalaje';
     document.getElementById(titId).textContent=titulo;
+    const uxhVals=filas.filter(x=>x.unid_x_hora!=null&&x.unid_x_hora>0);
+    const avgUxh=uxhVals.length>1?uxhVals.reduce((s,x)=>s+x.unid_x_hora,0)/uxhVals.length:0;
     if(!filas.length){
       document.getElementById(tbodyId).innerHTML=`<tr><td colspan="${almacenFiltro==='todos'?9:8}" class="rpt-empty">Sin registros</td></tr>`;
       document.getElementById(tfootId).innerHTML='';
@@ -1154,6 +1157,13 @@ function rptRenderOp(data){
       const bgA=esBBCE?'#D6EAF8':'#D5F5E3';
       const badgeA=almacenFiltro==='todos'?`<td><span style="background:${bgA};color:${colA};border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800">${x.almacen}</span></td>`:'';
       const cols=almacenFiltro==='todos'?8:7;
+      const uxh=x.unid_x_hora;
+      let perfBadge='';
+      if(avgUxh>0&&uxh!=null){
+        if(uxh>=avgUxh*1.15)      perfBadge=`<span style="background:#D5F5E3;color:#1E8449;border-radius:12px;padding:2px 7px;font-size:10px;font-weight:800">&#9650; TOP</span>`;
+        else if(uxh>=avgUxh*0.85) perfBadge=`<span style="background:#EEF4FF;color:#5B9BD5;border-radius:12px;padding:2px 7px;font-size:10px;font-weight:800">&#8226; MED</span>`;
+        else                       perfBadge=`<span style="background:#FADBD8;color:#C0392B;border-radius:12px;padding:2px 7px;font-size:10px;font-weight:800">&#9660; BAJO</span>`;
+      }
       return `<tr>
         <td style="text-align:center">${MEDALS[i]||i+1}</td>
         <td style="font-weight:800;color:#003366">${fmtNombre(x.nombre)}</td>
@@ -1162,8 +1172,8 @@ function rptRenderOp(data){
         <td class="n">${rptFmt(x.pick_lists)}</td>
         <td class="n" style="font-weight:900;color:${color}">${rptFmt(x.unidades)}</td>
         <td class="n">${x.min_prom_x_lista!=null?x.min_prom_x_lista+' min':'—'}</td>
-        <td class="n">${x.unid_x_hora!=null?rptFmt(x.unid_x_hora):'—'}</td>
-        <td style="min-width:70px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${color}"></div></div></td>
+        <td class="n">${uxh!=null?rptFmt(uxh):'—'}</td>
+        <td style="min-width:90px">${perfBadge}${perfBadge?'<br>':''}<div class="rpt-prog-wrap"${perfBadge?' style="margin-top:3px"':''}><div class="rpt-prog-bar" style="width:${pct}%;background:${color}"></div></div></td>
       </tr>`;
     }).join('');
     document.getElementById(tfootId).innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td>${almacenFiltro==='todos'?'<td></td>':''}<td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td class="n">—</td><td></td></tr>`;
