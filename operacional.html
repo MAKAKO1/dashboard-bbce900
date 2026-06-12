@@ -445,8 +445,9 @@
 
 </div>
 
+<script src="config.js"></script>
 <script>
-const HUB_URL  = 'https://script.google.com/macros/s/AKfycbwyIns-vKBOufHE79lDLqUiv3yLccM6kfph_kL1O7TKJURaA_4oSiZiul7BgwF2Z4co/exec';
+// HUB_LOG_URL viene de config.js (Hub Logístico — picking/embalaje en vivo)
 const DESP_URL = 'https://script.google.com/macros/s/AKfycbwS_VDoSbjoTqRvLSOaGYOcwsMzonLqd3gaFjwbX9YUZ3KgcBDzzA7yblp9yWgGGpU8tw/exec';
 
 const cache = { TIENDAS: null, ECO: null };
@@ -613,7 +614,7 @@ async function loadAllHubData(silent = false) {
     });
   }
   try {
-    const res  = await fetch(HUB_URL + '?t=' + Date.now());
+    const res  = await fetch(HUB_LOG_URL + '?t=' + Date.now());
     const data = await res.json();
     hideOfflineBanner();
     const picking  = (data.picking  || []).map(r => ({ ...r, tipo:'Picking'  }));
@@ -769,8 +770,8 @@ function redrawTable(tableId, rows, lim, olaLabel) {
   const thead = document.getElementById('thead-' + tableId);
   const tbody = document.getElementById('tbody-' + tableId);
   if (!rows.length) {
-    thead.innerHTML = `<tr><th>Operario</th><th>Seller</th><th>${olaLabel||'Picking'}</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros.</div></td></tr>`;
+    thead.innerHTML = `<tr><th>Operario</th><th>Seller</th><th>${olaLabel||'Picking'}</th><th>Mes&oacute;n/RDF</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">&#128203;</div>Sin registros.</div></td></tr>`;
     return;
   }
   if (mode === 'resumen') {
@@ -794,7 +795,7 @@ function redrawTable(tableId, rows, lim, olaLabel) {
       </tr>`;
     }).join('');
   } else {
-    thead.innerHTML = `<tr><th>Operario</th><th>Seller / Tienda</th><th>${olaLabel||'Picking'}</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
+    thead.innerHTML = `<tr><th>Operario</th><th>Seller / Tienda</th><th>${olaLabel||'Picking'}</th><th>Mes&oacute;n/RDF</th><th>Inicio</th><th>Fin</th><th>Min</th><th>Estado</th></tr>`;
     tbody.innerHTML = rows.map(r => {
       const min    = Number(r.minutos) || 0;
       const abierto = !r.fin && min === 0;
@@ -813,6 +814,7 @@ function redrawTable(tableId, rows, lim, olaLabel) {
         <td style="font-weight:${abierto?'900':'700'}">${r.operario||'—'}</td>
         <td>${r.seller||'—'}</td>
         <td>${r.ola||'—'}</td>
+        <td>${r.meson ? `<span style="background:#E8F6FF;border:1px solid #99D4F5;border-radius:10px;padding:1px 8px;font-weight:800;color:#0077BB;font-size:11px">${r.meson}</span>` : '—'}</td>
         <td>${formatDate(r.inicio)}</td>
         <td>${abierto ? '<span style="color:#8E44AD;font-size:11px;font-weight:800">En curso</span>' : formatDate(r.fin)}</td>
         ${minCell}

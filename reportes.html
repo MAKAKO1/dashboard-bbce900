@@ -292,6 +292,7 @@
       <div class="filter-group"><label>Hasta</label><input type="date" id="rpt-sap-hasta"></div>
       <button class="btn-apply" onclick="rptCargarSap()">Aplicar</button>
       <button class="btn-sec" onclick="rptSapClear()">Limpiar</button>
+      <button class="btn-sec" onclick="rptCsvSap()" title="Descargar tabla Marketplace &#215; Fecha en CSV">&#11015; CSV</button>
       <span id="rpt-sap-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
     <!-- Presets -->
@@ -381,6 +382,7 @@
       <button class="btn-sec" onclick="rptOpSetHoy()">Hoy</button>
       <button class="btn-sec" onclick="rptOpSetAyer()">Ayer</button>
       <button class="btn-apply" onclick="rptCargarOp()">Aplicar</button>
+      <button class="btn-sec" onclick="rptCsvOp()" title="Descargar detalle por operario en CSV">&#11015; CSV</button>
       <span id="rpt-op-ts" style="margin-left:auto;font-size:11px;color:#99AABB;font-weight:800"></span>
     </div>
 
@@ -504,6 +506,7 @@
         </div>
         <button class="t-btn-ref" onclick="rptTiendaSetTodo()">Todo</button>
         <button class="t-btn-ref" id="rpt-t-btn-ref" onclick="rptCargarTienda()">&#8635; Actualizar</button>
+        <button class="t-btn-ref" onclick="rptCsvTienda()" title="Descargar detalle de solicitudes en CSV">&#11015; CSV</button>
         <span class="t-ts" id="rpt-t-ts"></span>
       </div>
     </div>
@@ -778,7 +781,55 @@ function sapPill(ent,comp){
   return `<span class="sap-pill sap-pend">&#9679; Pendiente</span>`;
 }
 
-const HUB_URL='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
+// HUB_URL viene de config.js
+
+// ── Caché sessionStorage: muestra lo último al instante y refresca al fondo ──
+function _cacheGet(k){
+  try{ const v=sessionStorage.getItem('rpt:'+k); return v?JSON.parse(v):null; }catch(e){ return null; }
+}
+function _cacheSet(k,data){
+  try{ sessionStorage.setItem('rpt:'+k, JSON.stringify({ts:Date.now(),data})); }catch(e){}
+}
+function _cacheTsLabel(c){
+  const m=Math.round((Date.now()-c.ts)/60000);
+  return m<1?'recién':'hace '+m+' min';
+}
+
+// ── Export CSV (separador ; para Excel es-CL, BOM UTF-8) ──
+let _lastSap=null,_lastOp=null,_lastTienda=null;
+function _csvDescargar(nombre, headers, filas){
+  if(!filas||!filas.length){ alert('No hay datos para exportar. Carga el reporte primero.'); return; }
+  const esc=v=>{
+    const s=v==null?'':String(v);
+    return /[";\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+  };
+  const csv='﻿'+headers.map(esc).join(';')+'\n'+filas.map(f=>f.map(esc).join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=nombre+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function rptCsvSap(){
+  const pfc=(_lastSap&&_lastSap.por_fecha_cliente)||[];
+  _csvDescargar('pedidos_sap',
+    ['Fecha','Marketplace','Comprometido','Despachado','Pendiente','% Cumpl.'],
+    pfc.map(r=>[r.fecha,r.cliente,r.unidades,r.entregadas,r.abiertas,
+      r.unidades>0?(r.entregadas/r.unidades*100).toFixed(1).replace('.',','):'0']));
+}
+function rptCsvOp(){
+  const det=(_lastOp&&_lastOp.detalle)||[];
+  _csvDescargar('kpi_operarios',
+    ['Operario','Almacén','Tipo','Olas','Pick Lists','Unidades','Min/Lista','Unid x Hora'],
+    det.map(r=>[fmtNombre(r.nombre),r.almacen,r.tipo,r.olas,r.pick_lists,r.unidades,
+      r.min_prom_x_lista!=null?String(r.min_prom_x_lista).replace('.',','):'',
+      r.unid_x_hora!=null?String(r.unid_x_hora).replace('.',','):'']));
+}
+function rptCsvTienda(){
+  const det=(_lastTienda&&_lastTienda.detalle)||[];
+  _csvDescargar('kpi_tienda',
+    ['Solicitud','S°C','Fecha','Tienda Destino','Nombre Tienda','Tipo Carga','Almacén','Estatus','Solicitado','Pendiente','Pickeado','Embalado','Cerrado'],
+    det.map(r=>[r.solicitud,r.sc,r.fecha_solicitud,r.tienda_destino,r.nombre_tienda,r.tipo_carga,r.almacen_origen,r.estatus,r.solicitado,r.pendiente,r.pickeado,r.embalado,r.cerrado]));
+}
 
 async function rptCargarSap(){
   const desde=document.getElementById('rpt-sap-desde').value;
@@ -786,16 +837,29 @@ async function rptCargarSap(){
   const p=new URLSearchParams({tipo:'eco-kpi'});
   if(desde)p.set('desde',desde);
   if(hasta)p.set('hasta',hasta);
+  const ck='sap:'+p.toString();
+  const cached=_cacheGet(ck);
+  if(cached){
+    _sapAutoPop=true; // evita auto-jump al renderizar desde caché
+    rptRenderSap(cached.data);
+    document.getElementById('rpt-sap-demo-banner').style.display='none';
+    document.getElementById('rpt-sap-ts').textContent='Guardado '+_cacheTsLabel(cached)+' · actualizando…';
+  }
   const t0=Date.now();
   try{
     const res=await fetch(HUB_URL+'?'+p);
     const data=await res.json();
     if(!data.ok)throw new Error(data.error||'Error hub eco-kpi');
+    _cacheSet(ck,data);
     document.getElementById('rpt-sap-demo-banner').style.display='none';
     rptRenderSap(data);
     document.getElementById('rpt-sap-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL')+' ('+(((Date.now()-t0)/1000).toFixed(1))+'s)';
   }catch(e){
     console.warn('Hub eco-kpi no disponible:',e.message);
+    if(cached){
+      document.getElementById('rpt-sap-ts').textContent='Sin conexión · datos guardados '+_cacheTsLabel(cached);
+      return;
+    }
     document.getElementById('rpt-sap-demo-banner').style.display='flex';
     rptRenderSap(RPT_MOCK_SAP);
     document.getElementById('rpt-sap-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
@@ -811,6 +875,7 @@ function rptRenderSap(data){
     _sapAutoPop=true; sapDesde.value=data.fecha_max; sapHasta.value=data.fecha_max; rptCargarSap(); return;
   }
   _sapAutoPop=false;
+  _lastSap=data;
   // Si inputs vacíos, poblar desde la data
   if(!sapDesde.value&&data.fecha_min) sapDesde.value=data.fecha_min;
   if(!sapHasta.value&&data.fecha_max) sapHasta.value=data.fecha_max;
@@ -971,16 +1036,29 @@ async function rptCargarOp(){
   const p=new URLSearchParams({tipo:'kpi-op-gs'});
   if(fecha){p.set('desde',fecha);p.set('hasta',fecha);}
   if(almacen&&almacen!=='todos')p.set('almacen',almacen);
+  const ck='op:'+p.toString();
+  const cached=_cacheGet(ck);
+  if(cached){
+    _opAutoPop=true; // evita auto-jump al renderizar desde caché
+    rptRenderOp(cached.data);
+    document.getElementById('rpt-op-demo-banner').style.display='none';
+    document.getElementById('rpt-op-ts').textContent='Guardado '+_cacheTsLabel(cached)+' · actualizando…';
+  }
   const t0=Date.now();
   try{
     const res=await fetch(HUB_URL+'?'+p);
     const data=await res.json();
     if(!data.ok)throw new Error(data.error||'Error hub kpi-op-gs');
+    _cacheSet(ck,data);
     document.getElementById('rpt-op-demo-banner').style.display='none';
     rptRenderOp(data);
     document.getElementById('rpt-op-ts').textContent='Actualizado: '+new Date().toLocaleTimeString('es-CL')+' ('+(((Date.now()-t0)/1000).toFixed(1))+'s)';
   }catch(e){
     console.warn('Hub kpi-op-gs no disponible:',e.message);
+    if(cached){
+      document.getElementById('rpt-op-ts').textContent='Sin conexión · datos guardados '+_cacheTsLabel(cached);
+      return;
+    }
     document.getElementById('rpt-op-demo-banner').style.display='flex';
     rptRenderOp(RPT_MOCK_OP);
     document.getElementById('rpt-op-ts').textContent='Demo · '+new Date().toLocaleTimeString('es-CL');
@@ -994,6 +1072,7 @@ function rptRenderOp(data){
     _opAutoPop=true; opFecha.value=data.fecha_max; rptCargarOp(); return;
   }
   _opAutoPop=false;
+  _lastOp=data;
   const r=data.resumen||{};
   const rows=data.detalle||[];
   const almacenFiltro=document.getElementById('rpt-op-almacen').value;
@@ -1061,7 +1140,7 @@ function rptRenderOp(data){
     const titulo=filas[0]?.tipo==='Picking'?'📦 Picking':'📦 Pack / Embalaje';
     document.getElementById(titId).textContent=titulo;
     if(!filas.length){
-      document.getElementById(tbodyId).innerHTML=`<tr><td colspan="8" class="rpt-empty">Sin registros</td></tr>`;
+      document.getElementById(tbodyId).innerHTML=`<tr><td colspan="${almacenFiltro==='todos'?9:8}" class="rpt-empty">Sin registros</td></tr>`;
       document.getElementById(tfootId).innerHTML='';
       return;
     }
@@ -1083,16 +1162,17 @@ function rptRenderOp(data){
         <td class="n">${rptFmt(x.pick_lists)}</td>
         <td class="n" style="font-weight:900;color:${color}">${rptFmt(x.unidades)}</td>
         <td class="n">${x.min_prom_x_lista!=null?x.min_prom_x_lista+' min':'—'}</td>
+        <td class="n">${x.unid_x_hora!=null?rptFmt(x.unid_x_hora):'—'}</td>
         <td style="min-width:70px"><div class="rpt-prog-wrap"><div class="rpt-prog-bar" style="width:${pct}%;background:${color}"></div></div></td>
       </tr>`;
     }).join('');
-    document.getElementById(tfootId).innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td>${almacenFiltro==='todos'?'<td></td>':''}<td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td></td></tr>`;
+    document.getElementById(tfootId).innerHTML=`<tr><td></td><td style="font-weight:900">TOTAL</td>${almacenFiltro==='todos'?'<td></td>':''}<td class="n">${rptFmt(tO)}</td><td class="n">${rptFmt(tL)}</td><td class="n">${rptFmt(tU)}</td><td class="n">—</td><td class="n">—</td><td></td></tr>`;
 
     // Ajustar encabezado según si se muestra la columna Área o no
     const thead=document.getElementById(tbodyId.replace('tabla','thead'));
     if(thead){
       const areaCol=almacenFiltro==='todos'?'<th>&#193;rea</th>':'';
-      thead.innerHTML=`<tr><th>#</th><th>Operario</th>${areaCol}<th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th>Rendimiento</th></tr>`;
+      thead.innerHTML=`<tr><th>#</th><th>Operario</th>${areaCol}<th class="n">Olas</th><th class="n">Pick Lists</th><th class="n">Unidades</th><th class="n">Min/Lista</th><th class="n">Unid/h</th><th>Rendimiento</th></tr>`;
     }
   }
 
@@ -1158,20 +1238,30 @@ async function rptCargarTienda(){
   if(almacen)   p.set('almacen',   almacen);
   if(solDesde)  p.set('sol_desde', solDesde);
   if(solHasta)  p.set('sol_hasta', solHasta);
-  const HUB='https://script.google.com/macros/s/AKfycbyZU7IJt6E_v4S7T0-Uqbpr5ZGbGLMpJPlPpOGOmg91o8iKloR92rV7Yy8WMEfPbk3d/exec';
   const tsEl  = document.getElementById('rpt-t-ts');
   const btnRef = document.getElementById('rpt-t-btn-ref');
-  tsEl.textContent = 'Cargando...';
+  const ck='tienda:'+p.toString();
+  const cached=_cacheGet(ck);
+  if(cached){
+    _tiendaAutoPop=true; // evita auto-jump al renderizar desde caché
+    rptRenderTienda(cached.data);
+    tsEl.textContent='Guardado '+_cacheTsLabel(cached)+' · actualizando…';
+  } else {
+    tsEl.textContent = 'Cargando...';
+  }
   if(btnRef){ btnRef.disabled=true; btnRef.textContent='⏳'; }
   try{
     const ctrl = new AbortController(); setTimeout(()=>ctrl.abort(), 20000);
-    const res  = await fetch(HUB+'?'+p, { signal:ctrl.signal });
+    const res  = await fetch(HUB_URL+'?'+p, { signal:ctrl.signal });
     const data = await res.json();
     if(!data.ok) throw new Error(data.error||'Error hub');
+    _cacheSet(ck,data);
     rptRenderTienda(data);
     tsEl.textContent = 'Última act. '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
   } catch(e){
-    tsEl.textContent = 'Error: '+(e.name==='AbortError'?'timeout':e.message);
+    tsEl.textContent = cached
+      ? 'Sin conexión · datos guardados '+_cacheTsLabel(cached)
+      : 'Error: '+(e.name==='AbortError'?'timeout':e.message);
   } finally{
     if(btnRef){ btnRef.disabled=false; btnRef.textContent='↻ Actualizar'; }
   }
@@ -1195,6 +1285,7 @@ function rptRenderTienda(data){
     _tiendaAutoPop=true; desdeEl.value=data.fecha_max; hastaEl.value=data.fecha_max; rptCargarTienda(); return;
   }
   _tiendaAutoPop=false;
+  _lastTienda=data;
 
   // ── Poblar selects ──
   const _sel = (id, arr, placeholder) => {
